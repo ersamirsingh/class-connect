@@ -66,6 +66,7 @@ export const SAMPLE_COURSES = [
     rating: 4.9,
     totalReviews: 1240,
     studentsEnrolled: 4820,
+    tags: ['React 19', 'Node.js', 'MongoDB', 'Tailwind v4'],
     thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&auto=format&fit=crop&q=80',
     lectures: [
       { _id: 'l1', title: 'Course Overview & Setup', duration: '12:30', isPreview: true },
@@ -89,6 +90,7 @@ export const SAMPLE_COURSES = [
     rating: 4.8,
     totalReviews: 890,
     studentsEnrolled: 3210,
+    tags: ['React Native', 'Flutter', 'iOS', 'Android'],
     thumbnail: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&auto=format&fit=crop&q=80',
     lectures: [
       { _id: 'l21', title: 'Introduction to Mobile Architecture', duration: '15:00', isPreview: true },
@@ -110,6 +112,7 @@ export const SAMPLE_COURSES = [
     rating: 4.9,
     totalReviews: 750,
     studentsEnrolled: 2940,
+    tags: ['Figma', 'Motion UI', 'Design Systems', '3D Design'],
     thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&auto=format&fit=crop&q=80',
     lectures: [
       { _id: 'l31', title: 'Design Principles & Grid Systems', duration: '20:00', isPreview: true },
@@ -130,6 +133,7 @@ export const SAMPLE_COURSES = [
     rating: 4.9,
     totalReviews: 2100,
     studentsEnrolled: 6100,
+    tags: ['Python 3.12', 'OpenAI API', 'LangChain', 'AI Agents'],
     thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
     lectures: [
       { _id: 'l41', title: 'Python Basics to Advanced', duration: '30:00', isPreview: true },
@@ -150,6 +154,7 @@ export const SAMPLE_COURSES = [
     rating: 4.7,
     totalReviews: 630,
     studentsEnrolled: 1850,
+    tags: ['Meta Ads', 'Google Ads', 'SEO Strategy', 'Analytics'],
     thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80',
     lectures: [
       { _id: 'l51', title: 'Growth Mindset & Funnels', duration: '18:00', isPreview: true },
@@ -169,6 +174,7 @@ export const SAMPLE_COURSES = [
     rating: 5.0,
     totalReviews: 420,
     studentsEnrolled: 1400,
+    tags: ['Next.js 15', 'TypeScript', 'Server Actions', 'Stripe'],
     thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80',
     lectures: [
       { _id: 'l61', title: 'Next.js 15 App Architecture', duration: '25:00', isPreview: true },

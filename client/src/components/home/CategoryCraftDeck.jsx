@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import Marquee from 'react-fast-marquee';
 import { 
   Code2, 
   Smartphone, 
@@ -12,10 +12,10 @@ import {
   ShieldCheck,
   Cloud,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Layers
 } from 'lucide-react';
 import { GlowingEffect } from '../motion/GlowingEffect';
-import { Marquee } from '../motion/Marquee';
 import { TextEffect } from '../motion/TextEffect';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -30,6 +30,15 @@ const categoryIcons = {
   'data-engineering': Database,
 };
 
+const categoryTechStack = {
+  'web-development': ['React', 'Node.js', 'Next.js', 'MongoDB'],
+  'app-development': ['Flutter', 'React Native', 'Swift', 'Kotlin'],
+  'ui-ux-design': ['Figma', 'Framer', 'Prototyping', '3D Design'],
+  'ai-data-science': ['Python', 'OpenAI', 'PyTorch', 'LLMs'],
+  'digital-marketing': ['SEO', 'Google Ads', 'Meta', 'Analytics'],
+  'cloud-computing': ['AWS', 'Docker', 'Kubernetes', 'DevOps'],
+};
+
 const defaultGradientBadges = [
   'from-indigo-500/15 via-purple-500/10 to-transparent',
   'from-blue-500/15 via-cyan-500/10 to-transparent',
@@ -39,10 +48,9 @@ const defaultGradientBadges = [
 ];
 
 export function CategoryCraftDeck({ categories = [] }) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const isHindi = language === 'hi';
-  const row1Ref = useRef(null);
-  const row2Ref = useRef(null);
+  const scrollRef = useRef(null);
 
   // Ensure we have a rich set of items for scrolling
   const fullCategories = categories.length > 0 ? categories : [
@@ -54,19 +62,17 @@ export function CategoryCraftDeck({ categories = [] }) {
     { _id: 'c6', name: 'Cloud Computing', slug: 'cloud-computing', courseCount: 7, description: 'AWS, Docker & Kubernetes' },
   ];
 
-  // Split into two rows for dual-direction auto scroll
+  // Split into 2 rows for dual-direction smooth scrolling
   const halfLength = Math.ceil(fullCategories.length / 2);
   const row1 = fullCategories.slice(0, halfLength);
   const row2 = fullCategories.slice(halfLength).concat(fullCategories.slice(0, 2));
 
   const scrollLeft = () => {
-    if (row1Ref.current) row1Ref.current.scrollBy({ left: -360, behavior: 'smooth' });
-    if (row2Ref.current) row2Ref.current.scrollBy({ left: -360, behavior: 'smooth' });
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: -360, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
-    if (row1Ref.current) row1Ref.current.scrollBy({ left: 360, behavior: 'smooth' });
-    if (row2Ref.current) row2Ref.current.scrollBy({ left: 360, behavior: 'smooth' });
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: 360, behavior: 'smooth' });
   };
 
   return (
@@ -77,7 +83,7 @@ export function CategoryCraftDeck({ categories = [] }) {
         <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-3xl" />
       </div>
 
-      {/* Header — Clean without badge */}
+      {/* Header */}
       <div className="page-container flex flex-col md:flex-row md:items-end justify-between mb-12 relative z-10 gap-6">
         <div className="text-left">
           <TextEffect preset="fade-in-blur" className="section-heading mb-3">
@@ -91,7 +97,7 @@ export function CategoryCraftDeck({ categories = [] }) {
           </p>
         </div>
 
-        {/* Interactive Manual Navigation Controls */}
+        {/* Interactive Manual Controls */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={scrollLeft}
@@ -110,29 +116,25 @@ export function CategoryCraftDeck({ categories = [] }) {
         </div>
       </div>
 
-      {/* EXACTLY TWO ROWS TOTAL: Both auto-scroll AND allow hover/drag scrolling */}
+      {/* TWO ROWS ONLY: Powered by react-fast-marquee for high performance auto-scrolling with hover pause */}
       <div className="relative w-full space-y-6">
-        {/* Left & Right Fading Gradient Overlay */}
+        {/* Left & Right Fading Edge Overlay */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Row 1: Left Auto-Scroll & Scrollable */}
-        <div ref={row1Ref} className="w-full">
-          <Marquee speed={35} direction="left" pauseOnHover className="py-2">
-            {row1.map((cat, idx) => (
-              <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
-            ))}
-          </Marquee>
-        </div>
+        {/* Row 1: Left Smooth Fast Marquee */}
+        <Marquee speed={35} direction="left" pauseOnHover gradient={false} className="py-2">
+          {row1.map((cat, idx) => (
+            <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
+          ))}
+        </Marquee>
 
-        {/* Row 2: Right Auto-Scroll & Scrollable */}
-        <div ref={row2Ref} className="w-full">
-          <Marquee speed={35} direction="right" pauseOnHover className="py-2">
-            {row2.map((cat, idx) => (
-              <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
-            ))}
-          </Marquee>
-        </div>
+        {/* Row 2: Right Smooth Fast Marquee */}
+        <Marquee speed={35} direction="right" pauseOnHover gradient={false} className="py-2">
+          {row2.map((cat, idx) => (
+            <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
+          ))}
+        </Marquee>
       </div>
     </section>
   );
@@ -140,6 +142,7 @@ export function CategoryCraftDeck({ categories = [] }) {
 
 function CategoryCraftCard({ category, index }) {
   const IconComponent = categoryIcons[category.slug] || Code2;
+  const techList = categoryTechStack[category.slug] || ['React', 'Python', 'Figma', 'Node.js'];
   const gradientClass = defaultGradientBadges[index % defaultGradientBadges.length];
 
   return (
@@ -151,7 +154,7 @@ function CategoryCraftCard({ category, index }) {
           containerClassName="h-full"
         >
           <div className="relative h-full p-6 sm:p-7 flex flex-col justify-between overflow-hidden">
-            {/* Background Craft Grid Subtle Pattern */}
+            {/* Background Subtle Pattern */}
             <div 
               className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"
               style={{
@@ -164,7 +167,7 @@ function CategoryCraftCard({ category, index }) {
             <div className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl ${gradientClass} rounded-bl-full pointer-events-none`} />
 
             {/* Top Row: Icon + Course Tag */}
-            <div className="flex items-center justify-between mb-6 relative z-10">
+            <div className="flex items-center justify-between mb-5 relative z-10">
               <div className="w-12 h-12 rounded-xl bg-[var(--primary-soft)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)] shadow-sm group-hover:scale-110 transition-transform duration-300">
                 <IconComponent className="w-6 h-6" />
               </div>
@@ -175,9 +178,8 @@ function CategoryCraftCard({ category, index }) {
             </div>
 
             {/* Content */}
-            <div className="relative z-10">
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2 group-hover:text-[var(--primary)] transition-colors flex items-center gap-2"
-                style={{ fontFamily: 'Manrope, sans-serif' }}>
+            <div className="relative z-10 mb-4">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2 group-hover:text-[var(--primary)] transition-colors flex items-center gap-2 font-manrope">
                 {category.name}
                 <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[var(--primary)]" />
               </h3>
@@ -185,6 +187,18 @@ function CategoryCraftCard({ category, index }) {
               <p className="text-sm text-[var(--ink-muted)] line-clamp-2 leading-relaxed font-normal">
                 {category.description || 'Master key concepts with hands-on real-world projects.'}
               </p>
+            </div>
+
+            {/* Micro Tech Stack Badge Pills inside Card */}
+            <div className="relative z-10 pt-3 border-t border-[var(--border)] flex flex-wrap gap-1.5">
+              {techList.map((tech, i) => (
+                <span 
+                  key={i} 
+                  className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--canvas)] text-[var(--ink-muted)] border border-[var(--border)]"
+                >
+                  {tech}
+                </span>
+              ))}
             </div>
           </div>
         </GlowingEffect>

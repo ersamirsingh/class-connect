@@ -311,9 +311,18 @@ export function HomePage() {
                           <h3 className="text-xl font-bold font-manrope leading-tight mb-2 line-clamp-2">
                             {course.title}
                           </h3>
-                          <p className="text-[var(--ink-muted)] text-sm mb-4 line-clamp-2">
+                          <p className="text-[var(--ink-muted)] text-sm mb-3 line-clamp-2">
                             {course.subtitle || course.description}
                           </p>
+
+                          {/* Tech Stack Badges */}
+                          <div className="flex flex-wrap gap-1.5 mb-4">
+                            {(course.tags || ['React 19', 'Node.js', 'Next.js']).slice(0, 3).map((tag, idx) => (
+                              <span key={idx} className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--primary-soft)] text-[var(--primary)] border border-[var(--primary)]/15">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
                           
                           <div className="mt-auto pt-4 border-t border-[var(--border)] flex items-center justify-between">
                             <div className="flex items-center gap-1">
