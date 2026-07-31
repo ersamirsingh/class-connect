@@ -7,6 +7,7 @@ import { courseRouter } from '../modules/course/course.route';
 import { paymentRouter } from '../modules/payment/payment.route';
 import { enrollmentRouter } from '../modules/enrollment/enrollment.route';
 import { reportRouter } from '../modules/report/report.route';
+import { adminRouter } from '../modules/admin/admin.route';
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use('/courses', courseRouter);
 router.use('/payment', paymentRouter);
 router.use('/enrollments', enrollmentRouter);
 router.use('/report', reportRouter);
+router.use('/admin', adminRouter);
 
 export const appRouter = router;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, Layers, LogOut, Home } from 'lucide-react';
+import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, Layers, LogOut, Home, UserCheck } from 'lucide-react';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
 
 export const AdminLayout = () => {
@@ -54,15 +54,21 @@ export const AdminLayout = () => {
             </Link>
             <Link
               to="/admin/courses"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-[#3730E0] hover:bg-white/10 hover:text-white transition-colors"
             >
               <BookOpen className="w-4 h-4 text-[#3730E0]" /> Manage Courses
+            </Link>
+            <Link
+              to="/admin/users"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <UserCheck className="w-4 h-4 text-[#1FAE64]" /> Student Directory
             </Link>
             <Link
               to="/admin/admins"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
             >
-              <Users className="w-4 h-4 text-[#1FAE64]" /> Manage Admins
+              <Users className="w-4 h-4 text-[#FF7A33]" /> Manage Admins
             </Link>
             <Link
               to="/admin/payments"

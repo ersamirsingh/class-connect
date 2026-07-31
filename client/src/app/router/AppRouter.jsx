@@ -29,6 +29,9 @@ import { CertificatePage } from '../../pages/learning/CertificatePage';
 
 import { ReportProblemPage } from '../../pages/report/ReportProblemPage';
 import { ManageReportsPage } from '../../pages/admin/manageReports/ManageReportsPage';
+import { ManageAdminsPage } from '../../pages/admin/manageAdmins/ManageAdminsPage';
+import { ManageUsersPage } from '../../pages/admin/manageUsers/ManageUsersPage';
+import { ManagePaymentsPage } from '../../pages/admin/managePayments/ManagePaymentsPage';
 
 import { ManageCmsPage } from '../../pages/admin/manageCms/ManageCmsPage';
 import { ManageCategoriesPage } from '../../pages/admin/manageCategories/ManageCategoriesPage';
@@ -75,8 +78,9 @@ export const AppRouter = () => {
           <Route path="/admin/categories" element={<ManageCategoriesPage />} />
           <Route path="/admin/courses" element={<ManageCoursesPage />} />
           <Route path="/admin/reports" element={<ManageReportsPage />} />
-          <Route path="/admin/admins" element={<AdminDashboard />} />
-          <Route path="/admin/payments" element={<AdminDashboard />} />
+          <Route path="/admin/admins" element={<ManageAdminsPage />} />
+          <Route path="/admin/users" element={<ManageUsersPage />} />
+          <Route path="/admin/payments" element={<ManagePaymentsPage />} />
           <Route path="/admin/profile" element={<ProfilePage />} />
         </Route>
       </Route>
