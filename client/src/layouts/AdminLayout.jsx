@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, Layers, LogOut, Home } from 'lucide-react';
+import { ThemeToggle } from '../components/shared/ThemeToggle';
 
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -18,14 +19,17 @@ export const AdminLayout = () => {
       <aside className="w-full md:w-64 bg-[#1E1E2E] text-white p-5 flex flex-col justify-between shrink-0">
         <div>
           {/* Header */}
-          <div className="flex items-center gap-3 pb-6 border-b border-slate-700/50 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-[#FF7A33] flex items-center justify-center font-bold text-white shadow-lg">
-              <ShieldAlert className="w-6 h-6" />
+          <div className="flex items-center justify-between pb-6 border-b border-slate-700/50 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#FF7A33] flex items-center justify-center font-bold text-white shadow-lg">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="font-extrabold text-lg leading-tight">Admin Portal</h2>
+                <span className="text-[10px] font-bold tracking-wider text-[#FF7A33] uppercase">ClassConnect</span>
+              </div>
             </div>
-            <div>
-              <h2 className="font-extrabold text-lg leading-tight">Admin Portal</h2>
-              <span className="text-[10px] font-bold tracking-wider text-[#FF7A33] uppercase">ClassConnect Control</span>
-            </div>
+            <ThemeToggle />
           </div>
 
           {/* Navigation Links */}

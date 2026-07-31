@@ -20,6 +20,10 @@ import { StudentDashboard } from '../../pages/dashboard/StudentDashboard';
 import { AdminDashboard } from '../../pages/dashboard/AdminDashboard';
 import { ProfilePage } from '../../pages/profile/ProfilePage';
 
+import { CheckoutPage } from '../../pages/checkout/CheckoutPage';
+import { PaymentHistoryPage } from '../../pages/checkout/PaymentHistoryPage';
+import { ReceiptViewPage } from '../../pages/checkout/ReceiptViewPage';
+
 import { ManageCmsPage } from '../../pages/admin/manageCms/ManageCmsPage';
 import { ManageCategoriesPage } from '../../pages/admin/manageCategories/ManageCategoriesPage';
 import { ManageCoursesPage } from '../../pages/admin/manageCourses/ManageCoursesPage';
@@ -45,9 +49,12 @@ export const AppRouter = () => {
 
       {/* Protected Student Routes */}
       <Route element={<ProtectedRoute allowedRoles={[ROLES.STUDENT]} />}>
+        <Route path="/checkout/:courseId" element={<CheckoutPage />} />
+        <Route path="/receipt/:orderId" element={<ReceiptViewPage />} />
         <Route element={<StudentLayout />}>
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/payments" element={<PaymentHistoryPage />} />
         </Route>
       </Route>
 

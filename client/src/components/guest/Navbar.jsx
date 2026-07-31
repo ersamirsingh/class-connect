@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { GraduationCap, LogIn, UserPlus, Compass, Info } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { ThemeToggle } from '../shared/ThemeToggle';
 
 export const Navbar = () => {
   const { isAuthenticated, user } = useAuth();
@@ -22,21 +23,24 @@ export const Navbar = () => {
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex items-center gap-2 sm:gap-6">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link
             to="/courses"
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#3730E0]/10 hover:text-[#3730E0] transition-colors"
           >
             <Compass className="w-4 h-4 text-[#FF7A33]" />
-            <span>Explore Courses</span>
+            <span>Explore</span>
           </Link>
           <Link
             to="/about"
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#3730E0]/10 hover:text-[#3730E0] transition-colors"
           >
             <Info className="w-4 h-4 text-[#1FAE64]" />
-            <span className="hidden sm:inline">About Us</span>
+            <span className="hidden sm:inline">About</span>
           </Link>
+
+          {/* Theme Switcher Button */}
+          <ThemeToggle />
 
           {/* Action CTAs */}
           {isAuthenticated ? (
@@ -56,7 +60,7 @@ export const Navbar = () => {
               </Link>
               <Link
                 to="/signup"
-                className="btn-visual btn-secondary text-xs font-extrabold px-4 py-2 shadow-md"
+                className="btn-visual btn-secondary text-xs font-extrabold px-4 py-2 shadow-md hidden sm:inline-flex"
               >
                 <UserPlus className="w-4 h-4" /> Join Free
               </Link>
