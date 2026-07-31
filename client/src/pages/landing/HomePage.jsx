@@ -29,6 +29,7 @@ import { Marquee } from '../../components/motion/Marquee';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
+import { SquigglyText } from '../../components/motion/SquigglyText';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
@@ -64,8 +65,9 @@ const faqs = [
 ];
 
 export function HomePage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
+  const isHindi = language === 'hi';
   const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
   const [featuredCourses, setFeaturedCourses] = useState(SAMPLE_COURSES);
   const [isLoadingCats, setIsLoadingCats] = useState(false);
@@ -131,8 +133,16 @@ export function HomePage() {
               Luminous Learning OS 2026
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.1] mb-6">
-              <SplitText text={getTranslation(t, 'hero.headline', 'Learn skills that move you forward.')} />
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] mb-6">
+              {isHindi ? (
+                <span>
+                  ऐसी स्किल्स सीखें जो <SquigglyText>आगे ले जाएं</SquigglyText>
+                </span>
+              ) : (
+                <span>
+                  Learn skills that <SquigglyText>move you forward</SquigglyText>
+                </span>
+              )}
             </h1>
 
             <p className="text-lg sm:text-xl text-[var(--ink-muted)] mb-8 max-w-xl font-normal leading-relaxed">
