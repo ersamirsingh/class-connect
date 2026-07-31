@@ -11,6 +11,7 @@ import { ForgotPasswordPage } from '../../pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../../pages/auth/ResetPasswordPage';
 import { StudentDashboard } from '../../pages/dashboard/StudentDashboard';
 import { AdminDashboard } from '../../pages/dashboard/AdminDashboard';
+import { ProfilePage } from '../../pages/profile/ProfilePage';
 import { ROLES } from '../../constants/roles';
 
 export const AppRouter = () => {
@@ -29,7 +30,7 @@ export const AppRouter = () => {
         <Route element={<StudentLayout />}>
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/courses" element={<StudentDashboard />} />
-          <Route path="/profile" element={<StudentDashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
 
@@ -41,6 +42,7 @@ export const AppRouter = () => {
           <Route path="/admin/admins" element={<AdminDashboard />} />
           <Route path="/admin/payments" element={<AdminDashboard />} />
           <Route path="/admin/reports" element={<AdminDashboard />} />
+          <Route path="/admin/profile" element={<ProfilePage />} />
         </Route>
       </Route>
 
