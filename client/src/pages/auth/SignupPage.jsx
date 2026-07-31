@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { User, Mail, Lock, Phone, Image as ImageIcon, UserCheck, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Lock, UserCheck, AlertCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const SignupPage = () => {
@@ -12,8 +12,6 @@ export const SignupPage = () => {
     name: '',
     email: '',
     password: '',
-    phone: '',
-    photo: '',
   });
 
   const [error, setError] = useState('');
@@ -37,9 +35,7 @@ export const SignupPage = () => {
       const res = await signup(
         formData.name,
         formData.email,
-        formData.password,
-        formData.phone,
-        formData.photo
+        formData.password
       );
       if (res.success) {
         navigate('/dashboard');
@@ -75,7 +71,7 @@ export const SignupPage = () => {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-3.5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
@@ -122,36 +118,6 @@ export const SignupPage = () => {
             required
             className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white transition-all"
           />
-        </div>
-
-        {/* Phone & Photo URL (Grid) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-              <Phone className="w-4 h-4 text-[#FF7A33]" /> Phone (Optional)
-            </label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="+1234567890"
-              className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#FF7A33] focus:bg-white transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-              <ImageIcon className="w-4 h-4 text-[#1FAE64]" /> Profile Photo URL
-            </label>
-            <input
-              type="url"
-              name="photo"
-              value={formData.photo}
-              onChange={handleChange}
-              placeholder="https://..."
-              className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#1FAE64] focus:bg-white transition-all"
-            />
-          </div>
         </div>
 
         {/* Action Button */}
