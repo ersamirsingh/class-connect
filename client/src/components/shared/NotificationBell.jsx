@@ -1,129 +1,132 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { notificationApi } from '../../api/models/notification.api';
-import { Bell, CheckCheck, Clock, ShieldCheck, CreditCard, Radio, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, Check, CheckCheck } from 'lucide-react';
+import { notificationApi } from '../../api/models/notification.api';
 
-export const NotificationBell = () => {
+export function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await notificationApi.getNotifications();
-      if (res.success && res.data) {
-        setNotifications(res.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch notifications:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // refresh every 30s
-    return () => clearInterval(interval);
-  }, []);
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const ref = useRef(null);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const handleMarkAllRead = async () => {
-    try {
-      await notificationApi.markAllRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    } catch (err) {
-      console.error('Failed to mark all as read:', err);
-    }
-  };
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
-  const handleMarkSingleRead = async (id) => {
+  // Close on click outside
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  async function fetchNotifications() {
+    try {
+      const res = await notificationApi.getNotifications();
+      setNotifications(res.data?.notifications || []);
+    } catch {
+      // Silently fail — notifications are non-critical
+    }
+  }
+
+  async function handleMarkRead(id) {
     try {
       await notificationApi.markRead(id);
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
       );
-    } catch (err) {
-      console.error('Failed to mark read:', err);
+    } catch {
+      // Silently fail
     }
-  };
+  }
+
+  async function handleMarkAllRead() {
+    try {
+      await notificationApi.markAllRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch {
+      // Silently fail
+    }
+  }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={ref}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-xl text-slate-600 hover:text-[#3730E0] hover:bg-slate-100 transition-colors relative"
-        title="Notifications"
+        onClick={() => setOpen(!open)}
+        className="relative p-2.5 rounded-xl transition-all duration-200
+          text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]"
+        aria-label="Notifications"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#EF4444] text-white text-[10px] font-black flex items-center justify-center animate-pulse">
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[var(--accent)]
+            text-white text-[10px] font-bold flex items-center justify-center
+            animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {open && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-slate-100 z-50 overflow-hidden"
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 top-12 w-80 max-h-96 overflow-hidden
+              bg-[var(--surface)] border border-[var(--border)] rounded-2xl
+              shadow-[var(--shadow-lg)] z-50"
           >
-            {/* Dropdown Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-[#F7F8FC]">
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-[#3730E0]" />
-                <span className="font-extrabold text-sm text-[#1E1E2E]">Notifications</span>
-              </div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+              <h3 className="text-sm font-bold text-[var(--ink)]">Notifications</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllRead}
-                  className="text-xs font-bold text-[#3730E0] hover:underline flex items-center gap-1"
+                  className="text-xs font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
                 >
-                  <CheckCheck className="w-3.5 h-3.5" /> Mark all read
+                  <CheckCheck className="w-3 h-3" />
+                  Mark all read
                 </button>
               )}
             </div>
 
             {/* List */}
-            <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+            <div className="overflow-y-auto max-h-72">
               {notifications.length === 0 ? (
-                <div className="p-6 text-center text-xs font-semibold text-slate-400">
-                  No notifications yet.
+                <div className="px-4 py-8 text-center">
+                  <Bell className="w-8 h-8 mx-auto text-[var(--ink-faint)] mb-2" />
+                  <p className="text-sm text-[var(--ink-muted)]">No notifications yet</p>
                 </div>
               ) : (
-                notifications.map((notif) => (
+                notifications.map((n) => (
                   <div
-                    key={notif._id}
-                    onClick={() => handleMarkSingleRead(notif._id)}
-                    className={`p-4 flex items-start gap-3 cursor-pointer transition-colors ${
-                      !notif.isRead ? 'bg-[#3730E0]/5' : 'hover:bg-slate-50'
-                    }`}
+                    key={n._id}
+                    onClick={() => !n.isRead && handleMarkRead(n._id)}
+                    className={`px-4 py-3 border-b border-[var(--border)] last:border-0
+                      cursor-pointer transition-colors duration-150
+                      ${n.isRead
+                        ? 'bg-transparent'
+                        : 'bg-[var(--primary-soft)]'
+                      } hover:bg-[var(--canvas)]`}
                   >
-                    <div className="w-8 h-8 rounded-xl bg-[#3730E0]/10 text-[#3730E0] flex items-center justify-center shrink-0 mt-0.5">
-                      <Bell className="w-4 h-4" />
-                    </div>
-                    <div className="space-y-0.5 flex-1">
-                      <div className="text-xs font-extrabold text-[#1E1E2E] flex justify-between">
-                        <span>{notif.title}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">
-                          {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 font-medium leading-tight">{notif.message}</p>
-                    </div>
+                    <p className={`text-sm leading-relaxed ${
+                      n.isRead ? 'text-[var(--ink-muted)]' : 'text-[var(--ink)] font-medium'
+                    }`}>
+                      {n.message}
+                    </p>
+                    <p className="text-xs text-[var(--ink-faint)] mt-1">
+                      {new Date(n.createdAt).toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                      })}
+                    </p>
                   </div>
                 ))
               )}
@@ -133,4 +136,4 @@ export const NotificationBell = () => {
       </AnimatePresence>
     </div>
   );
-};
+}

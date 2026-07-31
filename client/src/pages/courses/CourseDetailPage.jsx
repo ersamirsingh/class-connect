@@ -1,262 +1,259 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Star, Clock, PlayCircle, Lock, CheckCircle, ChevronDown, ChevronUp, AlertCircle, ShoppingCart, Loader2 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../hooks/useAuth';
 import { courseApi } from '../../api/models/course.api';
-import { Navbar } from '../../components/guest/Navbar';
+import { reviewApi } from '../../api/models/review.api';
+import { TextEffect } from '../../components/motion/TextEffect';
+import { InView } from '../../components/motion/InView';
+import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
-import { CourseReviewsSection } from '../../components/courses/CourseReviewsSection';
-import {
-  PlayCircle,
-  Star,
-  CheckCircle2,
-  Lock,
-  Clock,
-  BookOpen,
-  Award,
-  Video,
-  FileText,
-  ShieldCheck,
-  ChevronDown,
-  ChevronUp,
-  Loader2,
-  ShoppingBag,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
 
-export const CourseDetailPage = () => {
-  const { idOrSlug } = useParams();
+export function CourseDetailPage() {
+  const { slug } = useParams();
   const navigate = useNavigate();
-
+  const { language } = useLanguage();
+  const { user, isAuthenticated } = useAuth();
+  
   const [course, setCourse] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [expandedSections, setExpandedSections] = useState({ 0: true });
-  const [playingVideo, setPlayingVideo] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [expandedModules, setExpandedModules] = useState({});
+
+  const isHindi = language === 'hi';
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseDetails = async () => {
       try {
-        setLoading(true);
-        const res = await courseApi.getCourseByIdOrSlug(idOrSlug);
-        if (res.success && res.data) {
-          setCourse(res.data);
-        }
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch course and reviews in parallel
+        const [courseRes, reviewsRes] = await Promise.all([
+          courseApi.getCourseByIdOrSlug(slug),
+          // Fallback mechanism to use course ID once we get it if possible, 
+          // or assume backend allows slug for reviews
+          reviewApi.getCourseReviews(slug).catch(() => ({ data: { reviews: [] } }))
+        ]);
+        
+        setCourse(courseRes.data?.course);
+        setReviews(reviewsRes.data?.reviews || []);
+        
+        // Expand first module by default if lectures exist and are grouped
+        // If not grouped, we just render a simple list
+        setExpandedModules({ 0: true });
+        
       } catch (err) {
-        console.error('Failed to load course details:', err);
+        console.error('Failed to fetch course details:', err);
+        setError(err.response?.data?.message || 'Course not found');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    fetchCourse();
-  }, [idOrSlug]);
+    
+    if (slug) fetchCourseDetails();
+  }, [slug]);
 
-  const toggleSection = (idx) => {
-    setExpandedSections((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  const toggleModule = (index) => {
+    setExpandedModules(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
-  if (loading) {
+  const handleBuyClick = () => {
+    if (isAuthenticated) {
+      navigate(`/checkout/${course?._id}`);
+    } else {
+      navigate('/login', { state: { from: `/courses/${slug}` } });
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F7F8FC] flex flex-col justify-between">
-        <Navbar />
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-10 h-10 text-[#3730E0] animate-spin mb-3" />
-          <span className="text-xs font-bold text-slate-500">Loading course...</span>
-        </div>
-        <Footer />
+      <div className="min-h-screen bg-[var(--canvas)] flex flex-col items-center justify-center font-sans">
+        <FloatingNav />
+        <Loader2 className="w-12 h-12 text-[var(--primary)] animate-spin mb-4" />
+        <p className="text-[var(--ink-muted)] font-medium">Loading course details...</p>
       </div>
     );
   }
 
-  if (!course) {
+  if (error || !course) {
     return (
-      <div className="min-h-screen bg-[#F7F8FC] flex flex-col justify-between">
-        <Navbar />
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-bold text-[#1E1E2E]">Course Not Found</h2>
-          <Link to="/courses" className="btn-visual btn-primary text-xs mt-4 inline-flex">
-            Back to Catalog
-          </Link>
-        </div>
+      <div className="min-h-screen bg-[var(--canvas)] flex flex-col font-sans">
+        <FloatingNav />
+        <main className="flex-grow flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-[var(--surface)] p-8 rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-md)] text-center">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-[var(--ink)] mb-4">Course Not Found</h2>
+            <p className="text-[var(--ink-muted)] mb-8">{error || "The course you are looking for does not exist or has been removed."}</p>
+            <Link to="/courses" className="inline-flex items-center justify-center w-full px-6 py-3 bg-[var(--primary)] text-[var(--surface)] font-bold rounded-[var(--radius-pill)] hover:opacity-90 transition-opacity min-h-[44px]">
+              Browse Courses
+            </Link>
+          </div>
+        </main>
         <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8FC] flex flex-col justify-between">
-      <Navbar />
-
-      <main className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8">
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Video Preview, Curriculum & Reviews */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Header Info */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-[#3730E0]/10 text-[#3730E0] text-xs font-extrabold uppercase">
-                  {course.category?.name || 'Course'}
-                </span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-black uppercase text-white ${
-                    course.type === 'live' ? 'bg-[#FF7A33]' : 'bg-[#1FAE64]'
-                  }`}
-                >
-                  {course.type === 'live' ? '⚡ Live Class' : '📹 Recorded'}
-                </span>
+    <div className="min-h-screen bg-[var(--canvas)] flex flex-col font-sans relative pb-24 lg:pb-0">
+      <FloatingNav />
+      
+      <main className="flex-grow pt-24">
+        {/* Hero Section */}
+        <div className="bg-[var(--surface)] border-b border-[var(--border)]">
+          <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20 flex flex-col lg:flex-row gap-12">
+            
+            {/* Text Content */}
+            <div className="flex-1 lg:pr-8">
+              <div className="inline-block px-3 py-1 bg-[var(--canvas)] text-[var(--primary)] text-sm font-bold rounded-[var(--radius-pill)] mb-6">
+                {course.category?.name || "General"}
               </div>
-
-              <h1 className="text-3xl sm:text-4xl font-black text-[#1E1E2E] leading-tight">{course.title}</h1>
-              <p className="text-sm font-medium text-slate-600">{course.subtitle || course.description}</p>
-
-              <div className="flex items-center gap-4 text-xs font-bold text-slate-500 pt-1">
-                <div className="flex items-center gap-1 text-[#F5A623]">
-                  <Star className="w-4 h-4 fill-[#F5A623]" />
-                  <span>{course.rating || 4.9}</span>
-                  <span className="text-slate-400">({course.reviewsCount || 120} reviews)</span>
+              
+              <TextEffect className="text-4xl lg:text-5xl font-extrabold text-[var(--ink)] leading-tight mb-6">
+                {course.title}
+              </TextEffect>
+              
+              <p className="text-lg text-[var(--ink-muted)] mb-8 max-w-3xl">
+                {course.description}
+              </p>
+              
+              <div className="flex flex-wrap items-center gap-6 text-[var(--ink)] font-medium">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 fill-[var(--accent)] text-[var(--accent)]" />
+                  <span>{course.rating?.toFixed(1) || "4.5"} ({course.totalReviews || 0} reviews)</span>
                 </div>
-                <div>•</div>
-                <div className="flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-[#1FAE64]" /> Completion Certificate
-                </div>
-              </div>
-            </div>
-
-            {/* Video Player Card */}
-            <div className="card-visual overflow-hidden relative bg-black">
-              {playingVideo ? (
-                <video src={course.previewVideo} controls autoPlay className="w-full h-80 sm:h-96 object-cover" />
-              ) : (
-                <div className="relative h-80 sm:h-96">
-                  <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover opacity-80" />
-                  <button
-                    onClick={() => setPlayingVideo(true)}
-                    className="absolute inset-0 m-auto w-20 h-20 rounded-full bg-[#FF7A33] text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer"
-                  >
-                    <PlayCircle className="w-10 h-10 fill-white text-[#FF7A33]" />
-                  </button>
-                  <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-white text-xs font-bold flex items-center gap-2">
-                    <Video className="w-4 h-4 text-[#FF7A33]" /> Preview Free Lesson
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-[var(--canvas)] flex items-center justify-center text-[var(--primary)] font-bold">
+                    {course.instructor?.name?.charAt(0) || "I"}
                   </div>
+                  <span>By {course.instructor?.name || "Expert Instructor"}</span>
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Visual Curriculum Section */}
-            <div className="card-visual p-6 space-y-4">
-              <h3 className="text-xl font-black text-[#1E1E2E] flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#3730E0]" /> Course Curriculum
-              </h3>
+            {/* Floating Action Card (Desktop) */}
+            <div className="hidden lg:block w-full max-w-md shrink-0">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] overflow-hidden sticky top-32">
+                <div className="aspect-video bg-[var(--canvas)] relative">
+                  {course.thumbnail ? (
+                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-[var(--canvas)]">
+                      <PlayCircle className="w-16 h-16 text-[var(--primary)] opacity-50" />
+                    </div>
+                  )}
+                </div>
+                <div className="p-8">
+                  <div className="text-4xl font-extrabold text-[var(--ink)] mb-6">
+                    {course.price === 0 ? "Free" : `₹${course.price?.toLocaleString('en-IN')}`}
+                  </div>
+                  <button 
+                    onClick={handleBuyClick}
+                    className="w-full bg-[var(--primary)] hover:bg-[var(--primary-soft)] text-[var(--surface)] hover:text-[var(--primary)] border border-transparent hover:border-[var(--primary)] font-bold text-lg py-4 rounded-[var(--radius-pill)] transition-all min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {isHindi ? "अभी खरीदें" : "Buy Now"}
+                  </button>
+                  <p className="text-center text-sm text-[var(--ink-faint)] mt-4">
+                    Full lifetime access • 30-day money-back guarantee
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
 
-              {course.sections && course.sections.length > 0 ? (
-                <div className="space-y-3">
-                  {course.sections.map((section, idx) => (
-                    <div key={section._id || idx} className="border border-slate-100 rounded-2xl overflow-hidden">
-                      {/* Section Header */}
-                      <button
-                        onClick={() => toggleSection(idx)}
-                        className="w-full bg-[#F7F8FC] p-4 flex items-center justify-between font-bold text-xs sm:text-sm text-[#1E1E2E] hover:bg-slate-100/70 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-[#3730E0] text-white flex items-center justify-center text-xs font-black">
-                            {idx + 1}
-                          </span>
-                          <span>{section.title}</span>
+        {/* Course Content */}
+        <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12">
+          
+          <div className="lg:col-span-2 space-y-16">
+            
+            {/* Curriculum */}
+            <section>
+              <h2 className="text-2xl font-bold text-[var(--ink)] mb-8">Course Curriculum</h2>
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+                {course.lectures && course.lectures.length > 0 ? (
+                  <div className="divide-y divide-[var(--border)]">
+                    {course.lectures.map((lecture, i) => (
+                      <div key={lecture._id || i} className="p-4 hover:bg-[var(--canvas)] transition-colors flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-full bg-[var(--canvas)] flex items-center justify-center shrink-0">
+                            <PlayCircle className="w-4 h-4 text-[var(--primary)]" />
+                          </div>
+                          <span className="font-medium text-[var(--ink)]">{lecture.title || `Lecture ${i + 1}`}</span>
                         </div>
-                        {expandedSections[idx] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </button>
+                        <div className="flex items-center gap-4 text-sm text-[var(--ink-faint)] shrink-0">
+                          {lecture.duration && <span>{lecture.duration}</span>}
+                          <Lock className="w-4 h-4" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-[var(--ink-muted)]">
+                    Curriculum details will be available soon.
+                  </div>
+                )}
+              </div>
+            </section>
 
-                      {/* Lectures List */}
-                      {expandedSections[idx] && (
-                        <div className="divide-y divide-slate-100 p-2 bg-white">
-                          {section.lectures.map((lec, lIdx) => (
-                            <div key={lec._id || lIdx} className="p-3 flex items-center justify-between text-xs font-medium">
-                              <div className="flex items-center gap-2.5">
-                                {lec.isPreview ? (
-                                  <PlayCircle className="w-4 h-4 text-[#FF7A33] shrink-0" />
-                                ) : (
-                                  <Lock className="w-4 h-4 text-slate-400 shrink-0" />
-                                )}
-                                <span className={lec.isPreview ? 'font-bold text-[#1E1E2E]' : 'text-slate-600'}>
-                                  {lec.title}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3 text-slate-400 text-[11px]">
-                                <span>{lec.duration || '10 mins'}</span>
-                                {lec.isPreview && (
-                                  <span className="px-2 py-0.5 rounded-full bg-[#FF7A33]/10 text-[#FF7A33] font-bold text-[10px]">
-                                    Free Preview
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+            {/* Reviews */}
+            <section>
+              <h2 className="text-2xl font-bold text-[var(--ink)] mb-8">Student Reviews</h2>
+              {reviews.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {reviews.map((review, idx) => (
+                    <div key={review._id || idx} className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)]">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-[var(--canvas)] flex items-center justify-center font-bold text-[var(--primary)]">
+                          {review.user?.name?.charAt(0) || "U"}
                         </div>
-                      )}
+                        <div>
+                          <div className="font-bold text-[var(--ink)]">{review.user?.name || "Anonymous User"}</div>
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={`w-3 h-3 ${i < (review.rating || 5) ? 'fill-[var(--accent)] text-[var(--accent)]' : 'fill-[var(--canvas)] text-[var(--border)]'}`} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[var(--ink-muted)] text-sm">{review.comment || "Great course!"}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-xs font-bold text-slate-400">Curriculum details available upon enrollment.</div>
+                <div className="bg-[var(--surface)] p-8 rounded-[var(--radius-lg)] border border-[var(--border)] text-center text-[var(--ink-muted)]">
+                  No reviews yet. Be the first to review this course!
+                </div>
               )}
-            </div>
-
-            {/* Course Reviews Section */}
-            <CourseReviewsSection courseId={course._id} />
-          </div>
-
-          {/* Right Column: Pricing & Instructor Box */}
-          <div className="lg:col-span-4 space-y-6 sticky top-24">
-            {/* Price Buy Card */}
-            <div className="card-visual p-6 space-y-6 border-2 border-[#3730E0]/20 shadow-xl">
-              <div>
-                <div className="text-xs font-bold text-slate-400 uppercase">Course Fee</div>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-black text-[#3730E0]">${course.discountPrice || course.price}</span>
-                  {course.discountPrice && (
-                    <span className="text-sm font-bold text-slate-400 line-through">${course.price}</span>
-                  )}
-                </div>
-              </div>
-
-              <Link
-                to={`/checkout/${course._id}`}
-                className="btn-visual btn-primary w-full text-sm font-black shadow-lg shadow-[#3730E0]/30 py-3.5"
-              >
-                <ShoppingBag className="w-5 h-5" /> Buy Course Now
-              </Link>
-
-              <div className="space-y-3 pt-4 border-t border-slate-100 text-xs font-bold text-slate-600">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#1FAE64]" /> Full Lifetime Access
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#1FAE64]" /> Access on Mobile & Desktop
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#1FAE64]" /> Certificate of Completion
-                </div>
-              </div>
-            </div>
-
-            {/* Instructor Card */}
-            <div className="card-visual p-5 space-y-3">
-              <div className="text-xs font-extrabold uppercase text-slate-400">Course Instructor</div>
-              <div className="flex items-center gap-3">
-                <img
-                  src={course.instructor?.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
-                  alt={course.instructor?.name}
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-[#3730E0]"
-                />
-                <div>
-                  <div className="text-sm font-extrabold text-[#1E1E2E]">{course.instructor?.name || 'ClassConnect'}</div>
-                  <div className="text-xs font-bold text-slate-500">{course.instructor?.title || 'Senior Instructor'}</div>
-                </div>
-              </div>
-            </div>
+            </section>
+            
           </div>
         </div>
       </main>
-
-      <Footer />
+      
+      {/* Mobile Sticky Buy Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[var(--surface)] border-t border-[var(--border)] p-4 shadow-[var(--shadow-md)] z-50 flex items-center justify-between gap-4">
+        <div className="text-2xl font-extrabold text-[var(--ink)]">
+          {course.price === 0 ? "Free" : `₹${course.price?.toLocaleString('en-IN')}`}
+        </div>
+        <button 
+          onClick={handleBuyClick}
+          className="flex-1 bg-[var(--primary)] text-[var(--surface)] font-bold py-3 px-6 rounded-[var(--radius-pill)] active:scale-95 transition-transform min-h-[44px] flex items-center justify-center gap-2"
+        >
+          <ShoppingCart className="w-5 h-5" />
+          {isHindi ? "अभी खरीदें" : "Buy Now"}
+        </button>
+      </div>
+      
+      <div className="hidden lg:block">
+        <Footer />
+      </div>
     </div>
   );
-};
+}

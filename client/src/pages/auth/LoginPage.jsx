@@ -1,150 +1,141 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
-import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, ArrowRight, UserCheck, ShieldCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff, LogIn, AlertCircle, Loader2 } from 'lucide-react';
 
-export const LoginPage = () => {
+export function LoginPage() {
+  const { t } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) setError('');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      setError('Please fill in both email and password.');
-      return;
-    }
-
+    setLoading(true);
+    setError('');
+    
     try {
-      setIsSubmitting(true);
-      setError('');
-      const res = await login(formData.email, formData.password);
-      if (res.success && res.data) {
-        if (res.data.user.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/dashboard');
-        }
+      const user = await login(email, password);
+      if (user?.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Login failed. Please check credentials.');
+      setError(err.message || t('auth.loginError'));
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3730E0]/10 text-[#3730E0] text-xs font-bold mb-3">
-          <LogIn className="w-4 h-4" /> Welcome Back
+    <div className="min-h-screen flex items-center justify-center bg-[var(--canvas)] p-4 sm:p-6 lg:p-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md bg-[var(--surface)] rounded-[var(--radius-lg,20px)] shadow-[var(--shadow-card,0_4px_32px_rgba(34,32,90,0.08))] p-8 border border-[var(--border)]"
+      >
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold font-['Manrope'] text-[var(--ink)] mb-2">
+            {t('auth.welcomeBack')}
+          </h1>
+          <p className="text-[var(--ink-muted)] font-['Inter']">
+            {t('auth.loginSubtitle')}
+          </p>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1E1E2E]">Sign In</h2>
-        <p className="text-xs text-slate-500 mt-1">Access your courses, progress, and live sessions.</p>
-      </div>
 
-      {/* Error Banner */}
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-3.5 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-xs font-semibold flex items-center gap-2.5"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <span>{error}</span>
-        </motion.div>
-      )}
+        {error && (
+          <div className="mb-6 p-4 bg-[var(--danger-soft,rgba(255,0,0,0.1))] text-[var(--danger,red)] rounded-[var(--radius-md,12px)] flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+        )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Email Field */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-            <Mail className="w-4 h-4 text-[#3730E0]" /> Email Address
-          </label>
-          <div className="relative">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[var(--ink)] font-['Inter']">
+              {t('auth.emailLabel')}
+            </label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="name@example.com"
               required
-              className="w-full pl-11 pr-4 py-3 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white transition-all"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full min-h-[48px] px-4 py-3 rounded-[var(--radius-md,12px)] border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-shadow font-['Inter']"
+              placeholder={t('auth.emailPlaceholder')}
+              disabled={loading}
             />
-            <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-semibold text-[var(--ink)] font-['Inter']">
+                {t('auth.passwordLabel')}
+              </label>
+              <Link 
+                to="/forgot-password" 
+                className="text-sm font-medium text-[var(--primary)] hover:underline"
+              >
+                {t('auth.forgotPassword')}
+              </Link>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full min-h-[48px] px-4 py-3 pr-12 rounded-[var(--radius-md,12px)] border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-shadow font-['Inter']"
+                placeholder={t('auth.passwordPlaceholder')}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] hover:text-[var(--ink)] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
+                aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full min-h-[48px] flex items-center justify-center gap-2 bg-[var(--primary)] text-[var(--surface)] font-bold rounded-[var(--radius-md,12px)] hover:bg-[var(--deep-anchor,#24216F)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] disabled:opacity-70 disabled:cursor-not-allowed font-['Inter']"
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <LogIn className="w-5 h-5" />
+                {t('auth.loginButton')}
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="mt-8 text-center font-['Inter']">
+          <span className="text-[var(--ink-muted)] text-sm">
+            {t('auth.noAccount')}
+          </span>{' '}
+          <Link 
+            to="/signup" 
+            className="text-[var(--primary)] font-bold hover:underline text-sm ml-1"
+          >
+            {t('auth.signupLink')}
+          </Link>
         </div>
-
-        {/* Password Field */}
-        <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <Lock className="w-4 h-4 text-[#3730E0]" /> Password
-            </label>
-            <Link to="/forgot-password" className="text-xs font-bold text-[#FF7A33] hover:underline">
-              Forgot?
-            </Link>
-          </div>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-              className="w-full pl-11 pr-11 py-3 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white transition-all"
-            />
-            <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Action Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn-visual btn-primary w-full shadow-lg shadow-[#3730E0]/25 mt-2"
-        >
-          {isSubmitting ? (
-            <span className="text-xs font-bold">Signing in...</span>
-          ) : (
-            <>
-              <span className="text-xs font-extrabold uppercase tracking-wide">Sign In</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
-      </form>
-
-      {/* Footer Switch */}
-      <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <span className="text-slate-500 font-medium">New student to ClassConnect?</span>
-        <Link
-          to="/signup"
-          className="px-4 py-2 rounded-xl bg-[#FF7A33]/10 text-[#FF7A33] font-bold hover:bg-[#FF7A33]/20 transition-colors flex items-center gap-1.5"
-        >
-          <UserCheck className="w-4 h-4" /> Create Student Account
-        </Link>
-      </div>
+      </motion.div>
     </div>
   );
-};
+}

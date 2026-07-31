@@ -1,68 +1,97 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import { Sparkles, GraduationCap, PlayCircle, ShieldCheck } from 'lucide-react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { BookOpen } from 'lucide-react';
+import { LanguageSwitcher } from '../components/shared/LanguageSwitcher';
+import { ThemeToggle } from '../components/shared/ThemeToggle';
 
-export const AuthLayout = () => {
+export function AuthLayout() {
+  const location = useLocation();
+
   return (
-    <div className="min-h-screen bg-[#F7F8FC] flex flex-col justify-between p-4 md:p-8">
-      {/* Brand Top Header */}
-      <header className="max-w-6xl mx-auto w-full flex justify-between items-center py-4">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-12 h-12 rounded-2xl bg-[#3730E0] flex items-center justify-center text-white shadow-lg shadow-[#3730E0]/30 group-hover:scale-105 transition-transform">
-            <GraduationCap className="w-7 h-7" />
-          </div>
-          <div>
-            <span className="text-2xl font-extrabold text-[#1E1E2E] tracking-tight">Class<span className="text-[#FF7A33]">Connect</span></span>
-            <span className="block text-xs font-semibold text-[#3730E0]">Visual Learning Hub</span>
-          </div>
-        </Link>
-        <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-[#1FAE64] bg-[#1FAE64]/10 px-3 py-1.5 rounded-full">
-          <ShieldCheck className="w-4 h-4" /> Secure Platform
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="max-w-5xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center my-6">
-        {/* Left Visual Banner (Desktop) */}
-        <div className="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-6 bg-gradient-to-br from-[#3730E0] to-[#2B24C7] p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
-          <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full blur-xl pointer-events-none" />
-          
-          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-            <Sparkles className="w-8 h-8 text-[#FF7A33]" />
-          </div>
-          
-          <h1 className="text-3xl font-extrabold leading-tight">
-            Learn Visually.<br />Master Skills Easily.
-          </h1>
-
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-3 bg-white/10 p-3 rounded-2xl backdrop-blur-sm">
-              <PlayCircle className="w-6 h-6 text-[#FF7A33] shrink-0" />
-              <span className="text-sm font-medium">Icon-first interactive lessons</span>
-            </div>
-            <div className="flex items-center gap-3 bg-white/10 p-3 rounded-2xl backdrop-blur-sm">
-              <GraduationCap className="w-6 h-6 text-[#1FAE64] shrink-0" />
-              <span className="text-sm font-medium">Certified expert courses</span>
-            </div>
-          </div>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[var(--canvas)]">
+      {/* Left panel — abstract visual (desktop only) */}
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden items-center justify-center"
+        style={{
+          background: `linear-gradient(135deg, var(--aura-violet) 0%, var(--aura-blue) 50%, var(--aura-peach) 100%)`,
+        }}
+      >
+        {/* Decorative floating shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full opacity-30"
+            style={{ background: 'var(--primary)', filter: 'blur(80px)' }}
+            animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute bottom-[20%] right-[15%] w-48 h-48 rounded-full opacity-25"
+            style={{ background: 'var(--accent)', filter: 'blur(60px)' }}
+            animate={{ y: [0, 15, 0], x: [0, -8, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full opacity-20"
+            style={{ background: 'var(--primary-deep)', filter: 'blur(100px)' }}
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
 
-        {/* Right Form Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="lg:col-span-7 bg-white p-6 sm:p-10 rounded-3xl shadow-xl border border-slate-100"
-        >
-          <Outlet />
-        </motion.div>
-      </main>
+        {/* Brand message */}
+        <div className="relative z-10 text-center px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-white/90 flex items-center justify-center mx-auto mb-8
+              shadow-[var(--shadow-lg)]">
+              <BookOpen className="w-8 h-8 text-[var(--primary)]" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-[var(--primary-deep)] mb-4"
+              style={{ fontFamily: 'Manrope, sans-serif' }}>
+              ClassConnect
+            </h1>
+            <p className="text-base text-[var(--primary-deep)] opacity-70 max-w-xs mx-auto leading-relaxed">
+              Your journey to mastering new skills starts here.
+            </p>
+          </motion.div>
+        </div>
+      </div>
 
-      {/* Footer */}
-      <footer className="text-center py-4 text-xs font-medium text-slate-500">
-        &copy; {new Date().getFullYear()} ClassConnect. All rights reserved.
-      </footer>
+      {/* Right panel — form */}
+      <div className="flex-1 flex flex-col">
+        {/* Top bar with actions */}
+        <div className="flex items-center justify-between p-4 lg:px-8 lg:py-5">
+          <Link to="/" className="flex items-center gap-2 lg:hidden group">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-base font-bold text-[var(--ink)]"
+              style={{ fontFamily: 'Manrope, sans-serif' }}>
+              ClassConnect
+            </span>
+          </Link>
+          <div className="flex items-center gap-1 ml-auto">
+            <LanguageSwitcher variant="compact" />
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Form content area */}
+        <div className="flex-1 flex items-center justify-center px-6 py-8 lg:px-16">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-md"
+          >
+            <Outlet />
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
-};
+}

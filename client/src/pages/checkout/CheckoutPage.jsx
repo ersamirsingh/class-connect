@@ -1,315 +1,185 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
+import { useParams, useNavigate } from 'react-router-dom';
 import { courseApi } from '../../api/models/course.api';
 import { paymentApi } from '../../api/models/payment.api';
-import {
-  CreditCard,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  ArrowRight,
-  Loader2,
-  Lock,
-  Receipt,
-  Globe,
-  Zap,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, CreditCard, Lock, Loader2, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-export const CheckoutPage = () => {
+export function CheckoutPage() {
   const { courseId } = useParams();
+  const { t } = useLanguage();
   const navigate = useNavigate();
-
   const [course, setCourse] = useState(null);
-  const [selectedGateway, setSelectedGateway] = useState('razorpay'); // 'razorpay' | 'stripe'
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
-  const [successOrder, setSuccessOrder] = useState(null);
+  const [status, setStatus] = useState('idle'); // idle, pending, success, failed
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    async function load() {
       try {
-        setLoading(true);
         const res = await courseApi.getCourseByIdOrSlug(courseId);
-        if (res.success && res.data) {
-          setCourse(res.data);
-        }
+        setCourse(res?.data);
       } catch (err) {
-        setError('Failed to fetch course details.');
+        console.error(err);
       } finally {
         setLoading(false);
       }
-    };
-    fetchCourse();
+    }
+    load();
   }, [courseId]);
 
-  const handlePayment = async () => {
-    if (!course) return;
-
+  const handlePay = async () => {
+    setProcessing(true);
+    setStatus('pending');
     try {
-      setProcessing(true);
-      setError('');
-
-      // Step 1: Create Order backend call
-      const orderRes = await paymentApi.createOrder(course._id, selectedGateway);
-
-      if (!orderRes.success || !orderRes.data) {
-        throw new Error(orderRes.message || 'Failed to initiate payment.');
-      }
-
+      const orderRes = await paymentApi.createOrder(courseId, 'razorpay');
       const orderData = orderRes.data;
 
-      // Step 2: Handle Gateway Checkout Verification
-      if (selectedGateway === 'razorpay') {
-        // Razorpay modal integration or test simulation
-        if (window.Razorpay && orderData.keyId && !orderData.keyId.includes('mock')) {
-          const options = {
-            key: orderData.keyId,
-            amount: orderData.amount * 100,
-            currency: orderData.currency,
-            name: 'ClassConnect',
-            description: orderData.courseTitle,
-            order_id: orderData.gatewayOrderId,
-            handler: async (response) => {
-              const verifyRes = await paymentApi.verifyPayment({
-                gateway: 'razorpay',
-                orderId: orderData.orderId,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpayOrderId: response.razorpay_order_id,
-                razorpaySignature: response.razorpay_signature,
-              });
-              if (verifyRes.success) {
-                setSuccessOrder(verifyRes.order);
-              }
-            },
-          };
-          const rzp = new window.Razorpay(options);
-          rzp.open();
-        } else {
-          // Dev / Test verification simulation
-          const verifyRes = await paymentApi.verifyPayment({
-            gateway: 'razorpay',
-            orderId: orderData.orderId,
-            razorpayPaymentId: `pay_mock_${Date.now()}`,
-            razorpayOrderId: orderData.gatewayOrderId,
-            razorpaySignature: 'mock_valid_signature',
-          });
-          if (verifyRes.success) {
-            setSuccessOrder(verifyRes.order);
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY || 'YOUR_KEY', 
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'Luminous OS',
+        description: `Purchase: ${course.title}`,
+        order_id: orderData.orderId,
+        handler: async function (response) {
+          try {
+            await paymentApi.verifyPayment({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            setStatus('success');
+            setTimeout(() => navigate('/dashboard'), 3000);
+          } catch (err) {
+            setStatus('failed');
+          }
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        theme: {
+          color: '#4338F2'
+        },
+        modal: {
+          ondismiss: function() {
+            setProcessing(false);
+            setStatus('idle');
           }
         }
+      };
+
+      if (window.Razorpay) {
+        const rzp = new window.Razorpay(options);
+        rzp.open();
       } else {
-        // Stripe verification simulation / clientSecret flow
-        const verifyRes = await paymentApi.verifyPayment({
-          gateway: 'stripe',
-          orderId: orderData.orderId,
-          paymentIntentId: orderData.gatewayOrderId,
-        });
-        if (verifyRes.success) {
-          setSuccessOrder(verifyRes.order);
-        }
+        alert('Razorpay SDK not loaded');
+        setStatus('failed');
       }
+
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Payment processing failed.');
-    } finally {
+      console.error(err);
+      setStatus('failed');
       setProcessing(false);
     }
   };
 
-  if (loading) {
+  if (loading) return <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center text-[var(--ink)]">Loading...</div>;
+  if (!course) return <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center text-[var(--ink)]">Course not found</div>;
+
+  if (status === 'success') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F8FC]">
-        <Loader2 className="w-10 h-10 text-[#3730E0] animate-spin mb-3" />
-        <span className="text-xs font-bold text-slate-500">Preparing checkout...</span>
+      <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center p-6 text-[var(--ink)]">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          className="bg-[var(--surface)] p-10 rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] border border-[var(--border)] text-center max-w-md w-full"
+        >
+          <div className="w-20 h-20 bg-[var(--success)]/10 text-[var(--success)] rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10" />
+          </div>
+          <h2 className="text-2xl font-bold font-['Manrope'] mb-2">Payment Successful!</h2>
+          <p className="text-[var(--ink-muted)] mb-8">You are now enrolled in <strong>{course.title}</strong>. Redirecting to your dashboard...</p>
+          <Loader2 className="w-6 h-6 animate-spin mx-auto text-[var(--primary)]" />
+        </motion.div>
       </div>
     );
   }
 
-  const priceToPay = course?.discountPrice || course?.price || 0;
-
   return (
-    <div className="min-h-screen bg-[#F7F8FC] p-4 sm:p-8 flex items-center justify-center">
-      {/* Success Modal Overlay */}
-      <AnimatePresence>
-        {successOrder && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="bg-white p-8 rounded-3xl max-w-md w-full text-center space-y-6 shadow-2xl"
-            >
-              <div className="w-20 h-20 rounded-full bg-[#1FAE64]/10 text-[#1FAE64] mx-auto flex items-center justify-center ring-8 ring-[#1FAE64]/20">
-                <CheckCircle2 className="w-12 h-12" />
-              </div>
-
-              <div>
-                <span className="inline-block px-3 py-1 rounded-full bg-[#1FAE64]/10 text-[#1FAE64] text-xs font-black uppercase mb-2">
-                  Payment Successful
-                </span>
-                <h2 className="text-2xl font-black text-[#1E1E2E]">Enrollment Confirmed! 🎉</h2>
-                <p className="text-xs text-slate-500 font-medium mt-1">
-                  You now have active access to <strong className="text-slate-800">{course?.title}</strong>.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 font-medium space-y-1">
-                <div>Receipt ID: <strong className="font-mono text-slate-800">{successOrder.receiptId}</strong></div>
-                <div>Amount Paid: <strong className="text-[#1FAE64] font-black">${priceToPay}</strong></div>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <Link
-                  to={`/receipt/${successOrder._id}`}
-                  className="btn-visual border border-slate-200 text-slate-700 w-full text-xs font-bold"
-                >
-                  <Receipt className="w-4 h-4" /> Download Receipt
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="btn-visual btn-primary w-full text-xs font-black shadow-lg"
-                >
-                  Go to Student Dashboard <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Payment Options */}
-        <div className="md:col-span-7 bg-white p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3730E0]/10 text-[#3730E0] text-xs font-bold mb-2">
-              <Lock className="w-4 h-4" /> 256-Bit Encrypted Checkout
+    <div className="min-h-screen bg-[var(--canvas)] p-6 md:p-10 text-[var(--ink)] flex justify-center">
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        
+        {/* Course Details */}
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold font-['Manrope'] mb-2">Checkout</h1>
+          <p className="text-[var(--ink-muted)]">Complete your purchase to start learning.</p>
+          
+          <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-xl)] shadow-[var(--shadow-sm)] border border-[var(--border)] flex gap-4 mt-6">
+            <div className="w-32 aspect-video bg-[var(--canvas)] rounded-[var(--radius-lg)] overflow-hidden shrink-0">
+              {course.thumbnail && <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />}
             </div>
-            <h1 className="text-2xl font-black text-[#1E1E2E]">Select Payment Gateway</h1>
-            <p className="text-xs text-slate-500 font-medium mt-1">Choose your preferred payment method.</p>
+            <div className="flex flex-col justify-center">
+              <h3 className="font-bold line-clamp-2 mb-1">{course.title}</h3>
+              <p className="text-sm text-[var(--ink-muted)] line-clamp-1">{course.instructor?.name || 'Instructor'}</p>
+            </div>
           </div>
 
-          {error && (
-            <div className="p-3.5 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-xs font-semibold flex items-center gap-2.5">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Visual Gateway Selection Cards */}
           <div className="space-y-4">
-            {/* Razorpay Card Tile */}
-            <div
-              onClick={() => setSelectedGateway('razorpay')}
-              className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                selectedGateway === 'razorpay'
-                  ? 'border-[#3730E0] bg-[#3730E0]/5 shadow-md'
-                  : 'border-slate-100 hover:border-slate-200 bg-white'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#3730E0] text-white font-black text-xs flex items-center justify-center shadow-md">
-                  RZP
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-sm text-[#1E1E2E] flex items-center gap-2">
-                    Razorpay <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF7A33]/10 text-[#FF7A33]">UPI / Netbanking</span>
-                  </h4>
-                  <p className="text-xs text-slate-500 font-medium">UPI, Google Pay, PhonePe, Cards & Netbanking</p>
-                </div>
-              </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedGateway === 'razorpay' ? 'border-[#3730E0] bg-[#3730E0]' : 'border-slate-300'}`}>
-                {selectedGateway === 'razorpay' && <CheckCircle2 className="w-4 h-4 text-white" />}
-              </div>
+            <div className="flex items-center gap-3 text-sm text-[var(--ink-muted)]">
+              <ShieldCheck className="w-5 h-5 text-[var(--success)]" />
+              <span>30-Day Money-Back Guarantee</span>
             </div>
+            <div className="flex items-center gap-3 text-sm text-[var(--ink-muted)]">
+              <Lock className="w-5 h-5 text-[var(--primary-soft)]" />
+              <span>Secure Encrypted Payment</span>
+            </div>
+          </div>
+        </div>
 
-            {/* Stripe Card Tile */}
-            <div
-              onClick={() => setSelectedGateway('stripe')}
-              className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                selectedGateway === 'stripe'
-                  ? 'border-[#3730E0] bg-[#3730E0]/5 shadow-md'
-                  : 'border-slate-100 hover:border-slate-200 bg-white'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#FF7A33] text-white font-black text-xs flex items-center justify-center shadow-md">
-                  <Globe className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-sm text-[#1E1E2E] flex items-center gap-2">
-                    Stripe Cards <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3730E0]/10 text-[#3730E0]">International</span>
-                  </h4>
-                  <p className="text-xs text-slate-500 font-medium">Visa, Mastercard, AMEX & International Credit Cards</p>
-                </div>
-              </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedGateway === 'stripe' ? 'border-[#3730E0] bg-[#3730E0]' : 'border-slate-300'}`}>
-                {selectedGateway === 'stripe' && <CheckCircle2 className="w-4 h-4 text-white" />}
-              </div>
+        {/* Order Summary & Pay */}
+        <div className="bg-[var(--surface)] p-6 md:p-8 rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] border border-[var(--border)]">
+          <h2 className="text-xl font-bold font-['Manrope'] mb-6">Order Summary</h2>
+          
+          <div className="space-y-4 border-b border-[var(--border)] pb-6 mb-6">
+            <div className="flex justify-between">
+              <span className="text-[var(--ink-muted)]">Original Price</span>
+              <span className="font-medium">${course.price}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--ink-muted)]">Discount</span>
+              <span className="font-medium text-[var(--success)]">-$0.00</span>
             </div>
           </div>
 
-          <button
-            onClick={handlePayment}
-            disabled={processing}
-            className="btn-visual btn-primary w-full text-sm font-black shadow-lg shadow-[#3730E0]/30 py-3.5 mt-4"
-          >
-            {processing ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" /> Verifying Order...
-              </span>
-            ) : (
-              <>
-                <span>Complete Payment (${priceToPay})</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </div>
+          <div className="flex justify-between items-center mb-8">
+            <span className="text-lg font-bold">Total</span>
+            <span className="text-3xl font-bold font-['Manrope'] text-[var(--primary)]">${course.price}</span>
+          </div>
 
-        {/* Right Column: Order Summary */}
-        <div className="md:col-span-5 bg-white p-6 rounded-3xl shadow-xl border border-slate-100 space-y-4">
-          <h3 className="font-black text-lg text-[#1E1E2E]">Order Summary</h3>
-
-          {course && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="w-16 h-16 rounded-2xl object-cover border border-slate-100"
-                />
-                <div>
-                  <div className="text-xs font-extrabold text-[#1E1E2E] line-clamp-2">{course.title}</div>
-                  <div className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase">
-                    {course.type === 'live' ? 'Live Class' : 'Recorded Course'}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 space-y-2 text-xs font-semibold text-slate-700">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Course Price</span>
-                  <span>${course.price}</span>
-                </div>
-                {course.discountPrice && (
-                  <div className="flex justify-between text-[#1FAE64]">
-                    <span>Special Discount</span>
-                    <span>-${course.price - course.discountPrice}</span>
-                  </div>
-                )}
-                <div className="pt-2 border-t border-slate-200 flex justify-between font-black text-sm text-[#1E1E2E]">
-                  <span>Total Amount</span>
-                  <span className="text-[#3730E0]">${priceToPay}</span>
-                </div>
-              </div>
+          {status === 'failed' && (
+            <div className="p-3 mb-6 bg-red-50 text-red-600 rounded-lg text-sm text-center font-medium">
+              Payment failed or was cancelled. Please try again.
             </div>
           )}
+
+          <button 
+            onClick={handlePay}
+            disabled={processing}
+            className="w-full py-4 min-h-[44px] bg-[var(--primary)] text-white font-bold rounded-[var(--radius-pill)] hover:bg-[var(--deep-anchor)] transition-colors flex items-center justify-center gap-2 disabled:opacity-70 text-lg shadow-md"
+          >
+            {processing ? <Loader2 className="w-6 h-6 animate-spin" /> : <CreditCard className="w-6 h-6" />}
+            {processing ? 'Processing...' : 'Pay Now'}
+          </button>
+          
+          <p className="text-xs text-center text-[var(--ink-muted)] mt-4">
+            By completing this purchase you agree to our Terms of Service.
+          </p>
         </div>
+
       </div>
     </div>
   );
-};
+}

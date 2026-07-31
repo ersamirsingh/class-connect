@@ -1,103 +1,79 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { Link } from 'react-router-dom';
 import { paymentApi } from '../../api/models/payment.api';
-import { Receipt, CheckCircle2, Clock, XCircle, ArrowRight, Loader2, DollarSign } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { FileText, ArrowRight, CreditCard } from 'lucide-react';
 
-export const PaymentHistoryPage = () => {
-  const [orders, setOrders] = useState([]);
+export function PaymentHistoryPage() {
+  const { t } = useLanguage();
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    async function loadHistory() {
       try {
-        setLoading(true);
         const res = await paymentApi.getHistory();
-        if (res.success && res.data) {
-          setOrders(res.data);
-        }
+        setHistory(res?.data || []);
       } catch (err) {
-        console.error('Failed to fetch payment history:', err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
-    };
-    fetchHistory();
+    }
+    loadHistory();
   }, []);
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5A623]/10 text-[#F5A623] text-xs font-bold mb-2">
-          <DollarSign className="w-4 h-4" /> Order History
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#1E1E2E]">My Payments & Receipts</h1>
-        <p className="text-xs text-slate-500 font-medium">Track your course purchases and download receipts.</p>
-      </div>
+  if (loading) return <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center text-[var(--ink)]">Loading...</div>;
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="w-10 h-10 text-[#3730E0] animate-spin mb-3" />
-          <span className="text-xs font-bold text-slate-500">Loading order history...</span>
+  return (
+    <div className="min-h-screen bg-[var(--canvas)] p-6 md:p-10 text-[var(--ink)]">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-3 bg-[var(--aura-peach)] text-[var(--energy-accent)] rounded-xl">
+            <CreditCard className="w-6 h-6" />
+          </div>
+          <h1 className="text-3xl font-bold font-['Manrope']">{t('payment_history') || 'Payment History'}</h1>
         </div>
-      ) : orders.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-3xl p-8 border border-slate-100 space-y-3">
-          <Receipt className="w-12 h-12 text-slate-300 mx-auto" />
-          <h3 className="text-lg font-bold text-slate-800">No payment history found</h3>
-          <p className="text-xs text-slate-500 font-medium">When you enroll in courses, your order records will appear here.</p>
-          <Link to="/courses" className="btn-visual btn-primary text-xs mt-2 inline-flex">
-            Browse Courses <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <motion.div key={order._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-visual p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <img
-                  src={order.course?.thumbnail || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800'}
-                  alt={order.course?.title}
-                  className="w-16 h-16 rounded-2xl object-cover border border-slate-100 shrink-0"
-                />
-                <div className="space-y-1">
-                  <div className="text-xs font-bold text-slate-400 uppercase">
-                    Receipt #{order.receiptId} • {order.gateway}
+
+        {history.length === 0 ? (
+          <div className="bg-[var(--surface)] p-12 rounded-[var(--radius-xl)] shadow-[var(--shadow-sm)] border border-[var(--border)] text-center">
+            <FileText className="w-12 h-12 text-[var(--ink-faint)] mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-2">No Transactions Yet</h3>
+            <p className="text-[var(--ink-muted)] mb-6">When you purchase a course, your receipts will appear here.</p>
+            <Link to="/courses" className="inline-block px-6 py-3 min-h-[44px] bg-[var(--primary)] text-white font-medium rounded-[var(--radius-pill)] hover:bg-[var(--deep-anchor)] transition-colors">
+              Browse Courses
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {history.map((order) => (
+              <div key={order.id} className="bg-[var(--surface)] p-5 md:p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--border)] hover:border-[var(--primary)] transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${order.status === 'success' || order.status === 'completed' ? 'bg-green-100 text-[var(--success)]' : 'bg-yellow-100 text-[var(--energy-accent)]'}`}>
+                      {order.status?.toUpperCase() || 'COMPLETED'}
+                    </span>
+                    <span className="text-sm text-[var(--ink-muted)]">{new Date(order.date || order.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <h3 className="font-extrabold text-base text-[#1E1E2E]">{order.course?.title || 'ClassConnect Course'}</h3>
-                  <div className="text-xs font-bold text-[#3730E0]">${order.amount} {order.currency}</div>
+                  <h3 className="font-bold text-lg mb-1">{order.courseName || order.course?.title || 'Course Name'}</h3>
+                  <p className="text-sm text-[var(--ink-muted)] font-mono">Order #{order.orderId || order.id}</p>
+                </div>
+                <div className="flex items-center justify-between w-full md:w-auto gap-6 mt-4 md:mt-0">
+                  <div className="text-xl font-bold font-['Manrope']">
+                    ${order.amount}
+                  </div>
+                  <Link 
+                    to={`/receipt/${order.orderId || order.id}`}
+                    className="flex items-center gap-2 text-[var(--primary)] font-medium hover:underline p-2 min-h-[44px]"
+                  >
+                    View Receipt <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-                {order.status === 'success' ? (
-                  <span className="px-3 py-1 rounded-full bg-[#1FAE64]/10 text-[#1FAE64] text-xs font-extrabold flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" /> Completed
-                  </span>
-                ) : order.status === 'pending' ? (
-                  <span className="px-3 py-1 rounded-full bg-[#F5A623]/10 text-[#F5A623] text-xs font-extrabold flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" /> Processing...
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 rounded-full bg-[#EF4444]/10 text-[#EF4444] text-xs font-extrabold flex items-center gap-1.5">
-                    <XCircle className="w-4 h-4" /> Failed
-                  </span>
-                )}
-
-                {order.status === 'success' && (
-                  <Link
-                    to={`/receipt/${order._id}`}
-                    className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:bg-[#3730E0]/10 hover:text-[#3730E0] transition-colors"
-                    title="View Receipt"
-                  >
-                    <Receipt className="w-5 h-5" />
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
-};
+}
