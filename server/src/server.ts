@@ -6,13 +6,17 @@ import { connectDB } from './config/mongo.config';
 import { connectRedis } from './config/redis.config';
 import { logger } from './utils/logger';
 
+import { seedAdminUser } from './utils/seedAdmin';
+
 const startServer = async () => {
   try {
     await Promise.all([connectDB(), connectRedis()]);
+    await seedAdminUser();
 
     app.listen(config.port, () => {
       logger.info(`Server listening on http://localhost:${config.port}`);
     });
+
   } catch (error: any) {
     logger.error(`Failed to start server: ${error.message}`);
     process.exit(1);

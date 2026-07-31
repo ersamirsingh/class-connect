@@ -7,5 +7,8 @@ export const config = {
   redisPort: Number(process.env.REDIS_PORT) || 6379,
   redisUsername: process.env.REDIS_USERNAME || 'default',
   redisPassword: process.env.REDIS_PASSWORD || '',
+  jwtSecret: process.env.JWT_SECRET || 'classconnect_super_secret_jwt_key_2026',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   nodeEnv: process.env.NODE_ENV || 'development',
 };
+

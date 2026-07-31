@@ -1,3 +1,72 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary: #3730E0;
+    --primary-hover: #2B24C7;
+    --secondary: #FF7A33;
+    --secondary-hover: #E8631C;
+    --success: #1FAE64;
+    --warning: #F5A623;
+    --danger: #EF4444;
+    --bg-cloud: #F7F8FC;
+    --text-ink: #1E1E2E;
+  }
+
+  body {
+    background-color: var(--bg-cloud);
+    color: var(--text-ink);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Custom visual utility classes */
+.btn-visual {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #3730E0;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px 0 rgba(55, 48, 224, 0.35);
+}
+.btn-primary:hover {
+  background-color: #2B24C7;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 rgba(55, 48, 224, 0.45);
+}
+
+.btn-secondary {
+  background-color: #FF7A33;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px 0 rgba(255, 122, 51, 0.35);
+}
+.btn-secondary:hover {
+  background-color: #E8631C;
+  transform: translateY(-1px);
+}
+
+.card-visual {
+  background-color: #FFFFFF;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-visual:hover {
+  box-shadow: 0 10px 30px -4px rgba(55, 48, 224, 0.12);
+}
