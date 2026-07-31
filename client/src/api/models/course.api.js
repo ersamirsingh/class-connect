@@ -41,4 +41,9 @@ export const courseApi = {
     const response = await api.delete(`/courses/${id}`);
     return response.data;
   },
+
+  trackPreviewPlay: async (id, guestCount = 0) => {
+    const response = await api.post(`/courses/${id}/preview/play`, { guestCount });
+    return response.data;
+  },
 };

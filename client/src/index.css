@@ -4,17 +4,26 @@
 
 @layer base {
   :root {
-    --primary: #6366F1;
-    --primary-hover: #4F46E5;
+    --primary: #5B54E8;
+    --primary-hover: #4740D2;
     --secondary: #06B6D4;
     --secondary-hover: #0891B2;
-    --success: #10B981;
-    --warning: #F59E0B;
-    --danger: #EF4444;
-    --bg-cloud: #F8FAFC;
-    --text-ink: #0F172A;
+    --success: #2FA876;
+    --warning: #E8A23D;
+    --danger: #E0524F;
+    --live-coral: #FF7A59;
+    --bg-cloud: #FBFAF7;
+    --text-ink: #2B2B38;
     --text-slate: #475569;
     --surface: #FFFFFF;
+
+    /* Pastel Tints set */
+    --tint-lavender: #E4E2FB;
+    --tint-powder: #DCEFFB;
+    --tint-mint: #DCF5E7;
+    --tint-peach: #FCE7D6;
+    --tint-blush: #FBDDE8;
+    --tint-butter: #FBF1CE;
   }
 
   .dark {

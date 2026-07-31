@@ -63,81 +63,15 @@ export const Navbar = () => {
 
           {/* 1. Logo Routing to Home Page / */}
           <Link to="/" className="flex items-center gap-2.5 group shrink-0" title="Go to Homepage">
-            <div className="w-10 h-10 rounded-xl bg-[#6366F1] flex items-center justify-center text-white font-black text-xl shadow-md shadow-[#6366F1]/30 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-[#5B54E8] flex items-center justify-center text-white font-black text-xl shadow-md shadow-[#5B54E8]/30 group-hover:scale-105 transition-transform">
               <GraduationCap className="w-6 h-6" />
             </div>
             <div>
-              <span className="font-black text-xl text-[#0F172A] dark:text-white tracking-tight">
+              <span className="font-black text-xl text-[#2B2B38] dark:text-white tracking-tight">
                 Class<span className="text-[#06B6D4]">Connect</span>
               </span>
             </div>
           </Link>
-
-          {/* 2. Explore Text Option with Hover & Click Dropdown displaying Courses */}
-          <div
-            className="relative hidden md:block"
-            onMouseEnter={() => setShowCategoryMenu(true)}
-            onMouseLeave={() => setShowCategoryMenu(false)}
-          >
-            <button
-              onClick={() => setShowCategoryMenu(!showCategoryMenu)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-extrabold text-slate-700 dark:text-slate-200 hover:bg-[#6366F1]/10 hover:text-[#6366F1] transition-all cursor-pointer"
-            >
-              <Compass className="w-4 h-4 text-[#06B6D4]" />
-              <span>Explore</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showCategoryMenu ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Hover & Click Dropdown List showing Top Courses & Categories */}
-            {showCategoryMenu && (
-              <div className="absolute left-0 mt-1 w-72 bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-in fade-in slide-in-from-top-2 space-y-3">
-                <div>
-                  <div className="text-[10px] font-black text-slate-400 uppercase px-2 mb-1">Featured Programs</div>
-                  <div className="space-y-1">
-                    {exploreCourses.length > 0 ? (
-                      exploreCourses.map((c) => (
-                        <Link
-                          key={c._id}
-                          to={`/courses/${c.slug || c._id}`}
-                          onClick={() => setShowCategoryMenu(false)}
-                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl hover:bg-[#6366F1]/10 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-[#6366F1] transition-colors truncate"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-[#06B6D4] shrink-0" />
-                          <span className="truncate">{c.title}</span>
-                        </Link>
-                      ))
-                    ) : (
-                      <Link
-                        to="/courses"
-                        onClick={() => setShowCategoryMenu(false)}
-                        className="block px-2 py-1 text-xs text-slate-500"
-                      >
-                        Browse All Courses
-                      </Link>
-                    )}
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-2">
-                  <div className="text-[10px] font-black text-slate-400 uppercase px-2 mb-1">Top Learning Paths</div>
-                  {categories.map((cat, idx) => {
-                    const Icon = cat.icon;
-                    return (
-                      <Link
-                        key={idx}
-                        to={cat.link}
-                        onClick={() => setShowCategoryMenu(false)}
-                        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-[#6366F1]/10 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-[#6366F1] transition-colors"
-                      >
-                        <Icon className="w-3.5 h-3.5 text-[#6366F1]" />
-                        <span>{cat.title}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Center: Global Search Bar */}

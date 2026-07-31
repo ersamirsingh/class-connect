@@ -15,4 +15,9 @@ export const enrollmentApi = {
     const response = await api.get(`/enrollments/certificate/${courseId}`);
     return response.data;
   },
+
+  checkStatus: async (courseId) => {
+    const response = await api.get(`/enrollments/status/${courseId}`);
+    return response.data;
+  },
 };

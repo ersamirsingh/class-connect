@@ -43,6 +43,7 @@ export interface ICourse extends Document {
     photo: string;
     title: string;
   };
+  maxPreviewViews?: number;
   sections: ISection[];
   liveSchedule?: ILiveSchedule;
   isPublished: boolean;
@@ -78,6 +79,7 @@ const courseSchema = new Schema<ICourse>(
     thumbnail: { type: String, required: true },
     coverImage: { type: String, default: '' },
     previewVideo: { type: String, default: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+    maxPreviewViews: { type: Number, default: 3 },
     price: { type: Number, required: true, default: 0 },
     discountPrice: { type: Number, default: 0 },
     rating: { type: Number, default: 4.8 },

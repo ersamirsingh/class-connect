@@ -168,4 +168,51 @@ export class CourseService {
 
     await CourseModel.insertMany(sampleCourses);
   }
+
+  static async trackPreviewPlay(courseId: string, user?: any, guestCount: number = 0) {
+    const course = await CourseService.getCourseByIdOrSlug(courseId);
+    const maxViews = course.maxPreviewViews || 3;
+
+    if (user && user._id) {
+      const { UserModel } = await import('../user/user.model');
+      const dbUser = await UserModel.findById(user._id);
+      if (dbUser) {
+        if (!dbUser.previewViews) dbUser.previewViews = [];
+        let viewEntry = dbUser.previewViews.find((v: any) => (v.course?._id || v.course)?.toString() === course._id.toString());
+        if (!viewEntry) {
+          viewEntry = { course: course._id as any, count: 0 };
+          dbUser.previewViews.push(viewEntry);
+        }
+
+        if ((viewEntry.count || 0) >= maxViews) {
+          throw new Error('Preview limit reached — Purchase to continue.');
+        }
+
+        viewEntry.count = (viewEntry.count || 0) + 1;
+        await dbUser.save();
+
+        const remainingViews = Math.max(0, maxViews - viewEntry.count);
+        return {
+          allowed: true,
+          remainingViews,
+          previewVideoUrl: course.previewVideo,
+          maxViews,
+        };
+      }
+    }
+
+    // Guest fallback view counter logic
+    const currentGuestCount = guestCount + 1;
+    if (currentGuestCount > maxViews) {
+      throw new Error('Preview limit reached — Purchase to continue.');
+    }
+
+    return {
+      allowed: true,
+      remainingViews: maxViews - currentGuestCount,
+      previewVideoUrl: course.previewVideo,
+      maxViews,
+      guestCount: currentGuestCount,
+    };
+  }
 }

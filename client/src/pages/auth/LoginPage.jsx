@@ -82,7 +82,7 @@ export const LoginPage = () => {
       <form onSubmit={handleSubmit} className="space-y-3.5">
         {/* Email Address Field */}
         <div>
-          <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+          <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-200 mb-1 items-center gap-1.5">
             <Mail className="w-3.5 h-3.5 text-[#6366F1]" /> Email Address
           </label>
           <div className="relative">

@@ -25,6 +25,7 @@ import { PaymentHistoryPage } from '../../pages/checkout/PaymentHistoryPage';
 import { ReceiptViewPage } from '../../pages/checkout/ReceiptViewPage';
 
 import { VideoPlayerPage } from '../../pages/learning/VideoPlayerPage';
+import { CourseExplorePage } from '../../pages/learning/CourseExplorePage';
 import { CertificatePage } from '../../pages/learning/CertificatePage';
 
 import { ReportProblemPage } from '../../pages/report/ReportProblemPage';
@@ -62,6 +63,7 @@ export const AppRouter = () => {
         <Route path="/receipt/:orderId" element={<ReceiptViewPage />} />
         <Route path="/learning/:courseId" element={<VideoPlayerPage />} />
         <Route path="/courses/:courseId/learn" element={<VideoPlayerPage />} />
+        <Route path="/courses/:courseId/explore" element={<CourseExplorePage />} />
         <Route path="/certificate/:courseId" element={<CertificatePage />} />
         <Route element={<StudentLayout />}>
           <Route path="/dashboard" element={<StudentDashboard />} />

@@ -84,4 +84,17 @@ export class CourseController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
+
+  static async trackPreviewPlay(req: Request, res: Response): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const user = (req as any).user;
+      const guestCount = Number(req.body.guestCount || 0);
+
+      const data = await CourseService.trackPreviewPlay(id, user, guestCount);
+      res.status(200).json({ success: true, data });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
 }

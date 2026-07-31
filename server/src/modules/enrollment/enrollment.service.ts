@@ -107,4 +107,9 @@ export class EnrollmentService {
       instructorName: course?.instructor?.name || 'ClassConnect Master',
     };
   }
+
+  static async checkEnrollmentStatus(studentId: string, courseId: string) {
+    const enrollment = await EnrollmentModel.findOne({ student: studentId, course: courseId, status: 'active' });
+    return { isEnrolled: !!enrollment, orderId: enrollment?.order, enrollment };
+  }
 }

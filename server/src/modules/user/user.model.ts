@@ -15,6 +15,7 @@ export interface IUser extends Document {
   lastLoginIp?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  previewViews?: Array<{ course: any; count: number }>;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -32,6 +33,12 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
     },
+    previewViews: [
+      {
+        course: { type: Schema.Types.ObjectId, ref: 'Course' },
+        count: { type: Number, default: 0 },
+      },
+    ],
     activeSessionId: { type: String },
     lastLoginIp: { type: String },
     resetPasswordToken: { type: String },

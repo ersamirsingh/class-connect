@@ -430,28 +430,34 @@ export const CourseListPage = () => {
                       )}
                     </AnimatePresence>
 
-                    {/* FOOTER ACTIONS: Explore (Unpurchased) vs Contents (Purchased) */}
+                    {/* FOOTER ACTIONS: Purchased (Hide price, show Enrolled) vs Unpurchased (Show Price & Purchase) */}
                     <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                       <div>
-                        <span className="text-base font-black text-[#0F172A] dark:text-white">
-                          ${course.discountPrice || course.price}
-                        </span>
+                        {isPurchased ? (
+                          <span className="px-2.5 py-1 rounded-full bg-[#2FA876]/10 text-[#2FA876] text-[10px] font-black uppercase flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Enrolled & Active
+                          </span>
+                        ) : (
+                          <span className="text-base font-black text-[#2B2B38] dark:text-white">
+                            ${course.discountPrice || course.price}
+                          </span>
+                        )}
                       </div>
 
                       {isPurchased ? (
                         <Link
-                          to={`/learning/${course._id}`}
-                          className="btn-visual bg-[#10B981] hover:bg-[#059669] text-white text-xs px-4 py-2 flex items-center gap-1.5 shadow-md"
+                          to={`/courses/${course._id}/explore`}
+                          className="btn-visual bg-[#5B54E8] hover:bg-[#4740D2] text-white text-xs px-4 py-2 flex items-center gap-1.5 shadow-md font-black"
                         >
-                          <Play className="w-3.5 h-3.5 fill-white" />
-                          <span>Contents</span>
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Explore</span>
                         </Link>
                       ) : (
                         <Link
                           to={`/courses/${course.slug || course._id}`}
-                          className="btn-visual btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
+                          className="btn-visual bg-[#FF7A59] hover:bg-[#E56848] text-white text-xs px-4 py-2 flex items-center gap-1.5 shadow-md font-black"
                         >
-                          <span>Explore</span>
+                          <span>Purchase</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       )}
