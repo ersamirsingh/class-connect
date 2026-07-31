@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -7,11 +7,12 @@ import {
   Palette, 
   Cpu, 
   TrendingUp, 
-  Layers, 
   ArrowRight,
   Database,
   ShieldCheck,
-  Cloud
+  Cloud,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { GlowingEffect } from '../motion/GlowingEffect';
 import { Marquee } from '../motion/Marquee';
@@ -40,6 +41,7 @@ const defaultGradientBadges = [
 export function CategoryCraftDeck({ categories = [] }) {
   const { t, language } = useLanguage();
   const isHindi = language === 'hi';
+  const row1Ref = useRef(null);
 
   // Ensure we have a rich set of items for scrolling
   const fullCategories = categories.length > 0 ? categories : [
@@ -56,6 +58,18 @@ export function CategoryCraftDeck({ categories = [] }) {
   const row1 = fullCategories.slice(0, halfLength);
   const row2 = fullCategories.slice(halfLength).concat(fullCategories.slice(0, 2));
 
+  const scrollLeft = () => {
+    if (row1Ref.current) {
+      row1Ref.current.scrollBy({ left: -360, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (row1Ref.current) {
+      row1Ref.current.scrollBy({ left: 360, behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative py-20 overflow-hidden bg-[var(--canvas)]">
       {/* Background Subtle Gradient Blobs */}
@@ -64,43 +78,71 @@ export function CategoryCraftDeck({ categories = [] }) {
         <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-3xl" />
       </div>
 
-      {/* Header */}
-      <div className="page-container text-center mb-14 relative z-10">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-bold uppercase tracking-wider mb-4">
-          <Layers className="w-3.5 h-3.5" />
-          {isHindi ? 'विषय चुनें' : 'Curated Disciplines'}
+      {/* Header — Without 'Curated Disciplines' word */}
+      <div className="page-container flex flex-col md:flex-row md:items-end justify-between mb-12 relative z-10 gap-6">
+        <div className="text-left">
+          <TextEffect preset="fade-in-blur" className="section-heading mb-3">
+            {isHindi ? 'अपना रास्ता चुनें (Find Your Path)' : 'Find Your Path'}
+          </TextEffect>
+
+          <p className="section-subheading max-w-xl">
+            {isHindi 
+              ? 'शुरुआती से लेकर प्रोफेशनल बनने तक के लिए तैयार किए गए हमारे विशेष कोर्स श्रेणियों को देखें।'
+              : 'Explore our curated selection of disciplines designed to take you from beginner to professional.'}
+          </p>
         </div>
 
-        <TextEffect preset="fade-in-blur" className="section-heading mb-4">
-          {isHindi ? 'अपना रास्ता चुनें (Find Your Path)' : 'Find Your Path'}
-        </TextEffect>
-
-        <p className="section-subheading mx-auto max-w-xl text-center">
-          {isHindi 
-            ? 'शुरुआती से लेकर प्रोफेशनल बनने तक के लिए तैयार किए गए हमारे विशेष कोर्स श्रेणियों को देखें।'
-            : 'Explore our curated selection of disciplines designed to take you from beginner to professional.'}
-        </p>
+        {/* Interactive Manual Navigation Controls */}
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={scrollLeft}
+            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={scrollRight}
+            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      {/* Interface Craft Infinite Scroll Container */}
+      {/* Interactive Controllable Sliding Rail + Auto-Scroll */}
       <div className="relative w-full space-y-6">
-        {/* Left & Right Fading Gradient Edge Overlay for seamless marquee */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
+        {/* Left & Right Fading Gradient Overlay */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Row 1: Left Auto-Scroll */}
+        {/* Row 1: Smooth Infinite Marquee with hover pause */}
         <Marquee speed={35} direction="left" pauseOnHover className="py-2">
           {row1.map((cat, idx) => (
             <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
           ))}
         </Marquee>
 
-        {/* Row 2: Right Auto-Scroll */}
+        {/* Row 2: Right Direction Auto-Scroll */}
         <Marquee speed={35} direction="right" pauseOnHover className="py-2">
           {row2.map((cat, idx) => (
             <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
           ))}
         </Marquee>
+
+        {/* Interactive Manual Scrollable Rail Container for Mouse Drag / Touch Swipe */}
+        <div
+          ref={row1Ref}
+          className="flex overflow-x-auto scrollbar-hide gap-6 px-6 py-4 cursor-grab active:cursor-grabbing snap-x snap-mandatory"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {fullCategories.map((cat, idx) => (
+            <div key={`manual-${cat._id}-${idx}`} className="snap-start shrink-0">
+              <CategoryCraftCard category={cat} index={idx} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -111,7 +153,7 @@ function CategoryCraftCard({ category, index }) {
   const gradientClass = defaultGradientBadges[index % defaultGradientBadges.length];
 
   return (
-    <div className="w-[340px] sm:w-[380px] shrink-0 mx-3">
+    <div className="w-[320px] sm:w-[360px] shrink-0 mx-3">
       <Link to={`/courses?category=${category.slug}`}>
         <GlowingEffect
           glowColor="rgba(67, 56, 242, 0.4)"
