@@ -38,8 +38,12 @@ export function CourseListPage() {
           courseApi.getCourses()
         ]);
         
-        const apiCats = categoriesRes.data?.categories || [];
-        const apiCourses = coursesRes.data?.courses || [];
+        const apiCats = Array.isArray(categoriesRes.data)
+          ? categoriesRes.data
+          : (categoriesRes.data?.categories || (Array.isArray(categoriesRes) ? categoriesRes : []));
+        const apiCourses = Array.isArray(coursesRes.data)
+          ? coursesRes.data
+          : (coursesRes.data?.courses || (Array.isArray(coursesRes) ? coursesRes : []));
 
         if (apiCats.length > 0) setCategories(apiCats);
         if (apiCourses.length > 0) setAllCourses(apiCourses);

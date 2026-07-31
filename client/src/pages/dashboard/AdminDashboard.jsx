@@ -18,7 +18,7 @@ export function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const response = await adminApi.getStats();
-        setStats(response.data);
+        setStats(response.data?.data || response.data || response);
       } catch (err) {
         setError(t('failedToLoadStats') || 'Failed to load stats');
       } finally {

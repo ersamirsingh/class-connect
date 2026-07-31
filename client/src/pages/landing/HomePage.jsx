@@ -76,7 +76,9 @@ export function HomePage() {
     const fetchCategories = async () => {
       try {
         const response = await categoryApi.getCategories();
-        const apiCats = response.data?.categories || [];
+        const apiCats = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.categories || (Array.isArray(response) ? response : []));
         if (apiCats.length > 0) {
           setCategories(apiCats);
         }
@@ -88,7 +90,9 @@ export function HomePage() {
     const fetchCourses = async () => {
       try {
         const response = await courseApi.getCourses();
-        const apiCourses = response.data?.courses || [];
+        const apiCourses = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.courses || (Array.isArray(response) ? response : []));
         if (apiCourses.length > 0) {
           setFeaturedCourses(apiCourses.slice(0, 6));
         }

@@ -21,7 +21,10 @@ export function CategoryListPage() {
     const fetchCategories = async () => {
       try {
         const res = await categoryApi.getCategories();
-        setCategories(res.data?.categories || []);
+        const loadedCats = Array.isArray(res.data)
+          ? res.data
+          : (res.data?.categories || (Array.isArray(res) ? res : []));
+        setCategories(loadedCats);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
       } finally {

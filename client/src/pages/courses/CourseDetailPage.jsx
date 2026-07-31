@@ -35,12 +35,17 @@ export function CourseDetailPage() {
         // Fetch course and reviews in parallel
         const [courseRes, reviewsRes] = await Promise.all([
           courseApi.getCourseByIdOrSlug(slug),
-          reviewApi.getCourseReviews(slug).catch(() => ({ data: { reviews: [] } }))
+          reviewApi.getCourseReviews(slug).catch(() => ({ data: [] }))
         ]);
+
+        const loadedCourse = courseRes.data?.course || courseRes.data || (courseRes._id ? courseRes : null);
         
-        if (courseRes.data?.course) {
-          setCourse(courseRes.data.course);
-          setReviews(reviewsRes.data?.reviews || []);
+        if (loadedCourse) {
+          setCourse(loadedCourse);
+          const loadedReviews = Array.isArray(reviewsRes.data)
+            ? reviewsRes.data
+            : (reviewsRes.data?.reviews || []);
+          setReviews(loadedReviews);
         } else {
           throw new Error('Course not found in API');
         }

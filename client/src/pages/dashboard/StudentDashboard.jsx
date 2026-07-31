@@ -20,7 +20,10 @@ export function StudentDashboard() {
     async function loadData() {
       try {
         const res = await enrollmentApi.getMyEnrollments();
-        setEnrollments(res?.data || []);
+        const loadedEnrollments = Array.isArray(res?.data)
+          ? res.data
+          : (res?.data?.enrollments || (Array.isArray(res) ? res : []));
+        setEnrollments(loadedEnrollments);
       } catch (error) {
         console.error('Failed to load enrollments', error);
       } finally {
