@@ -19,4 +19,6 @@ router.get('/stats', AdminController.getStats);
 router.get('/payments', AdminController.getPayments);
 router.put('/payments/:id/refund', AdminController.refundOrder);
 
+router.get('/courses/:courseId/students', AdminController.getCourseEnrollments);
+
 export const adminRouter = router;

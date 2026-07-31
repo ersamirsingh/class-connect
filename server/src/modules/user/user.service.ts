@@ -12,7 +12,7 @@ export class UserService {
 
   static async updateProfile(
     userId: string,
-    payload: { name?: string; phone?: string; email?: string }
+    payload: { name?: string; phone?: string; email?: string; photo?: string }
   ): Promise<IUser> {
     const user = await UserModel.findById(userId);
     if (!user || !user.isActive) {
@@ -29,6 +29,7 @@ export class UserService {
 
     if (payload.name) user.name = payload.name;
     if (payload.phone !== undefined) user.phone = payload.phone;
+    if (payload.photo !== undefined) user.photo = payload.photo;
 
     await user.save();
     return user;

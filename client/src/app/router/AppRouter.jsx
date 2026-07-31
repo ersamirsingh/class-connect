@@ -56,11 +56,12 @@ export const AppRouter = () => {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
 
-      {/* Protected Student Routes */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLES.STUDENT]} />}>
+      {/* Protected Student & Admin Learning Routes */}
+      <Route element={<ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.ADMIN]} />}>
         <Route path="/checkout/:courseId" element={<CheckoutPage />} />
         <Route path="/receipt/:orderId" element={<ReceiptViewPage />} />
         <Route path="/learning/:courseId" element={<VideoPlayerPage />} />
+        <Route path="/courses/:courseId/learn" element={<VideoPlayerPage />} />
         <Route path="/certificate/:courseId" element={<CertificatePage />} />
         <Route element={<StudentLayout />}>
           <Route path="/dashboard" element={<StudentDashboard />} />

@@ -40,6 +40,24 @@ export class CourseService {
     return course;
   }
 
+  static async getSuggestedCourses(limit: number = 6): Promise<ICourse[]> {
+    // First try courses explicitly marked as suggested
+    let courses = await CourseModel.find({ isPublished: true, isSuggested: true })
+      .populate('category')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    // Fallback: if no suggested courses, return latest published courses
+    if (courses.length === 0) {
+      courses = await CourseModel.find({ isPublished: true })
+        .populate('category')
+        .sort({ createdAt: -1 })
+        .limit(limit);
+    }
+
+    return courses;
+  }
+
   static async getAllCoursesAdmin(): Promise<ICourse[]> {
     return CourseModel.find().populate('category').sort({ createdAt: -1 });
   }

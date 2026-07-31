@@ -11,6 +11,8 @@ export interface IUser extends Document {
   isActive: boolean;
   phone?: string;
   photo?: string;
+  activeSessionId?: string;
+  lastLoginIp?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   createdAt: Date;
@@ -30,6 +32,8 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
     },
+    activeSessionId: { type: String },
+    lastLoginIp: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },

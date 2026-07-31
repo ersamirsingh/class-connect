@@ -5,6 +5,7 @@ export interface ICategory extends Document {
   slug: string;
   icon: string; // Lucide icon name or image URL
   color: string; // Hex color code (e.g. #3730E0)
+  coverImage?: string; // Cloudinary cover image URL
   description?: string;
   isActive: boolean;
   createdAt: Date;
@@ -17,6 +18,7 @@ const categorySchema = new Schema<ICategory>(
     slug: { type: String, required: true, lowercase: true, trim: true },
     icon: { type: String, default: 'Code' },
     color: { type: String, default: '#3730E0' },
+    coverImage: { type: String, default: '' },
     description: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
   },

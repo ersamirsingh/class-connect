@@ -12,6 +12,11 @@ export const courseApi = {
     return response.data;
   },
 
+  getSuggestedCourses: async (limit = 6) => {
+    const response = await api.get(`/courses/suggested?limit=${limit}`);
+    return response.data;
+  },
+
   getAllCoursesAdmin: async () => {
     const response = await api.get('/courses/admin/all');
     return response.data;
@@ -24,6 +29,11 @@ export const courseApi = {
 
   updateCourse: async (id, data) => {
     const response = await api.put(`/courses/${id}`, data);
+    return response.data;
+  },
+
+  toggleSuggested: async (id) => {
+    const response = await api.put(`/courses/toggle-suggested/${id}`);
     return response.data;
   },
 

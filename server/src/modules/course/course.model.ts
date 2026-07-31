@@ -6,6 +6,7 @@ export interface ILecture {
   duration: string;
   videoUrl: string;
   pdfUrl?: string;
+  coverImage?: string;
   isPreview: boolean;
 }
 
@@ -31,6 +32,7 @@ export interface ICourse extends Document {
   category: Types.ObjectId;
   type: 'live' | 'recorded' | 'hybrid';
   thumbnail: string;
+  coverImage?: string;
   previewVideo?: string;
   price: number;
   discountPrice?: number;
@@ -45,6 +47,7 @@ export interface ICourse extends Document {
   liveSchedule?: ILiveSchedule;
   isPublished: boolean;
   isFeatured: boolean;
+  isSuggested: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +57,7 @@ const lectureSchema = new Schema<ILecture>({
   duration: { type: String, default: '10 mins' },
   videoUrl: { type: String, required: true },
   pdfUrl: { type: String, default: '' },
+  coverImage: { type: String, default: '' },
   isPreview: { type: Boolean, default: false },
 });
 
@@ -72,6 +76,7 @@ const courseSchema = new Schema<ICourse>(
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
     type: { type: String, enum: ['live', 'recorded', 'hybrid'], default: 'recorded' },
     thumbnail: { type: String, required: true },
+    coverImage: { type: String, default: '' },
     previewVideo: { type: String, default: 'https://www.w3schools.com/html/mov_bbb.mp4' },
     price: { type: Number, required: true, default: 0 },
     discountPrice: { type: Number, default: 0 },
@@ -91,6 +96,7 @@ const courseSchema = new Schema<ICourse>(
     },
     isPublished: { type: Boolean, default: true },
     isFeatured: { type: Boolean, default: true },
+    isSuggested: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

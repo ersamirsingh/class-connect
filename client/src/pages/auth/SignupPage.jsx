@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { User, Mail, Lock, Eye, EyeOff, UserCheck, AlertCircle, ArrowRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, UserCheck, AlertCircle, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const SignupPage = () => {
@@ -25,19 +25,18 @@ export const SignupPage = () => {
     if (error) setError('');
   };
 
-  // Password strength logic
   const getPasswordStrength = (pass) => {
-    if (!pass) return { label: '', score: 0, color: 'bg-slate-200' };
+    if (!pass) return { label: '', bars: 0, color: 'bg-slate-200' };
     let score = 0;
     if (pass.length >= 6) score += 1;
     if (pass.length >= 10) score += 1;
     if (/[A-Z]/.test(pass)) score += 1;
-    if (/[0-9]/.test(pass)) score += 1;
-    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass) || /[^A-Za-z0-9]/.test(pass)) score += 1;
 
-    if (score <= 2) return { label: 'Weak', score: 33, color: 'bg-[#EF4444]' };
-    if (score <= 4) return { label: 'Medium', score: 66, color: 'bg-[#F59E0B]' };
-    return { label: 'Strong', score: 100, color: 'bg-[#10B981]' };
+    if (score === 1) return { label: 'Weak', bars: 1, color: 'bg-[#EF4444]' };
+    if (score === 2) return { label: 'Fair', bars: 2, color: 'bg-[#F59E0B]' };
+    if (score === 3) return { label: 'Good', bars: 3, color: 'bg-[#06B6D4]' };
+    return { label: 'Strong', bars: 4, color: 'bg-[#10B981]' };
   };
 
   const strength = getPasswordStrength(formData.password);
@@ -46,7 +45,7 @@ export const SignupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields.');
+      setError('Please fill in all required fields.');
       return;
     }
 
@@ -74,37 +73,31 @@ export const SignupPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4">
+      {/* Header Info */}
       <div>
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#10B981]/10 text-[#10B981] text-xs font-bold mb-3 border border-[#10B981]/20">
-          <UserCheck className="w-4 h-4" /> Free Student Registration
-        </div>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#0F172A] dark:text-white tracking-tight">Create Your Account</h2>
-        {/* Reassuring Micro-copy */}
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center gap-2">
-          <Zap className="w-3.5 h-3.5 text-[#F59E0B]" /> Takes less than 1 minute • No credit card required
-        </p>
+        <h2 className="text-xl sm:text-2xl font-black text-[#0F172A] dark:text-white tracking-tight">Create Account</h2>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Join ClassConnect visual learning platform.</p>
       </div>
 
-      {/* Error Banner */}
+      {/* Error Alert */}
       {error && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="p-4 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-xs font-semibold flex items-center gap-3"
+          className="p-3 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-[11px] font-semibold flex items-center gap-2"
         >
-          <AlertCircle className="w-5 h-5 shrink-0" />
+          <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </motion.div>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Full Name */}
         <div>
-          <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-            <User className="w-4 h-4 text-[#4F46E5]" /> Full Name
+          <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5 text-[#6366F1]" /> Full Name
           </label>
           <div className="relative">
             <input
@@ -114,16 +107,16 @@ export const SignupPage = () => {
               onChange={handleChange}
               placeholder="John Doe"
               required
-              className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:bg-white dark:focus:bg-slate-800 transition-all shadow-xs"
+              className="w-full pl-9 pr-3 py-2 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
             />
-            <User className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
         {/* Email Address */}
         <div>
-          <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-            <Mail className="w-4 h-4 text-[#4F46E5]" /> Email Address
+          <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5 text-[#6366F1]" /> Email Address
           </label>
           <div className="relative">
             <input
@@ -131,25 +124,18 @@ export const SignupPage = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="student@example.com"
+              placeholder="name@example.com"
               required
-              className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:bg-white dark:focus:bg-slate-800 transition-all shadow-xs"
+              className="w-full pl-9 pr-3 py-2 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
             />
-            <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
-        {/* Password & Password Strength Bar */}
+        {/* Password & Strength Bar */}
         <div>
-          <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1.5 flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <Lock className="w-4 h-4 text-[#4F46E5]" /> Password
-            </span>
-            {formData.password && (
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                Strength: <strong className={strength.score === 100 ? 'text-[#10B981]' : strength.score === 66 ? 'text-[#F59E0B]' : 'text-[#EF4444]'}>{strength.label}</strong>
-              </span>
-            )}
+          <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-[#6366F1]" /> Password
           </label>
           <div className="relative">
             <input
@@ -157,50 +143,50 @@ export const SignupPage = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="At least 6 characters"
+              placeholder="••••••••"
               required
-              className="w-full pl-11 pr-12 py-3 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:bg-white dark:focus:bg-slate-800 transition-all shadow-xs"
+              className="w-full pl-9 pr-10 py-2 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
             />
-            <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            
-            {/* Independent Eye Toggle #1 */}
+            <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-              title={showPassword ? 'Hide Password' : 'Show Password'}
-              aria-label="Toggle password visibility"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
             >
-              {showPassword ? <EyeOff className="w-5 h-5 text-[#4F46E5]" /> : <Eye className="w-5 h-5" />}
+              {showPassword ? <EyeOff className="w-4 h-4 text-[#6366F1]" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
 
-          {/* Dynamic Password Strength Meter Bar */}
+          {/* Strength Bar */}
           {formData.password && (
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
-              <div
-                className={`h-full ${strength.color} transition-all duration-300 rounded-full`}
-                style={{ width: `${strength.score}%` }}
-              />
+            <div className="mt-1.5 space-y-1">
+              <div className="flex items-center justify-between text-[9px] font-bold text-slate-500">
+                <span>Strength</span>
+                <span className={strength.color.replace('bg-', 'text-')}>{strength.label}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                {[1, 2, 3, 4].map((bar) => (
+                  <div
+                    key={bar}
+                    className={`h-1 rounded-full transition-all ${
+                      bar <= strength.bars ? strength.color : 'bg-slate-200 dark:bg-slate-800'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Confirm Password Field & Real-Time Matching Indicator */}
+        {/* Confirm Password */}
         <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-              <Lock className="w-4 h-4 text-[#3B82F6]" /> Confirm Password
+          <div className="flex justify-between items-center mb-1">
+            <label className="text-[11px] font-extrabold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-[#6366F1]" /> Confirm Password
             </label>
-            {formData.confirmPassword && (
-              <span className={`text-[11px] font-bold flex items-center gap-1 ${passwordsMatch ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
-                {passwordsMatch ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" /> Passwords Match
-                  </>
-                ) : (
-                  'Passwords do not match'
-                )}
+            {passwordsMatch && (
+              <span className="text-[9px] font-black text-[#10B981] flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> Match
               </span>
             )}
           </div>
@@ -210,54 +196,75 @@ export const SignupPage = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="Re-enter your password"
+              placeholder="••••••••"
               required
-              className={`w-full pl-11 pr-12 py-3 bg-[#F8FAFC] dark:bg-slate-900 border ${
-                formData.confirmPassword
-                  ? passwordsMatch
-                    ? 'border-[#10B981]'
-                    : 'border-[#EF4444]'
-                  : 'border-slate-200 dark:border-slate-700'
-              } rounded-2xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:bg-white dark:focus:bg-slate-800 transition-all shadow-xs`}
+              className={`w-full pl-9 pr-10 py-2 bg-[#F8FAFC] dark:bg-slate-900 border rounded-xl text-xs font-semibold text-[#0F172A] dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 ${
+                passwordsMatch
+                  ? 'border-[#10B981] focus:ring-[#10B981]'
+                  : 'border-slate-200 dark:border-slate-700 focus:ring-[#6366F1]'
+              }`}
             />
-            <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-
-            {/* Independent Eye Toggle #2 */}
+            <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-              title={showConfirmPassword ? 'Hide Confirm Password' : 'Show Confirm Password'}
-              aria-label="Toggle confirm password visibility"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
             >
-              {showConfirmPassword ? <EyeOff className="w-5 h-5 text-[#3B82F6]" /> : <Eye className="w-5 h-5" />}
+              {showConfirmPassword ? <EyeOff className="w-4 h-4 text-[#6366F1]" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* Action CTA Button */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn-visual btn-secondary w-full shadow-lg shadow-[#3B82F6]/25 py-3.5 mt-3"
+          className="btn-visual btn-primary w-full shadow-md py-3 text-xs mt-1"
         >
           {isSubmitting ? (
-            <span className="text-xs font-bold">Creating Account...</span>
+            <span>Creating Account...</span>
           ) : (
             <>
-              <span className="text-xs font-black uppercase tracking-wider">Create Free Student Account</span>
+              <span className="font-black uppercase tracking-wider">Create Free Account</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>
       </form>
 
-      {/* Footer Switch */}
-      <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-        <span className="text-slate-500 dark:text-slate-400 font-medium">Already have an account?</span>
-        <Link to="/login" className="font-extrabold text-[#4F46E5] hover:underline flex items-center gap-1">
-          Sign In <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+      {/* Social Auth Dividers */}
+      <div className="space-y-3 pt-1">
+        <div className="relative flex items-center justify-center">
+          <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
+          <span className="bg-white dark:bg-[#111827] px-2 text-[10px] font-black text-slate-400 uppercase tracking-wider absolute">
+            Or register with
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5 pt-1">
+          <button
+            type="button"
+            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            Google
+          </button>
+
+          <button
+            type="button"
+            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          >
+            <svg className="w-3.5 h-3.5 fill-current text-[#0F172A] dark:text-white" viewBox="0 0 24 24">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            GitHub
+          </button>
+        </div>
       </div>
     </div>
   );

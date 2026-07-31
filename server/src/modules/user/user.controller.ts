@@ -16,8 +16,8 @@ export class UserController {
   static async updateProfile(req: AuthRequest, res: Response): Promise<void> {
     try {
       const userId = req.user!._id.toString();
-      const { name, phone, email } = req.body;
-      const updatedUser = await UserService.updateProfile(userId, { name, phone, email });
+      const { name, phone, email, photo } = req.body;
+      const updatedUser = await UserService.updateProfile(userId, { name, phone, email, photo });
       res.status(200).json({
         success: true,
         message: 'Profile updated successfully.',

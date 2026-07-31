@@ -27,6 +27,7 @@ export const ProfilePage = () => {
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
+    photo: user?.photo || '',
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -131,6 +132,7 @@ export const ProfilePage = () => {
                   name: user?.name || '',
                   email: user?.email || '',
                   phone: user?.phone || '',
+                  photo: user?.photo || '',
                 });
                 setIsEditing(true);
               }}
@@ -147,8 +149,15 @@ export const ProfilePage = () => {
           <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-16 mb-6 gap-4">
             <div className="relative group cursor-pointer" onClick={handlePhotoClick}>
               <img
-                src={user?.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
+                src={
+                  user?.photo ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366F1&color=fff`
+                }
                 alt={user?.name}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=6366F1&color=fff`;
+                }}
                 className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover ring-4 ring-white shadow-xl bg-white"
               />
 
@@ -265,6 +274,23 @@ export const ProfilePage = () => {
                   placeholder="+1234567890"
                   className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-semibold text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#FF7A33]"
                 />
+              </div>
+
+              {/* Profile Picture Image URL Input (Fallback for when photo is not uploaded) */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                  <Camera className="w-4 h-4 text-[#3730E0]" /> Profile Picture Image URL (Fallback if not uploaded)
+                </label>
+                <input
+                  type="text"
+                  value={formData.photo}
+                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-semibold text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0]"
+                />
+                <p className="text-[10px] font-medium text-slate-400 mt-1">
+                  If you haven't uploaded a photo file, paste any image URL here to use as your avatar.
+                </p>
               </div>
 
               {/* Save / Cancel Action Buttons */}
