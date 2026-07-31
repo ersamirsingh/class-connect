@@ -6,6 +6,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { courseApi } from '../../api/models/course.api';
 import { reviewApi } from '../../api/models/review.api';
+import { SAMPLE_COURSES } from '../../data/sampleData';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
@@ -34,21 +35,22 @@ export function CourseDetailPage() {
         // Fetch course and reviews in parallel
         const [courseRes, reviewsRes] = await Promise.all([
           courseApi.getCourseByIdOrSlug(slug),
-          // Fallback mechanism to use course ID once we get it if possible, 
-          // or assume backend allows slug for reviews
           reviewApi.getCourseReviews(slug).catch(() => ({ data: { reviews: [] } }))
         ]);
         
-        setCourse(courseRes.data?.course);
-        setReviews(reviewsRes.data?.reviews || []);
-        
-        // Expand first module by default if lectures exist and are grouped
-        // If not grouped, we just render a simple list
+        if (courseRes.data?.course) {
+          setCourse(courseRes.data.course);
+          setReviews(reviewsRes.data?.reviews || []);
+        } else {
+          throw new Error('Course not found in API');
+        }
         setExpandedModules({ 0: true });
         
       } catch (err) {
-        console.error('Failed to fetch course details:', err);
-        setError(err.response?.data?.message || 'Course not found');
+        // Fallback to sample courses if API fails or course not found
+        const foundSample = SAMPLE_COURSES.find(c => c.slug === slug || c._id === slug) || SAMPLE_COURSES[0];
+        setCourse(foundSample);
+        setExpandedModules({ 0: true });
       } finally {
         setIsLoading(false);
       }

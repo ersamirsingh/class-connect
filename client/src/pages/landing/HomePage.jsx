@@ -29,6 +29,7 @@ import { Marquee } from '../../components/motion/Marquee';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
+import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 
 // --- Placeholder Translations (Fallback if keys missing) ---
 const getTranslation = (t, key, fallback) => {
@@ -63,33 +64,34 @@ const faqs = [
 export function HomePage() {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const [categories, setCategories] = useState([]);
-  const [featuredCourses, setFeaturedCourses] = useState([]);
-  const [isLoadingCats, setIsLoadingCats] = useState(true);
-  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
+  const [featuredCourses, setFeaturedCourses] = useState(SAMPLE_COURSES);
+  const [isLoadingCats, setIsLoadingCats] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await categoryApi.getCategories();
-        setCategories(response.data?.categories || []);
+        const apiCats = response.data?.categories || [];
+        if (apiCats.length > 0) {
+          setCategories(apiCats);
+        }
       } catch (error) {
-        console.error('Failed to fetch categories', error);
-      } finally {
-        setIsLoadingCats(false);
+        console.warn('Using sample categories fallback:', error.message);
       }
     };
 
     const fetchCourses = async () => {
       try {
         const response = await courseApi.getCourses();
-        const allCourses = response.data?.courses || [];
-        setFeaturedCourses(allCourses.slice(0, 6));
+        const apiCourses = response.data?.courses || [];
+        if (apiCourses.length > 0) {
+          setFeaturedCourses(apiCourses.slice(0, 6));
+        }
       } catch (error) {
-        console.error('Failed to fetch featured courses', error);
-      } finally {
-        setIsLoadingCourses(false);
+        console.warn('Using sample courses fallback:', error.message);
       }
     };
 

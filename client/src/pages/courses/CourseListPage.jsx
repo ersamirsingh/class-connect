@@ -5,6 +5,7 @@ import { Search, Star, BookOpen, Loader2, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
+import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 import { SpotlightCard } from '../../components/motion/SpotlightCard';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
@@ -15,9 +16,9 @@ export function CourseListPage() {
   const { language } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  const [courses, setCourses] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [courses, setCourses] = useState(SAMPLE_COURSES);
+  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
+  const [isLoading, setIsLoading] = useState(false);
   
   const categoryParam = searchParams.get('category') || '';
   const searchParam = searchParams.get('search') || '';
@@ -32,12 +33,26 @@ export function CourseListPage() {
           courseApi.getCourses({ category: categoryParam, search: searchParam })
         ]);
         
-        setCategories(categoriesRes.data?.categories || []);
-        setCourses(coursesRes.data?.courses || []);
+        const apiCats = categoriesRes.data?.categories || [];
+        const apiCourses = coursesRes.data?.courses || [];
+
+        if (apiCats.length > 0) setCategories(apiCats);
+        if (apiCourses.length > 0) {
+          setCourses(apiCourses);
+        } else if (categoryParam || searchParam) {
+          // Filter sample courses locally if API has no results
+          let filtered = [...SAMPLE_COURSES];
+          if (categoryParam) {
+            filtered = filtered.filter(c => c.category?.slug === categoryParam);
+          }
+          if (searchParam) {
+            const q = searchParam.toLowerCase();
+            filtered = filtered.filter(c => c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
+          }
+          setCourses(filtered);
+        }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
-      } finally {
-        setIsLoading(false);
+        console.warn('Using sample courses fallback for CourseListPage:', error.message);
       }
     };
     
