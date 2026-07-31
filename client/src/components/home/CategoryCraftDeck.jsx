@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Marquee from 'react-fast-marquee';
+import FastMarquee from 'react-fast-marquee';
+const Marquee = typeof FastMarquee === 'function' ? FastMarquee : (FastMarquee?.default || FastMarquee);
 import { 
   Code2, 
   Smartphone, 
