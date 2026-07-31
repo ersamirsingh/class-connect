@@ -123,17 +123,7 @@ export function HomePage() {
         <div className="max-w-[var(--max-width)] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
           {/* Left Column: Text Content */}
           <div className="flex flex-col items-start text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-sm font-semibold mb-6 border border-[var(--primary)]/10"
-            >
-              <span className="w-2 h-2 rounded-full bg-[var(--primary)] animate-ping" />
-              Luminous Learning OS 2026
-            </motion.div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] mb-6 pt-4">
               {isHindi ? (
                 <span>
                   ऐसी स्किल्स सीखें जो <SquigglyText>आगे ले जाएं</SquigglyText>
@@ -164,13 +154,19 @@ export function HomePage() {
                   Explore Courses
                 </ShimmerButton>
               </Link>
-              {!user && (
-                <Link to="/auth">
-                  <button className="w-full sm:w-auto px-8 py-4 rounded-[var(--radius-pill)] border-2 border-[var(--border)] bg-transparent text-[var(--ink)] font-semibold hover:bg-[var(--surface)] hover:border-[var(--primary)]/20 transition-all duration-300 min-h-[44px]">
-                    Start Learning
-                  </button>
-                </Link>
-              )}
+              <button 
+                onClick={() => {
+                  const target = document.getElementById('featured-courses');
+                  if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    window.location.href = '/courses';
+                  }
+                }}
+                className="w-full sm:w-auto px-8 py-4 rounded-[var(--radius-pill)] border-2 border-[var(--border)] bg-transparent text-[var(--ink)] font-semibold hover:bg-[var(--surface)] hover:border-[var(--primary)]/30 transition-all duration-300 min-h-[44px] cursor-pointer"
+              >
+                {isHindi ? 'सीखना शुरू करें' : 'Start Learning'}
+              </button>
             </motion.div>
 
             <motion.div 
@@ -254,7 +250,7 @@ export function HomePage() {
       <CategoryCraftDeck categories={categories} />
 
       {/* 4. Featured Courses Section */}
-      <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
+      <section id="featured-courses" className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
         <div className="max-w-[var(--max-width)] mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>

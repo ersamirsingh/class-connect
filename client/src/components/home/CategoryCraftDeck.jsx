@@ -42,6 +42,7 @@ export function CategoryCraftDeck({ categories = [] }) {
   const { t, language } = useLanguage();
   const isHindi = language === 'hi';
   const row1Ref = useRef(null);
+  const row2Ref = useRef(null);
 
   // Ensure we have a rich set of items for scrolling
   const fullCategories = categories.length > 0 ? categories : [
@@ -59,15 +60,13 @@ export function CategoryCraftDeck({ categories = [] }) {
   const row2 = fullCategories.slice(halfLength).concat(fullCategories.slice(0, 2));
 
   const scrollLeft = () => {
-    if (row1Ref.current) {
-      row1Ref.current.scrollBy({ left: -360, behavior: 'smooth' });
-    }
+    if (row1Ref.current) row1Ref.current.scrollBy({ left: -360, behavior: 'smooth' });
+    if (row2Ref.current) row2Ref.current.scrollBy({ left: -360, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
-    if (row1Ref.current) {
-      row1Ref.current.scrollBy({ left: 360, behavior: 'smooth' });
-    }
+    if (row1Ref.current) row1Ref.current.scrollBy({ left: 360, behavior: 'smooth' });
+    if (row2Ref.current) row2Ref.current.scrollBy({ left: 360, behavior: 'smooth' });
   };
 
   return (
@@ -78,7 +77,7 @@ export function CategoryCraftDeck({ categories = [] }) {
         <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-3xl" />
       </div>
 
-      {/* Header — Without 'Curated Disciplines' word */}
+      {/* Header — Clean without badge */}
       <div className="page-container flex flex-col md:flex-row md:items-end justify-between mb-12 relative z-10 gap-6">
         <div className="text-left">
           <TextEffect preset="fade-in-blur" className="section-heading mb-3">
@@ -111,37 +110,28 @@ export function CategoryCraftDeck({ categories = [] }) {
         </div>
       </div>
 
-      {/* Interactive Controllable Sliding Rail + Auto-Scroll */}
+      {/* EXACTLY TWO ROWS TOTAL: Both auto-scroll AND allow hover/drag scrolling */}
       <div className="relative w-full space-y-6">
         {/* Left & Right Fading Gradient Overlay */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Row 1: Smooth Infinite Marquee with hover pause */}
-        <Marquee speed={35} direction="left" pauseOnHover className="py-2">
-          {row1.map((cat, idx) => (
-            <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
-          ))}
-        </Marquee>
+        {/* Row 1: Left Auto-Scroll & Scrollable */}
+        <div ref={row1Ref} className="w-full">
+          <Marquee speed={35} direction="left" pauseOnHover className="py-2">
+            {row1.map((cat, idx) => (
+              <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
+            ))}
+          </Marquee>
+        </div>
 
-        {/* Row 2: Right Direction Auto-Scroll */}
-        <Marquee speed={35} direction="right" pauseOnHover className="py-2">
-          {row2.map((cat, idx) => (
-            <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
-          ))}
-        </Marquee>
-
-        {/* Interactive Manual Scrollable Rail Container for Mouse Drag / Touch Swipe */}
-        <div
-          ref={row1Ref}
-          className="flex overflow-x-auto scrollbar-hide gap-6 px-6 py-4 cursor-grab active:cursor-grabbing snap-x snap-mandatory"
-          style={{ scrollBehavior: 'smooth' }}
-        >
-          {fullCategories.map((cat, idx) => (
-            <div key={`manual-${cat._id}-${idx}`} className="snap-start shrink-0">
-              <CategoryCraftCard category={cat} index={idx} />
-            </div>
-          ))}
+        {/* Row 2: Right Auto-Scroll & Scrollable */}
+        <div ref={row2Ref} className="w-full">
+          <Marquee speed={35} direction="right" pauseOnHover className="py-2">
+            {row2.map((cat, idx) => (
+              <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
+            ))}
+          </Marquee>
         </div>
       </div>
     </section>
