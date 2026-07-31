@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, LogOut, Home } from 'lucide-react';
+import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, Layers, LogOut, Home } from 'lucide-react';
 
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -41,6 +41,12 @@ export const AdminLayout = () => {
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
             >
               <Layout className="w-4 h-4 text-[#9333EA]" /> Homepage CMS
+            </Link>
+            <Link
+              to="/admin/categories"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <Layers className="w-4 h-4 text-[#0EA5E9]" /> Categories
             </Link>
             <Link
               to="/admin/courses"
