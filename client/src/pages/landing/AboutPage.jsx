@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, BookOpen, Heart, Target, Sparkles, ArrowRight, CheckCircle2, Award, Globe } from 'lucide-react';
+import { Users, BookOpen, Heart, Target, Sparkles, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
-import { TextEffect } from '../../components/motion/TextEffect';
+import { SplitText } from '../../components/motion/SplitText';
 import { InView } from '../../components/motion/InView';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { useLanguage } from '../../context/LanguageContext';
@@ -59,11 +59,11 @@ export function AboutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)]">
+    <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden">
       <FloatingNav />
 
-      {/* Floating Jump-to Sub-Navigation Pill Bar (Matching Reference Screenshot) */}
-      <div className="sticky top-[72px] z-40 py-3 bg-[var(--canvas)]/80 backdrop-blur-md border-b border-[var(--border)] transition-all">
+      {/* Floating Jump-to Sub-Navigation Pill Bar */}
+      <div className="sticky top-[72px] z-40 py-3 bg-[var(--canvas)]/85 backdrop-blur-md border-b border-[var(--border)] transition-all">
         <div className="max-w-7xl mx-auto px-6 flex items-center gap-3 overflow-x-auto scrollbar-hide">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--ink-muted)] shrink-0 mr-1">
             Jump to:
@@ -87,29 +87,46 @@ export function AboutPage() {
         </div>
       </div>
 
-      {/* Hero Overview */}
-      <section id="overview" className="pt-16 pb-16 px-6 max-w-7xl mx-auto text-center">
-        <InView>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-bold uppercase tracking-wider mb-6">
-            <BookOpen className="w-3.5 h-3.5" />
-            {t('nav.about', 'About ClassConnect')}
-          </div>
-        </InView>
+      {/* Hero Overview — Perfectly Aligned & Animated without "About" */}
+      <section id="overview" className="pt-20 pb-16 px-6 max-w-5xl mx-auto text-center relative">
+        {/* Subtle Background Glow Aura */}
+        <div className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 w-96 h-96 rounded-full bg-gradient-to-tr from-[var(--aura-violet)] to-[var(--aura-peach)] filter blur-[120px] opacity-60 -z-10" />
 
-        <TextEffect preset="fade-in-blur" className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight mb-6 max-w-4xl mx-auto leading-tight">
-          {isHindi ? 'ज्ञान जो आपको आगे बढ़ाए' : 'Making quality education accessible to everyone'}
-        </TextEffect>
+        {/* Animated Title — Perfectly Aligned with Gradient Highlight & Kinetic Motion */}
+        <div className="mb-6">
+          <h1 
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] text-[var(--ink)] max-w-4xl mx-auto text-center"
+            style={{ textWrap: 'balance' }}
+          >
+            {isHindi ? (
+              <SplitText text="ज्ञान जो आपको आगे बढ़ाए" />
+            ) : (
+              <span>
+                Making quality education{' '}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] via-purple-600 to-[var(--accent)] inline-block">
+                  accessible to everyone
+                </span>
+              </span>
+            )}
+          </h1>
+        </div>
 
-        <InView>
-          <p className="text-lg md:text-xl text-[var(--ink-muted)] max-w-2xl mx-auto leading-relaxed">
+        {/* Subtitle — Perfectly Aligned */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="max-w-2xl mx-auto"
+        >
+          <p className="text-base sm:text-lg text-[var(--ink-muted)] font-normal leading-relaxed text-center">
             {isHindi
               ? 'क्लासकनेक्ट भारत का सबसे विजुअल और इंटरएक्टिव लर्निंग प्लेटफॉर्म है। हम व्यावहारिक और जॉब-रेडी स्किल्स सिखाते हैं।'
               : "ClassConnect is India's premier visual learning OS. We believe great education should be affordable, bilingual in Hindi & English, and built around real skills."}
           </p>
-        </InView>
+        </motion.div>
       </section>
 
-      {/* Large Numbers Impact Section (Matching Reference Screenshot) */}
+      {/* Large Numbers Impact Section */}
       <section id="stats" className="py-16 bg-[var(--surface)] border-y border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 text-center lg:text-left">
@@ -163,9 +180,9 @@ export function AboutPage() {
       {/* Values */}
       <section id="values" className="py-20 max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <TextEffect preset="fade-in-blur" className="text-3xl md:text-4xl font-extrabold font-manrope mb-4">
+          <h2 className="text-3xl md:text-4xl font-extrabold font-manrope mb-4">
             {t('about.valuesHeading', 'What makes us different')}
-          </TextEffect>
+          </h2>
           <p className="text-[var(--ink-muted)] text-base max-w-xl mx-auto">
             We focus on outcome-oriented learning, visual clarity, and accessible instruction.
           </p>
@@ -193,7 +210,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Large Featured Deep Purple Career Banner Card (Matching Reference Screenshot) */}
+      {/* Large Featured Deep Purple Career Banner Card */}
       <section id="career" className="py-12 max-w-7xl mx-auto px-6 mb-16">
         <InView>
           <div className="relative rounded-[32px] md:rounded-[40px] overflow-hidden bg-[#2D1B69] text-white p-8 md:p-14 shadow-2xl">
