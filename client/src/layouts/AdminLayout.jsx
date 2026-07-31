@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Settings, LogOut, Home } from 'lucide-react';
+import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, LogOut, Home } from 'lucide-react';
 
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -37,6 +37,12 @@ export const AdminLayout = () => {
               <Home className="w-4 h-4 text-[#FF7A33]" /> Dashboard
             </Link>
             <Link
+              to="/admin/cms"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <Layout className="w-4 h-4 text-[#9333EA]" /> Homepage CMS
+            </Link>
+            <Link
               to="/admin/courses"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
             >
@@ -65,17 +71,17 @@ export const AdminLayout = () => {
 
         {/* User Card & Logout */}
         <div className="pt-6 border-t border-slate-700/50 mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+          <Link to="/admin/profile" className="flex items-center gap-2.5 group">
             <img
               src={user?.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
               alt={user?.name}
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-[#FF7A33]"
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-[#FF7A33] group-hover:scale-105 transition-transform"
             />
             <div className="truncate max-w-[110px]">
-              <div className="text-xs font-bold text-white truncate">{user?.name}</div>
+              <div className="text-xs font-bold text-white truncate group-hover:text-[#FF7A33] transition-colors">{user?.name}</div>
               <div className="text-[10px] text-slate-400 font-semibold uppercase">Admin</div>
             </div>
-          </div>
+          </Link>
           <button
             onClick={handleLogout}
             className="p-2 text-slate-400 hover:text-[#EF4444] transition-colors"

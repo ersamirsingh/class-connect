@@ -5,6 +5,8 @@ import { StudentLayout } from '../../layouts/StudentLayout';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 
+import { HomePage } from '../../pages/landing/HomePage';
+import { AboutPage } from '../../pages/landing/AboutPage';
 import { LoginPage } from '../../pages/auth/LoginPage';
 import { SignupPage } from '../../pages/auth/SignupPage';
 import { ForgotPasswordPage } from '../../pages/auth/ForgotPasswordPage';
@@ -12,11 +14,16 @@ import { ResetPasswordPage } from '../../pages/auth/ResetPasswordPage';
 import { StudentDashboard } from '../../pages/dashboard/StudentDashboard';
 import { AdminDashboard } from '../../pages/dashboard/AdminDashboard';
 import { ProfilePage } from '../../pages/profile/ProfilePage';
+import { ManageCmsPage } from '../../pages/admin/manageCms/ManageCmsPage';
 import { ROLES } from '../../constants/roles';
 
 export const AppRouter = () => {
   return (
     <Routes>
+      {/* Public Pages */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+
       {/* Public Auth Routes */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
@@ -38,6 +45,7 @@ export const AppRouter = () => {
       <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/cms" element={<ManageCmsPage />} />
           <Route path="/admin/courses" element={<AdminDashboard />} />
           <Route path="/admin/admins" element={<AdminDashboard />} />
           <Route path="/admin/payments" element={<AdminDashboard />} />
@@ -47,7 +55,7 @@ export const AppRouter = () => {
       </Route>
 
       {/* Fallback Redirect */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
