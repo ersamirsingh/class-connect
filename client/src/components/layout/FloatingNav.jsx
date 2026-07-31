@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { ThemeToggle } from '../shared/ThemeToggle';
+import { GooeyInput } from '../motion/GooeyInput';
 
 const publicLinks = [
   { key: 'nav.courses', path: '/courses' },
@@ -16,10 +17,18 @@ const publicLinks = [
 export function FloatingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [navSearch, setNavSearch] = useState('');
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleNavSearchSubmit = (e) => {
+    e.preventDefault();
+    if (navSearch.trim()) {
+      navigate(`/courses?search=${encodeURIComponent(navSearch.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -83,7 +92,7 @@ export function FloatingNav() {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`relative px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200
+                    className={`relative px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200
                       ${isActive
                         ? 'text-[var(--primary)] bg-[var(--primary-soft)]'
                         : 'text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]'
@@ -93,6 +102,17 @@ export function FloatingNav() {
                   </Link>
                 );
               })}
+            </div>
+
+            {/* Top Navigation Bar Search (GooeyInput) */}
+            <div className="hidden md:block w-48 lg:w-64 mx-2">
+              <GooeyInput
+                value={navSearch}
+                onChange={(e) => setNavSearch(e.target.value)}
+                onClear={() => setNavSearch('')}
+                onSubmit={handleNavSearchSubmit}
+                placeholder={language === 'hi' ? 'कोर्स खोजें...' : 'Search courses...'}
+              />
             </div>
 
             {/* Desktop right actions */}
