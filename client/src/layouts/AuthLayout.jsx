@@ -2,10 +2,11 @@ import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { Sparkles, GraduationCap, PlayCircle, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ThemeToggle } from '../components/shared/ThemeToggle';
 
 export const AuthLayout = () => {
   return (
-    <div className="min-h-screen bg-[#F7F8FC] flex flex-col justify-between p-4 md:p-8">
+    <div className="min-h-screen bg-[#F7F8FC] dark:bg-[#0F172A] text-[#1E1E2E] dark:text-[#F8FAFC] flex flex-col justify-between p-4 md:p-8 transition-colors duration-300">
       {/* Brand Top Header */}
       <header className="max-w-6xl mx-auto w-full flex justify-between items-center py-4">
         <Link to="/" className="flex items-center gap-3 group">
@@ -13,13 +14,16 @@ export const AuthLayout = () => {
             <GraduationCap className="w-7 h-7" />
           </div>
           <div>
-            <span className="text-2xl font-extrabold text-[#1E1E2E] tracking-tight">Class<span className="text-[#FF7A33]">Connect</span></span>
+            <span className="text-2xl font-extrabold tracking-tight">Class<span className="text-[#FF7A33]">Connect</span></span>
             <span className="block text-xs font-semibold text-[#3730E0]">Visual Learning Hub</span>
           </div>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-[#1FAE64] bg-[#1FAE64]/10 px-3 py-1.5 rounded-full">
-          <ShieldCheck className="w-4 h-4" /> Secure Platform
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-[#1FAE64] bg-[#1FAE64]/10 px-3 py-1.5 rounded-full">
+            <ShieldCheck className="w-4 h-4" /> Secure Platform
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -54,14 +58,14 @@ export const AuthLayout = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="lg:col-span-7 bg-white p-6 sm:p-10 rounded-3xl shadow-xl border border-slate-100"
+          className="lg:col-span-7 bg-white dark:bg-[#1E293B] p-6 sm:p-10 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 transition-colors duration-300"
         >
           <Outlet />
         </motion.div>
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-4 text-xs font-medium text-slate-500">
+      <footer className="text-center py-4 text-xs font-medium text-slate-500 dark:text-slate-400">
         &copy; {new Date().getFullYear()} ClassConnect. All rights reserved.
       </footer>
     </div>
