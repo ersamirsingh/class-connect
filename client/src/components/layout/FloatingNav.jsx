@@ -16,6 +16,7 @@ const publicLinks = [
 export function FloatingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
@@ -27,9 +28,10 @@ export function FloatingNav() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
+  // Close mobile and user menu on route change
   useEffect(() => {
     setMobileOpen(false);
+    setUserMenuOpen(false);
   }, [location.pathname]);
 
   const handleLogout = async () => {
@@ -101,23 +103,57 @@ export function FloatingNav() {
               <ThemeToggle />
 
               {isAuthenticated ? (
-                <div className="flex items-center gap-2 ml-1">
-                  <Link
-                    to={dashboardPath}
-                    className="btn-primary flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl"
-                    style={{ minHeight: '40px' }}
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    {t('nav.dashboard')}
-                  </Link>
+                <div className="relative ml-1">
+                  {/* Bar Menu Button */}
                   <button
-                    onClick={handleLogout}
-                    className="p-2.5 rounded-xl text-[var(--ink-muted)] hover:text-[var(--danger)]
-                      hover:bg-[var(--danger-soft)] transition-all duration-200"
-                    aria-label={t('nav.logout')}
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] hover:bg-[var(--primary-soft)] transition-all duration-200 shadow-xs cursor-pointer"
+                    aria-label="User menu"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <Menu className="w-4 h-4 text-[var(--primary)]" />
+                    <User className="w-4 h-4 text-[var(--ink-muted)]" />
                   </button>
+
+                  {/* Dropdown Menu wrapping Dashboard & Logout */}
+                  <AnimatePresence>
+                    {userMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-56 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-lg)] p-2 z-50 overflow-hidden"
+                      >
+                        {/* User Header Info */}
+                        <div className="px-3 py-2 mb-1 border-b border-[var(--border)]">
+                          <p className="text-xs font-black text-[var(--ink)] truncate">{user?.name || 'Account'}</p>
+                          <p className="text-[10px] font-semibold text-[var(--ink-muted)] truncate">{user?.email || ''}</p>
+                        </div>
+
+                        {/* Dashboard Link */}
+                        <Link
+                          to={dashboardPath}
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-all duration-200"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-[var(--primary)]" />
+                          <span>{t('nav.dashboard')}</span>
+                        </Link>
+
+                        {/* Logout Button */}
+                        <button
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            handleLogout();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-[var(--danger)] hover:bg-[var(--danger-soft)] transition-all duration-200 text-left cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4 text-[var(--danger)]" />
+                          <span>{t('nav.logout')}</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 ml-1">
