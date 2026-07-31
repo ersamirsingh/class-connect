@@ -4,54 +4,38 @@ import { appRouter } from './routes';
 
 const app: Application = express();
 
-// Allowed Origins List
-const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:5173',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:4173',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:3000',
-];
+// Dynamically fetch client URL from environment variable (.env)
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
-// Robust CORS configuration supporting credentials, headers, and preflight OPTIONS
+// CORS configuration reading target client origin from process.env
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. mobile apps, curl, postman) or matching origin
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      // Allow non-browser requests or requests matching configured clientUrl / dev origin
+      if (!origin || origin === clientUrl || process.env.NODE_ENV !== 'production') {
         callback(null, true);
       } else {
-        callback(null, true); // Fallback to allow dev connection
+        callback(null, true);
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'Accept',
-      'Origin',
-      'Access-Control-Allow-Origin',
-      'Access-Control-Allow-Headers',
-      'Access-Control-Allow-Methods',
-    ],
-    exposedHeaders: ['Authorization', 'Content-Range', 'X-Content-Range'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   })
 );
 
-// Pre-flight OPTIONS handling for all routes
 app.options('*', cors());
 
+// Standard Body Parsing Middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api', appRouter);
 
-// ROOT
-app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'OK', message: 'Class Connect Server is healthy' });
+// Health Check Endpoint
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'OK', message: 'ClassConnect Server is running cleanly' });
 });
 
 export default app;
