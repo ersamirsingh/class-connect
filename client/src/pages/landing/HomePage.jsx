@@ -27,6 +27,8 @@ import { SpotlightCard } from '../../components/motion/SpotlightCard';
 import { ShimmerButton } from '../../components/motion/ShimmerButton';
 import { Marquee } from '../../components/motion/Marquee';
 import { NumberTicker } from '../../components/motion/NumberTicker';
+import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
+import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
@@ -104,40 +106,42 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden font-inter">
+    <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden selection:bg-[var(--primary-soft)] selection:text-[var(--primary-deep)]">
       <FloatingNav />
 
       {/* 1. Hero Section */}
-      <section className="relative pt-[calc(var(--space-section)*1.5)] pb-[var(--space-section)] px-6 lg:px-[var(--space-page)] overflow-hidden">
-        {/* Aura Background */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[var(--aura-violet)] opacity-60 blur-[120px] mix-blend-multiply" />
-          <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] rounded-full bg-[var(--aura-peach)] opacity-60 blur-[120px] mix-blend-multiply" />
-          <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] rounded-full bg-[var(--aura-blue)] opacity-60 blur-[120px] mix-blend-multiply" />
+      <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-6 lg:px-[var(--space-page)] overflow-hidden">
+        {/* Subtle Background Aura Gradients */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 -left-10 w-96 h-96 rounded-full bg-[var(--aura-violet)] filter blur-[100px] opacity-60 animate-pulse" />
+          <div className="absolute top-1/3 -right-10 w-96 h-96 rounded-full bg-[var(--aura-blue)] filter blur-[100px] opacity-50" />
+          <div className="absolute -bottom-10 left-1/3 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-[120px] opacity-40" />
         </div>
 
-        <div className="max-w-[var(--max-width)] mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <div className="flex flex-col items-start z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-pill)] bg-[var(--primary-soft)] text-[var(--primary-deep)] text-sm font-semibold mb-6 shadow-sm border border-[var(--primary)]/10">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--primary)] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--primary)]"></span>
-              </span>
-              Luminous OS 2.0 is Live
-            </div>
+        <div className="max-w-[var(--max-width)] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+          {/* Left Column: Text Content */}
+          <div className="flex flex-col items-start text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-sm font-semibold mb-6 border border-[var(--primary)]/10"
+            >
+              <span className="w-2 h-2 rounded-full bg-[var(--primary)] animate-ping" />
+              Luminous Learning OS 2026
+            </motion.div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-[64px] leading-[1.1] font-manrope font-extrabold tracking-tight mb-6">
-              <SplitText 
-                text={getTranslation(t, 'hero.headline', 'Master the skills of the future')} 
-                delay={40} 
-              />
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.1] mb-6">
+              <SplitText text={getTranslation(t, 'hero.headline', 'Learn skills that move you forward.')} />
             </h1>
 
-            <div className="text-lg md:text-xl text-[var(--ink-muted)] mb-10 max-w-xl font-medium leading-relaxed">
-              <TextEffect preset="fade-up" delay={0.4}>
-                {getTranslation(t, 'hero.subtitle', 'Join thousands of learners elevating their careers with cinematic, expert-led courses designed for real-world impact.')}
-              </TextEffect>
-            </div>
+            <p className="text-lg sm:text-xl text-[var(--ink-muted)] mb-8 max-w-xl font-normal leading-relaxed">
+              {getTranslation(
+                t,
+                'hero.subtitle',
+                "India's most visual learning platform. Master real-world skills with expert-led courses in Hindi & English."
+              )}
+            </p>
 
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -236,53 +240,8 @@ export function HomePage() {
         </Marquee>
       </section>
 
-      {/* 3. Categories Section */}
-      <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] relative">
-        <div className="max-w-[var(--max-width)] mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-manrope font-bold mb-4">
-              <TextEffect preset="fade-up">Find your path</TextEffect>
-            </h2>
-            <p className="text-[var(--ink-muted)] text-lg max-w-2xl mx-auto">
-              Explore our curated selection of disciplines designed to take you from beginner to professional.
-            </p>
-          </div>
-
-          {isLoadingCats ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-40 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {categories.slice(0, 8).map((category, idx) => (
-                <InView key={category._id || idx} delay={idx * 0.1}>
-                  <Link to={`/courses?category=${category.slug || category._id}`}>
-                    <div className="group relative h-40 p-6 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all duration-300 overflow-hidden flex flex-col justify-end">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary-soft)] rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none translate-x-1/2 -translate-y-1/2" />
-                      
-                      <div className="mb-auto">
-                        <div className="w-10 h-10 rounded-lg bg-[var(--canvas)] flex items-center justify-center text-[var(--primary)] group-hover:scale-110 transition-transform duration-300">
-                          {/* Fallback icon if no category image/icon exists */}
-                          <MonitorPlay className="w-5 h-5" />
-                        </div>
-                      </div>
-                      
-                      <h3 className="font-bold text-lg font-manrope group-hover:text-[var(--primary)] transition-colors">
-                        {category.name}
-                      </h3>
-                      {category.courseCount !== undefined && (
-                        <p className="text-sm text-[var(--ink-muted)] mt-1">{category.courseCount} courses</p>
-                      )}
-                    </div>
-                  </Link>
-                </InView>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* 3. Category Crafts Deck (Find Your Path - Auto-scrolling Interface Crafts style) */}
+      <CategoryCraftDeck categories={categories} />
 
       {/* 4. Featured Courses Section */}
       <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
@@ -293,7 +252,7 @@ export function HomePage() {
                 <TextEffect preset="fade-up">Featured courses</TextEffect>
               </h2>
               <p className="text-[var(--ink-muted)] text-lg max-w-xl">
-                Hand-picked by our experts, these courses represent the best of what Luminous has to offer.
+                Hand-picked by our experts, these courses represent the best of what ClassConnect has to offer.
               </p>
             </div>
             <Link to="/courses" className="inline-flex items-center gap-2 text-[var(--primary)] font-semibold hover:text-[var(--primary-deep)] transition-colors">
@@ -310,45 +269,52 @@ export function HomePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredCourses.map((course, idx) => (
-                <InView key={course._id} delay={idx * 0.1}>
+                <InView key={course._id || idx} delay={idx * 0.1}>
                   <Link to={`/courses/${course.slug || course._id}`} className="block h-full">
-                    <SpotlightCard className="h-full bg-[var(--canvas)] border border-[var(--border)] overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-300">
-                      <div className="relative aspect-video w-full overflow-hidden bg-[var(--ink-faint)]">
-                        {course.thumbnail ? (
-                          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)] flex items-center justify-center">
-                            <BookOpen className="w-12 h-12 text-[var(--primary)]/40" />
-                          </div>
-                        )}
-                        {course.category && (
-                          <div className="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-bold text-[var(--ink)] shadow-sm">
-                            {typeof course.category === 'object' ? course.category.name : 'Category'}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="p-6 flex flex-col flex-grow">
-                        <h3 className="text-xl font-bold font-manrope leading-tight mb-2 line-clamp-2">
-                          {course.title}
-                        </h3>
-                        <p className="text-[var(--ink-muted)] text-sm mb-4 line-clamp-2">
-                          {course.subtitle || course.description}
-                        </p>
+                    {/* GlowingEdge Border Card */}
+                    <GlowingEffect
+                      glowColor="rgba(67, 56, 242, 0.45)"
+                      accentGlow="rgba(255, 107, 53, 0.4)"
+                      containerClassName="h-full"
+                    >
+                      <div className="h-full bg-[var(--canvas)] overflow-hidden flex flex-col rounded-[15px] relative">
+                        <div className="relative aspect-video w-full overflow-hidden bg-[var(--ink-faint)]">
+                          {course.thumbnail ? (
+                            <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)] flex items-center justify-center">
+                              <BookOpen className="w-12 h-12 text-[var(--primary)]/40" />
+                            </div>
+                          )}
+                          {course.category && (
+                            <div className="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-bold text-[var(--ink)] shadow-sm">
+                              {typeof course.category === 'object' ? course.category.name : 'Category'}
+                            </div>
+                          )}
+                        </div>
                         
-                        <div className="mt-auto pt-4 border-t border-[var(--border)] flex items-center justify-between">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-[var(--accent)] text-[var(--accent)]" />
-                            <span className="text-sm font-bold">{course.averageRating || '4.8'}</span>
-                            <span className="text-xs text-[var(--ink-muted)]">({course.reviewCount || 120})</span>
-                          </div>
+                        <div className="p-6 flex flex-col flex-grow">
+                          <h3 className="text-xl font-bold font-manrope leading-tight mb-2 line-clamp-2">
+                            {course.title}
+                          </h3>
+                          <p className="text-[var(--ink-muted)] text-sm mb-4 line-clamp-2">
+                            {course.subtitle || course.description}
+                          </p>
                           
-                          <div className="font-manrope font-bold text-lg text-[var(--primary-deep)]">
-                            {course.price === 0 ? 'Free' : `₹${course.price}`}
+                          <div className="mt-auto pt-4 border-t border-[var(--border)] flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-[var(--accent)] text-[var(--accent)]" />
+                              <span className="text-sm font-bold">{course.rating || '4.9'}</span>
+                              <span className="text-xs text-[var(--ink-muted)]">({course.totalReviews || 120})</span>
+                            </div>
+                            
+                            <div className="font-manrope font-bold text-lg text-[var(--primary-deep)]">
+                              {course.price === 0 ? 'Free' : `₹${course.price?.toLocaleString('en-IN')}`}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </SpotlightCard>
+                    </GlowingEffect>
                   </Link>
                 </InView>
               ))}
