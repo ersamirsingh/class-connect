@@ -2,15 +2,15 @@
 
 @layer base {
   :root {
-    --primary: #3730E0;
-    --primary-hover: #2B24C7;
-    --secondary: #FF7A33;
-    --secondary-hover: #E8631C;
-    --success: #1FAE64;
-    --warning: #F5A623;
+    --primary: #4F46E5;
+    --primary-hover: #4338CA;
+    --secondary: #3B82F6;
+    --secondary-hover: #2563EB;
+    --success: #10B981;
+    --warning: #F59E0B;
     --danger: #EF4444;
-    --bg-cloud: #F7F8FC;
-    --text-ink: #1E1E2E;
+    --bg-cloud: #F8FAFC;
+    --text-ink: #0F172A;
     --surface: #FFFFFF;
   }
 
@@ -28,7 +28,7 @@
     padding: 0;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
@@ -37,10 +37,24 @@
   color: #F8FAFC;
 }
 
+/* Tactile Modern Card Utilities */
+.card-visual {
+  background-color: var(--surface);
+  border-radius: 1rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-visual:hover {
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1), 0 8px 10px -6px rgba(79, 70, 229, 0.05);
+}
+
 .dark .card-visual {
   background-color: #1E293B;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: #334155;
   color: #F8FAFC;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .dark .bg-white {
@@ -48,11 +62,13 @@
   color: #F8FAFC !important;
 }
 
-.dark .bg-\[\#F7F8FC\] {
+.dark .bg-\[\#F7F8FC\],
+.dark .bg-\[\#F8FAFC\] {
   background-color: #0F172A !important;
 }
 
-.dark .text-\[\#1E1E2E\] {
+.dark .text-\[\#1E1E2E\],
+.dark .text-\[\#0F172A\] {
   color: #F8FAFC !important;
 }
 
@@ -85,7 +101,7 @@
 .dark textarea:focus,
 .dark select:focus {
   background-color: #1E293B !important;
-  border-color: #3730E0 !important;
+  border-color: #4F46E5 !important;
 }
 
 .dark input::placeholder,
@@ -93,7 +109,7 @@
   color: #64748B !important;
 }
 
-/* Custom visual utility classes */
+/* Clean Button Utilities */
 .btn-visual {
   min-height: 44px;
   display: inline-flex;
@@ -108,34 +124,22 @@
 }
 
 .btn-primary {
-  background-color: #3730E0;
+  background-color: #4F46E5;
   color: #FFFFFF !important;
-  box-shadow: 0 4px 14px 0 rgba(55, 48, 224, 0.35);
+  box-shadow: 0 4px 12px 0 rgba(79, 70, 229, 0.3);
 }
 .btn-primary:hover {
-  background-color: #2B24C7;
+  background-color: #4338CA;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px 0 rgba(55, 48, 224, 0.45);
+  box-shadow: 0 6px 18px 0 rgba(79, 70, 229, 0.4);
 }
 
 .btn-secondary {
-  background-color: #FF7A33;
+  background-color: #3B82F6;
   color: #FFFFFF !important;
-  box-shadow: 0 4px 14px 0 rgba(255, 122, 51, 0.35);
+  box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.3);
 }
 .btn-secondary:hover {
-  background-color: #E8631C;
+  background-color: #2563EB;
   transform: translateY(-1px);
-}
-
-.card-visual {
-  background-color: var(--surface);
-  border-radius: 1rem;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-visual:hover {
-  box-shadow: 0 10px 30px -4px rgba(55, 48, 224, 0.12);
 }

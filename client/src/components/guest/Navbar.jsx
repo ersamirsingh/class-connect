@@ -8,16 +8,16 @@ export const Navbar = () => {
   const { isAuthenticated, user } = useAuth();
 
   return (
-    <nav className="bg-white border-b border-slate-100 sticky top-0 z-40 px-4 py-3 shadow-xs">
+    <nav className="bg-white dark:bg-[#1E293B] border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-xs transition-colors duration-200">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-[#3730E0] flex items-center justify-center text-white font-black text-xl shadow-md shadow-[#3730E0]/30 group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-[#4F46E5] flex items-center justify-center text-white font-black text-xl shadow-md shadow-[#4F46E5]/30 group-hover:scale-105 transition-transform">
             <GraduationCap className="w-6 h-6" />
           </div>
           <div>
-            <span className="font-extrabold text-xl text-[#1E1E2E] tracking-tight">
-              Class<span className="text-[#FF7A33]">Connect</span>
+            <span className="font-black text-xl text-[#0F172A] dark:text-white tracking-tight">
+              Class<span className="text-[#3B82F6]">Connect</span>
             </span>
           </div>
         </Link>
@@ -26,16 +26,16 @@ export const Navbar = () => {
         <div className="flex items-center gap-2 sm:gap-4">
           <Link
             to="/courses"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#3730E0]/10 hover:text-[#3730E0] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-700 dark:text-slate-200 hover:bg-[#4F46E5]/10 hover:text-[#4F46E5] transition-colors"
           >
-            <Compass className="w-4 h-4 text-[#FF7A33]" />
+            <Compass className="w-4 h-4 text-[#3B82F6]" />
             <span>Explore</span>
           </Link>
           <Link
             to="/about"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#3730E0]/10 hover:text-[#3730E0] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-700 dark:text-slate-200 hover:bg-[#4F46E5]/10 hover:text-[#4F46E5] transition-colors"
           >
-            <Info className="w-4 h-4 text-[#1FAE64]" />
+            <Info className="w-4 h-4 text-[#10B981]" />
             <span className="hidden sm:inline">About</span>
           </Link>
 
@@ -54,7 +54,7 @@ export const Navbar = () => {
             <div className="flex items-center gap-2">
               <Link
                 to="/login"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-[#3730E0] hover:bg-[#3730E0]/10 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold text-[#4F46E5] hover:bg-[#4F46E5]/10 transition-colors"
               >
                 <LogIn className="w-4 h-4" /> Sign In
               </Link>
