@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const targetApi = env.VITE_API_TARGET || 'http://localhost:5000';
+  const targetApi = env.VITE_API_TARGET || 'http://127.0.0.1:5000';
   const port = Number(env.VITE_PORT) || 5173;
 
   return {
