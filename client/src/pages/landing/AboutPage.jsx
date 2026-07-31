@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, BookOpen, Heart, Target, Sparkles, ArrowRight } from 'lucide-react';
+import { Users, BookOpen, Heart, Target, Sparkles, ArrowRight, Globe, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
@@ -87,12 +87,12 @@ export function AboutPage() {
         </div>
       </div>
 
-      {/* Hero Overview — Perfectly Aligned & Animated without "About" */}
+      {/* Hero Overview */}
       <section id="overview" className="pt-20 pb-16 px-6 max-w-5xl mx-auto text-center relative">
         {/* Subtle Background Glow Aura */}
         <div className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 w-96 h-96 rounded-full bg-gradient-to-tr from-[var(--aura-violet)] to-[var(--aura-peach)] filter blur-[120px] opacity-60 -z-10" />
 
-        {/* Animated Title — Perfectly Aligned with Gradient Highlight & Kinetic Motion */}
+        {/* Animated Title */}
         <div className="mb-6">
           <h1 
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] text-[var(--ink)] max-w-4xl mx-auto text-center"
@@ -111,7 +111,7 @@ export function AboutPage() {
           </h1>
         </div>
 
-        {/* Subtitle — Perfectly Aligned */}
+        {/* Subtitle */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,53 +126,75 @@ export function AboutPage() {
         </motion.div>
       </section>
 
-      {/* Large Numbers Impact Section */}
-      <section id="stats" className="py-16 bg-[var(--surface)] border-y border-[var(--border)]">
+      {/* Premium Tactile Numbers Impact Cards (Smaller & Deeper Look) */}
+      <section id="stats" className="py-16 bg-[var(--surface)] border-y border-[var(--border)] relative">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 text-center lg:text-left">
-            <InView>
-              <div>
-                <div className="text-5xl md:text-6xl lg:text-7xl font-extrabold font-manrope text-[var(--primary)] mb-2 tracking-tight">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Stat Card 1 */}
+            <InView delay={0.05}>
+              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[var(--primary-soft)] to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
+                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)] mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                  <Users className="w-4.5 h-4.5" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
                   <NumberTicker value={10} suffix="k+" />
                 </div>
-                <p className="text-sm font-semibold text-[var(--ink-muted)] uppercase tracking-wider">
+                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
                   Global active learners
                 </p>
               </div>
             </InView>
 
+            {/* Stat Card 2 */}
             <InView delay={0.1}>
-              <div>
-                <div className="text-5xl md:text-6xl lg:text-7xl font-extrabold font-manrope text-[var(--primary)] mb-2 tracking-tight">
+              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
+                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-blue-600 mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                  <BookOpen className="w-4.5 h-4.5" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
                   <NumberTicker value={50} suffix="+" />
                 </div>
-                <p className="text-sm font-semibold text-[var(--ink-muted)] uppercase tracking-wider">
+                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
                   Industry-ready courses
                 </p>
               </div>
             </InView>
 
-            <InView delay={0.2}>
-              <div>
-                <div className="text-5xl md:text-6xl lg:text-7xl font-extrabold font-manrope text-[var(--primary)] mb-2 tracking-tight">
+            {/* Stat Card 3 */}
+            <InView delay={0.15}>
+              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-orange-500/10 to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
+                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)] mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                  <Globe className="w-4.5 h-4.5" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
                   <NumberTicker value={100} suffix="%" />
                 </div>
-                <p className="text-sm font-semibold text-[var(--ink-muted)] uppercase tracking-wider">
+                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
                   Bilingual Hindi & English
                 </p>
               </div>
             </InView>
 
-            <InView delay={0.3}>
-              <div>
-                <div className="text-5xl md:text-6xl lg:text-7xl font-extrabold font-manrope text-[var(--primary)] mb-2 tracking-tight">
+            {/* Stat Card 4 */}
+            <InView delay={0.2}>
+              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
+                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-amber-500 mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                  <Star className="w-4.5 h-4.5 fill-current" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
                   <NumberTicker value={4} decimals={1} suffix="★" />
                 </div>
-                <p className="text-sm font-semibold text-[var(--ink-muted)] uppercase tracking-wider">
+                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
                   Average student rating
                 </p>
               </div>
             </InView>
+
           </div>
         </div>
       </section>
