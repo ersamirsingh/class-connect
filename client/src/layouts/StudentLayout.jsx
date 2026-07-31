@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { BookOpen, User, LogOut, Home, Receipt } from 'lucide-react';
+import { BookOpen, User, LogOut, Home, Receipt, Flag } from 'lucide-react';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
 
 export const StudentLayout = () => {
@@ -40,6 +40,10 @@ export const StudentLayout = () => {
             <Link to="/payments" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#3730E0]/10 hover:text-[#3730E0] transition-colors">
               <Receipt className="w-4 h-4 text-[#F5A623]" />
               <span className="hidden sm:inline">Payments</span>
+            </Link>
+            <Link to="/report-problem" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#EF4444]/10 hover:text-[#EF4444] transition-colors">
+              <Flag className="w-4 h-4 text-[#EF4444]" />
+              <span className="hidden sm:inline">Report Issue</span>
             </Link>
             <Link to="/profile" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#3730E0]/10 hover:text-[#3730E0] transition-colors">
               <User className="w-4 h-4 text-[#1FAE64]" />

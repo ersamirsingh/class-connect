@@ -27,6 +27,9 @@ import { ReceiptViewPage } from '../../pages/checkout/ReceiptViewPage';
 import { VideoPlayerPage } from '../../pages/learning/VideoPlayerPage';
 import { CertificatePage } from '../../pages/learning/CertificatePage';
 
+import { ReportProblemPage } from '../../pages/report/ReportProblemPage';
+import { ManageReportsPage } from '../../pages/admin/manageReports/ManageReportsPage';
+
 import { ManageCmsPage } from '../../pages/admin/manageCms/ManageCmsPage';
 import { ManageCategoriesPage } from '../../pages/admin/manageCategories/ManageCategoriesPage';
 import { ManageCoursesPage } from '../../pages/admin/manageCourses/ManageCoursesPage';
@@ -60,6 +63,7 @@ export const AppRouter = () => {
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/payments" element={<PaymentHistoryPage />} />
+          <Route path="/report-problem" element={<ReportProblemPage />} />
         </Route>
       </Route>
 
@@ -70,9 +74,9 @@ export const AppRouter = () => {
           <Route path="/admin/cms" element={<ManageCmsPage />} />
           <Route path="/admin/categories" element={<ManageCategoriesPage />} />
           <Route path="/admin/courses" element={<ManageCoursesPage />} />
+          <Route path="/admin/reports" element={<ManageReportsPage />} />
           <Route path="/admin/admins" element={<AdminDashboard />} />
           <Route path="/admin/payments" element={<AdminDashboard />} />
-          <Route path="/admin/reports" element={<AdminDashboard />} />
           <Route path="/admin/profile" element={<ProfilePage />} />
         </Route>
       </Route>
