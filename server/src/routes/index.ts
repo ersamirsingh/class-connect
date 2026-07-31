@@ -5,6 +5,7 @@ import { contentRouter } from '../modules/content/content.route';
 import { categoryRouter } from '../modules/category/category.route';
 import { courseRouter } from '../modules/course/course.route';
 import { paymentRouter } from '../modules/payment/payment.route';
+import { enrollmentRouter } from '../modules/enrollment/enrollment.route';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use('/content', contentRouter);
 router.use('/categories', categoryRouter);
 router.use('/courses', courseRouter);
 router.use('/payment', paymentRouter);
+router.use('/enrollments', enrollmentRouter);
 
 export const appRouter = router;

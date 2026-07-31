@@ -24,6 +24,9 @@ import { CheckoutPage } from '../../pages/checkout/CheckoutPage';
 import { PaymentHistoryPage } from '../../pages/checkout/PaymentHistoryPage';
 import { ReceiptViewPage } from '../../pages/checkout/ReceiptViewPage';
 
+import { VideoPlayerPage } from '../../pages/learning/VideoPlayerPage';
+import { CertificatePage } from '../../pages/learning/CertificatePage';
+
 import { ManageCmsPage } from '../../pages/admin/manageCms/ManageCmsPage';
 import { ManageCategoriesPage } from '../../pages/admin/manageCategories/ManageCategoriesPage';
 import { ManageCoursesPage } from '../../pages/admin/manageCourses/ManageCoursesPage';
@@ -51,6 +54,8 @@ export const AppRouter = () => {
       <Route element={<ProtectedRoute allowedRoles={[ROLES.STUDENT]} />}>
         <Route path="/checkout/:courseId" element={<CheckoutPage />} />
         <Route path="/receipt/:orderId" element={<ReceiptViewPage />} />
+        <Route path="/learning/:courseId" element={<VideoPlayerPage />} />
+        <Route path="/certificate/:courseId" element={<CertificatePage />} />
         <Route element={<StudentLayout />}>
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
