@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, Layers, LogOut, Home, UserCheck } from 'lucide-react';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
+import { NotificationBell } from '../components/shared/NotificationBell';
 
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
@@ -29,7 +30,10 @@ export const AdminLayout = () => {
                 <span className="text-[10px] font-bold tracking-wider text-[#FF7A33] uppercase">ClassConnect</span>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-1">
+              <NotificationBell />
+              <ThemeToggle />
+            </div>
           </div>
 
           {/* Navigation Links */}

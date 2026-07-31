@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { BookOpen, User, LogOut, Home, Receipt, Flag } from 'lucide-react';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
+import { NotificationBell } from '../components/shared/NotificationBell';
 
 export const StudentLayout = () => {
   const { user, logout } = useAuth();
@@ -50,6 +51,7 @@ export const StudentLayout = () => {
               <span className="hidden sm:inline">Profile</span>
             </Link>
 
+            <NotificationBell />
             <ThemeToggle />
           </div>
 

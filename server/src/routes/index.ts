@@ -8,6 +8,8 @@ import { paymentRouter } from '../modules/payment/payment.route';
 import { enrollmentRouter } from '../modules/enrollment/enrollment.route';
 import { reportRouter } from '../modules/report/report.route';
 import { adminRouter } from '../modules/admin/admin.route';
+import { notificationRouter } from '../modules/notification/notification.route';
+import { reviewRouter } from '../modules/review/review.route';
 
 const router = Router();
 
@@ -21,5 +23,7 @@ router.use('/payment', paymentRouter);
 router.use('/enrollments', enrollmentRouter);
 router.use('/report', reportRouter);
 router.use('/admin', adminRouter);
+router.use('/notifications', notificationRouter);
+router.use('/reviews', reviewRouter);
 
 export const appRouter = router;

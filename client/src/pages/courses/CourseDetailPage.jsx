@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { courseApi } from '../../api/models/course.api';
 import { Navbar } from '../../components/guest/Navbar';
 import { Footer } from '../../components/guest/Footer';
+import { CourseReviewsSection } from '../../components/courses/CourseReviewsSection';
 import {
   PlayCircle,
   Star,
@@ -86,7 +87,7 @@ export const CourseDetailPage = () => {
       <main className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8">
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Video Preview & Curriculum */}
+          {/* Left Column: Video Preview, Curriculum & Reviews */}
           <div className="lg:col-span-8 space-y-6">
             {/* Header Info */}
             <div className="space-y-3">
@@ -110,7 +111,7 @@ export const CourseDetailPage = () => {
                 <div className="flex items-center gap-1 text-[#F5A623]">
                   <Star className="w-4 h-4 fill-[#F5A623]" />
                   <span>{course.rating || 4.9}</span>
-                  <span className="text-slate-400">({course.ratingCount || 120} reviews)</span>
+                  <span className="text-slate-400">({course.reviewsCount || 120} reviews)</span>
                 </div>
                 <div>•</div>
                 <div className="flex items-center gap-1.5">
@@ -197,6 +198,9 @@ export const CourseDetailPage = () => {
                 <div className="text-xs font-bold text-slate-400">Curriculum details available upon enrollment.</div>
               )}
             </div>
+
+            {/* Course Reviews Section */}
+            <CourseReviewsSection courseId={course._id} />
           </div>
 
           {/* Right Column: Pricing & Instructor Box */}
