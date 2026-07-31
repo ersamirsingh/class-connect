@@ -1,152 +1,169 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ShieldAlert, BookOpen, Users, DollarSign, Flag, Layout, Layers, Home, UserCheck, Menu, X, ExternalLink, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutDashboard, BookOpen, FolderOpen, Users, ShieldCheck,
+  CreditCard, AlertTriangle, FileText, LogOut, ChevronLeft,
+  ChevronRight, User, Menu
+} from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../context/LanguageContext';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
-import { NotificationBell } from '../components/shared/NotificationBell';
-import { UserProfileDropdown } from '../components/shared/UserProfileDropdown';
 
-const NAV_SECTIONS = [
-  {
-    label: 'Main',
-    items: [
-      { label: 'Dashboard', path: '/admin/dashboard', icon: Home, color: '#06B6D4' },
-    ],
-  },
-  {
-    label: 'Content',
-    items: [
-      { label: 'Homepage CMS', path: '/admin/cms', icon: Layout, color: '#8B5CF6' },
-      { label: 'Categories', path: '/admin/categories', icon: Layers, color: '#0EA5E9' },
-      { label: 'Manage Courses', path: '/admin/courses', icon: BookOpen, color: '#6366F1' },
-    ],
-  },
-  {
-    label: 'Users',
-    items: [
-      { label: 'Student Directory', path: '/admin/users', icon: UserCheck, color: '#10B981' },
-      { label: 'Manage Admins', path: '/admin/admins', icon: Users, color: '#06B6D4' },
-    ],
-  },
-  {
-    label: 'Finance & Support',
-    items: [
-      { label: 'Sales & Payments', path: '/admin/payments', icon: DollarSign, color: '#F59E0B' },
-      { label: 'Problem Reports', path: '/admin/reports', icon: Flag, color: '#EF4444' },
-    ],
-  },
+const adminNavItems = [
+  { key: 'admin.dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+  { key: 'admin.manageCourses', path: '/admin/courses', icon: BookOpen },
+  { key: 'admin.manageCategories', path: '/admin/categories', icon: FolderOpen },
+  { key: 'admin.manageUsers', path: '/admin/users', icon: Users },
+  { key: 'admin.manageAdmins', path: '/admin/admins', icon: ShieldCheck },
+  { key: 'admin.payments', path: '/admin/payments', icon: CreditCard },
+  { key: 'admin.reports', path: '/admin/reports', icon: AlertTriangle },
+  { key: 'admin.cms', path: '/admin/cms', icon: FileText },
+  { key: 'nav.profile', path: '/admin/profile', icon: User },
 ];
 
-export const AdminLayout = () => {
+export function AdminLayout() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] flex flex-col md:flex-row transition-colors duration-200">
-      {/* Mobile Top Bar */}
-      <div className="md:hidden bg-[#111827] text-white px-4 py-3 flex items-center justify-between border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-          <span className="font-black text-base">Admin Portal</span>
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const SidebarContent = ({ mobile = false }) => (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 px-4 h-16 border-b border-[var(--border)]">
+        <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center shrink-0">
+          <ShieldCheck className="w-4 h-4 text-white" />
         </div>
-        <div className="flex items-center gap-1">
-          <NotificationBell />
-          <ThemeToggle />
-        </div>
+        {(!collapsed || mobile) && (
+          <span className="text-sm font-extrabold tracking-tight text-[var(--ink)]"
+            style={{ fontFamily: 'Manrope, sans-serif' }}>
+            Admin Panel
+          </span>
+        )}
       </div>
 
-      {/* Overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
+      {/* Nav links */}
+      <nav className="flex-1 py-3 px-2 overflow-y-auto space-y-0.5">
+        {adminNavItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => mobile && setMobileOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
+                ${isActive
+                  ? 'text-[var(--primary)] bg-[var(--primary-soft)]'
+                  : 'text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]'
+                }`}
+              title={collapsed && !mobile ? t(item.key) : undefined}
+            >
+              <Icon className="w-4.5 h-4.5 shrink-0" />
+              {(!collapsed || mobile) && <span>{t(item.key)}</span>}
+            </Link>
+          );
+        })}
+      </nav>
 
-      {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#111827] text-white flex flex-col justify-between border-r border-slate-800 transform transition-transform duration-200 md:static md:transform-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="flex-1 overflow-y-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between p-5 pb-4 border-b border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#6366F1] flex items-center justify-center font-bold text-white shadow-lg shadow-[#6366F1]/30">
-                <ShieldAlert className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="font-black text-lg leading-tight">Admin Portal</h2>
-                <span className="text-[10px] font-extrabold tracking-wider text-[#06B6D4] uppercase">ClassConnect</span>
-              </div>
-            </div>
-            <div className="hidden md:flex items-center gap-1">
-              <NotificationBell />
-              <ThemeToggle />
-            </div>
-          </div>
-
-          {/* Navigation Sections */}
-          <nav className="p-4 space-y-5">
-            {NAV_SECTIONS.map((section) => (
-              <div key={section.label}>
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-wider px-3 mb-2">{section.label}</div>
-                <div className="space-y-1">
-                  {section.items.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setSidebarOpen(false)}
-                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-                          isActive
-                            ? 'bg-[#6366F1] text-white shadow-md shadow-[#6366F1]/20'
-                            : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-4 h-4" style={{ color: isActive ? 'white' : item.color }} />
-                          <span>{item.label}</span>
-                        </div>
-                        {isActive && <ChevronRight className="w-3.5 h-3.5" />}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-
-            {/* See Live Website */}
-            <div className="pt-3 border-t border-slate-800">
-              <a
-                href="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-extrabold text-[#06B6D4] hover:bg-[#06B6D4]/10 transition-all"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>See Live Website</span>
-              </a>
-            </div>
-          </nav>
-        </div>
-
-        {/* User Card */}
-        <div className="p-4 border-t border-slate-800 relative z-50">
-          <UserProfileDropdown position="up" />
-        </div>
-      </aside>
-
-      {/* Main Page Area */}
-      <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
-        {/* Back Button */}
-        <div className="mb-4">
-          <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#6366F1] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-        </div>
-        <Outlet />
-      </main>
+      {/* Bottom actions */}
+      <div className="p-3 border-t border-[var(--border)] space-y-1">
+        <ThemeToggle className="w-full justify-start" />
+        <button
+          onClick={handleLogout}
+          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold
+            text-[var(--ink-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-soft)]
+            transition-all duration-200`}
+        >
+          <LogOut className="w-4.5 h-4.5 shrink-0" />
+          {(!collapsed || mobile) && <span>{t('nav.logout')}</span>}
+        </button>
+      </div>
     </div>
   );
-};
+
+  return (
+    <div className="min-h-screen bg-[var(--canvas)] flex">
+      {/* Desktop sidebar */}
+      <aside
+        className={`hidden md:flex flex-col shrink-0 border-r border-[var(--border)]
+          bg-[var(--surface)] transition-all duration-300 sticky top-0 h-screen
+          ${collapsed ? 'w-16' : 'w-60'}`}
+      >
+        <SidebarContent />
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-[var(--surface)]
+            border border-[var(--border)] flex items-center justify-center
+            text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]
+            transition-all duration-200 shadow-[var(--shadow-xs)]"
+        >
+          {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+        </button>
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-black/30 z-40 md:hidden"
+            />
+            <motion.aside
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed left-0 top-0 bottom-0 w-64 bg-[var(--surface)]
+                border-r border-[var(--border)] z-50 md:hidden shadow-[var(--shadow-xl)]"
+            >
+              <SidebarContent mobile />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile top bar */}
+        <header className="md:hidden sticky top-0 z-30 glass border-b border-[var(--border)]">
+          <div className="flex items-center justify-between h-14 px-4">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="p-2 rounded-xl text-[var(--ink)] hover:bg-[var(--primary-soft)] transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-bold text-[var(--ink)]">Admin</span>
+            <ThemeToggle />
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Outlet />
+          </motion.div>
+        </main>
+      </div>
+    </div>
+  );
+}

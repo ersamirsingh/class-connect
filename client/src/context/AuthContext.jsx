@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
     return res;
   };
 
-  const signup = async (name, email, password, phone = '', photo = '') => {
+  const signup = async (name, email, password, phone, photo) => {
     const res = await authApi.signup({ name, email, password, phone, photo });
     if (res.success && res.data) {
       setToken(res.data.token);

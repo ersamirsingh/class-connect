@@ -5,18 +5,17 @@ const ThemeContext = createContext(null);
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('theme');
-    if (saved === 'dark' || saved === 'light') return saved;
-    return 'light'; // Default strictly to Light Mode
+    if (saved) return saved;
+    // Default to light theme as requested
+    return 'light';
   });
 
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
-      root.style.colorScheme = 'dark';
     } else {
       root.classList.remove('dark');
-      root.style.colorScheme = 'light';
     }
     localStorage.setItem('theme', theme);
   }, [theme]);

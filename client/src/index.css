@@ -1,189 +1,427 @@
+/* Google Fonts: Manrope (headlines) + Inter (body) + Noto Sans Devanagari (Hindi) */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* ═══════════════════════════════════════════════════════════
+   LUMINOUS LEARNING OS — Design System Tokens
+   ═══════════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    --primary: #5B54E8;
-    --primary-hover: #4740D2;
-    --secondary: #06B6D4;
-    --secondary-hover: #0891B2;
-    --success: #2FA876;
-    --warning: #E8A23D;
-    --danger: #E0524F;
-    --live-coral: #FF7A59;
-    --bg-cloud: #FBFAF7;
-    --text-ink: #2B2B38;
-    --text-slate: #475569;
+    /* ── Canvas & Surfaces ── */
+    --canvas: #F8F8FC;
     --surface: #FFFFFF;
+    --surface-raised: #FFFFFF;
+    --surface-overlay: rgba(255, 255, 255, 0.85);
 
-    /* Pastel Tints set */
-    --tint-lavender: #E4E2FB;
-    --tint-powder: #DCEFFB;
-    --tint-mint: #DCF5E7;
-    --tint-peach: #FCE7D6;
-    --tint-blush: #FBDDE8;
-    --tint-butter: #FBF1CE;
+    /* ── Ink & Text ── */
+    --ink: #17172A;
+    --ink-muted: #6B6B80;
+    --ink-faint: #9D9DB0;
+
+    /* ── Primary (Electric Indigo) ── */
+    --primary: #4338F2;
+    --primary-hover: #3730D8;
+    --primary-deep: #24216F;
+    --primary-soft: rgba(67, 56, 242, 0.08);
+    --primary-glow: rgba(67, 56, 242, 0.20);
+
+    /* ── Accent (Coral Tangerine) ── */
+    --accent: #FF6B35;
+    --accent-hover: #E85A24;
+    --accent-soft: rgba(255, 107, 53, 0.08);
+
+    /* ── Semantic ── */
+    --success: #16A56A;
+    --success-soft: rgba(22, 165, 106, 0.08);
+    --warning: #F59E0B;
+    --warning-soft: rgba(245, 158, 11, 0.08);
+    --danger: #EF4444;
+    --danger-soft: rgba(239, 68, 68, 0.08);
+
+    /* ── Aura (atmospheric light colours) ── */
+    --aura-violet: #E7E2FF;
+    --aura-blue: #DDEEFF;
+    --aura-peach: #FFE7DB;
+
+    /* ── Borders ── */
+    --border: rgba(34, 32, 90, 0.08);
+    --border-strong: rgba(34, 32, 90, 0.15);
+
+    /* ── Shadows ── */
+    --shadow-xs: 0 1px 2px rgba(34, 32, 90, 0.04);
+    --shadow-sm: 0 2px 8px rgba(34, 32, 90, 0.05);
+    --shadow-md: 0 4px 20px rgba(34, 32, 90, 0.06);
+    --shadow-lg: 0 8px 40px rgba(34, 32, 90, 0.08);
+    --shadow-xl: 0 16px 64px rgba(34, 32, 90, 0.10);
+    --shadow-primary: 0 4px 24px rgba(67, 56, 242, 0.25);
+    --shadow-accent: 0 4px 24px rgba(255, 107, 53, 0.25);
+
+    /* ── Radii ── */
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-pill: 100px;
+
+    /* ── Motion ── */
+    --motion-fast: 150ms;
+    --motion-normal: 280ms;
+    --motion-slow: 420ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ── Spacing scale ── */
+    --space-page: clamp(1rem, 4vw, 3rem);
+    --space-section: clamp(3rem, 8vw, 7rem);
+    --max-width: 1280px;
   }
 
+  /* ── Dark mode overrides ── */
   .dark {
-    --bg-cloud: #090D16;
-    --text-ink: #F8FAFC;
-    --text-slate: #94A3B8;
-    --surface: #111827;
+    --canvas: #0C0C18;
+    --surface: #161625;
+    --surface-raised: #1E1E32;
+    --surface-overlay: rgba(22, 22, 37, 0.90);
+    --ink: #F0F0F8;
+    --ink-muted: #A0A0B8;
+    --ink-faint: #6B6B80;
+    --border: rgba(240, 240, 248, 0.08);
+    --border-strong: rgba(240, 240, 248, 0.15);
+    --primary-soft: rgba(67, 56, 242, 0.15);
+    --accent-soft: rgba(255, 107, 53, 0.12);
+    --success-soft: rgba(22, 165, 106, 0.12);
+    --aura-violet: rgba(103, 80, 220, 0.15);
+    --aura-blue: rgba(80, 160, 240, 0.10);
+    --aura-peach: rgba(255, 140, 80, 0.10);
+  }
+
+  /* ── Root reset ── */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
   body {
-    background-color: #F8FAFC;
-    color: #0F172A;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: 'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, sans-serif;
     margin: 0;
     padding: 0;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    line-height: 1.6;
+  }
+
+  /* Hindi language-specific typography */
+  html[lang="hi"] body {
+    font-family: 'Noto Sans Devanagari', 'Inter', system-ui, sans-serif;
+    line-height: 1.75;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Manrope', 'Noto Sans Devanagari', system-ui, sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img, video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  button, input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* Focus visible for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  ::selection {
+    background-color: var(--primary-soft);
+    color: var(--primary-deep);
   }
 }
 
-/* Light Mode Base Overrides when NOT dark */
-html:not(.dark) body {
-  background-color: #F8FAFC !important;
-  color: #0F172A !important;
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* ── Page container ── */
+  .page-container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-page);
+  }
+
+  /* ── Section spacing ── */
+  .section-gap {
+    padding-top: var(--space-section);
+    padding-bottom: var(--space-section);
+  }
+
+  /* ── Card surface ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--motion-normal) var(--ease-out),
+                transform var(--motion-normal) var(--ease-out);
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Glass surface ── */
+  .glass {
+    background: var(--surface-overlay);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--border);
+  }
+
+  /* ── Chip / Badge ── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .chip-primary {
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .chip-accent {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .chip-success {
+    background: var(--success-soft);
+    color: var(--success);
+  }
+
+  /* ── Input ── */
+  .input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+    background: var(--canvas);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--ink);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: border-color var(--motion-fast) var(--ease-out),
+                box-shadow var(--motion-fast) var(--ease-out);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+
+  .input::placeholder {
+    color: var(--ink-faint);
+  }
+
+  /* ── Button base ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: 'Manrope', 'Noto Sans Devanagari', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--motion-fast) var(--ease-out);
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #FFFFFF;
+    box-shadow: var(--shadow-primary);
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 32px rgba(67, 56, 242, 0.30);
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #FFFFFF;
+    box-shadow: var(--shadow-accent);
+  }
+
+  .btn-accent:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-ghost:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* ── Section heading ── */
+  .section-heading {
+    font-family: 'Manrope', sans-serif;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+
+  .section-subheading {
+    font-size: clamp(0.9375rem, 2vw, 1.125rem);
+    font-weight: 500;
+    color: var(--ink-muted);
+    max-width: 560px;
+    line-height: 1.6;
+  }
+
+  /* ── Skeleton loading ── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--border) 25%,
+      var(--canvas) 50%,
+      var(--border) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-sm);
+  }
+
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-faint);
+  }
 }
 
-html:not(.dark) .card-visual {
-  background-color: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-  color: #0F172A !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
-}
+/* ═══════════════════════════════════════════════════════════
+   UTILITY ADDITIONS
+   ═══════════════════════════════════════════════════════════ */
 
-/* Dark Mode Overrides when .dark is present */
-.dark body {
-  background-color: #090D16 !important;
-  color: #F8FAFC !important;
-}
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 
-.dark .card-visual {
-  background-color: #111827 !important;
-  border-color: #1F2937 !important;
-  color: #F8FAFC !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
-}
+  .animate-fade-in {
+    animation: fade-in var(--motion-normal) var(--ease-out) both;
+  }
 
-.dark .bg-white {
-  background-color: #111827 !important;
-  color: #F8FAFC !important;
-}
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-.dark .bg-\[\#F7F8FC\],
-.dark .bg-\[\#F8FAFC\] {
-  background-color: #090D16 !important;
-}
+  .animate-fade-in-up {
+    animation: fade-in-up var(--motion-normal) var(--ease-out) both;
+  }
 
-.dark .text-\[\#1E1E2E\],
-.dark .text-\[\#0F172A\] {
-  color: #F8FAFC !important;
-}
-
-.dark .text-slate-700,
-.dark .text-slate-800,
-.dark .text-slate-600 {
-  color: #E2E8F0 !important;
-}
-
-.dark .text-slate-500,
-.dark .text-slate-400 {
-  color: #94A3B8 !important;
-}
-
-.dark .border-slate-100,
-.dark .border-slate-200 {
-  border-color: #1F2937 !important;
-}
-
-/* Explicit Dark Mode styling for Inputs, Textareas, and Placeholders */
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: #090D16 !important;
-  color: #F8FAFC !important;
-  border-color: #1F2937 !important;
-}
-
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
-  background-color: #111827 !important;
-  border-color: #6366F1 !important;
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: #64748B !important;
-}
-
-/* Tactile Card Utilities */
-.card-visual {
-  background-color: #FFFFFF;
-  border-radius: 1rem;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-visual:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 35px rgba(99, 102, 241, 0.12);
-}
-
-/* Cool Button Styles */
-.btn-visual {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  padding: 0.625rem 1.375rem;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background-color: #6366F1;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35);
-}
-.btn-primary:hover {
-  background-color: #4F46E5;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.45);
-}
-
-.btn-secondary {
-  background-color: #06B6D4;
-  color: #FFFFFF !important;
-  box-shadow: 0 4px 14px 0 rgba(6, 182, 212, 0.35);
-}
-.btn-secondary:hover {
-  background-color: #0891B2;
-  transform: translateY(-1px);
-}
-
-/* Scrollbar customization */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 9999px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #1F2937;
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }

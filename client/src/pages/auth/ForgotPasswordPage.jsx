@@ -1,135 +1,120 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { Link } from 'react-router-dom';
-import { authApi } from '../../api/models/auth.api';
-import { Mail, KeyRound, ArrowRight, AlertCircle, CheckCircle2, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Mail, ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { authApi } from '../../api/models/auth.api';
 
-export const ForgotPasswordPage = () => {
+export function ForgotPasswordPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [resetToken, setResetToken] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) {
-      setError('Please enter your email address.');
-      return;
-    }
-
+    setLoading(true);
+    setError('');
+    
     try {
-      setIsSubmitting(true);
-      setError('');
-      const res = await authApi.forgotPassword(email);
-      if (res.success) {
-        setMessage(res.message);
-        if (res.resetToken) {
-          setResetToken(res.resetToken);
-        }
-      }
+      await authApi.forgotPassword(email);
+      setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send reset request.');
+      setError(err.message || t('auth.forgotPasswordError'));
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5A623]/10 text-[#F5A623] text-xs font-bold mb-3">
-          <KeyRound className="w-4 h-4" /> Password Recovery
-        </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1E1E2E]">Forgot Password?</h2>
-        <p className="text-xs text-slate-500 mt-1">Enter your registered email to receive a password reset token.</p>
-      </div>
-
-      {error && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="p-3.5 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-xs font-semibold flex items-center gap-2.5"
+    <div className="min-h-screen flex items-center justify-center bg-[var(--canvas)] p-4 sm:p-6 lg:p-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md bg-[var(--surface)] rounded-[var(--radius-lg,20px)] shadow-[var(--shadow-card,0_4px_32px_rgba(34,32,90,0.08))] p-8 border border-[var(--border)]"
+      >
+        <Link 
+          to="/login"
+          className="inline-flex items-center gap-2 text-sm font-medium text-[var(--ink-muted)] hover:text-[var(--ink)] mb-6 min-h-[44px] transition-colors"
         >
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <span>{error}</span>
-        </motion.div>
-      )}
+          <ArrowLeft className="w-4 h-4" />
+          {t('auth.backToLogin')}
+        </Link>
 
-      {message ? (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
-          <div className="p-4 rounded-2xl bg-[#1FAE64]/10 border border-[#1FAE64]/20 text-[#1FAE64] text-xs font-semibold flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-extrabold">{message}</div>
-              <div className="text-[11px] text-slate-600 font-normal mt-1">
-                Please check your inbox or use the token generated below to reset your password.
-              </div>
-            </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold font-['Manrope'] text-[var(--ink)] mb-2">
+            {t('auth.forgotPasswordTitle')}
+          </h1>
+          <p className="text-[var(--ink-muted)] font-['Inter']">
+            {t('auth.forgotPasswordSubtitle')}
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-[var(--danger-soft,rgba(255,0,0,0.1))] text-[var(--danger,red)] rounded-[var(--radius-md,12px)] flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <p className="text-sm font-medium">{error}</p>
           </div>
+        )}
 
-          {resetToken && (
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-slate-800 space-y-2">
-              <div className="text-xs font-extrabold text-amber-800 flex items-center gap-1.5">
-                <KeyRound className="w-4 h-4 text-amber-600" /> Dev/Test Reset Token:
-              </div>
-              <div className="font-mono text-xs p-2 bg-white rounded-xl border border-amber-200 break-all select-all">
-                {resetToken}
-              </div>
-              <Link
-                to={`/reset-password?token=${resetToken}`}
-                className="btn-visual btn-primary w-full text-xs mt-2"
-              >
-                Proceed to Reset Password <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          )}
-
-          <div className="pt-2 text-center">
-            <Link to="/login" className="text-xs font-bold text-[#3730E0] hover:underline">
-              Return to Login
-            </Link>
-          </div>
-        </motion.div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Mail className="w-4 h-4 text-[#3730E0]" /> Account Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              required
-              className="w-full px-4 py-3 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white transition-all"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="btn-visual btn-primary w-full mt-2"
+        {success ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-6"
           >
-            {isSubmitting ? (
-              <span className="text-xs font-bold">Sending request...</span>
-            ) : (
-              <>
-                <span className="text-xs font-extrabold uppercase tracking-wide">Request Reset Link</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-
-          <div className="pt-4 border-t border-slate-100 text-center">
-            <Link to="/login" className="text-xs font-bold text-slate-500 hover:text-[#3730E0]">
-              Back to Sign In
+            <div className="w-16 h-16 bg-[var(--success-soft,rgba(22,165,106,0.1))] rounded-full flex items-center justify-center mx-auto mb-4 text-[var(--success,#16A56A)]">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold font-['Manrope'] text-[var(--ink)] mb-2">
+              {t('auth.checkYourEmail')}
+            </h3>
+            <p className="text-[var(--ink-muted)] font-['Inter'] mb-6">
+              {t('auth.emailSentMessage')}
+            </p>
+            <Link
+              to="/login"
+              className="inline-flex min-h-[48px] items-center justify-center w-full bg-[var(--primary)] text-[var(--surface)] font-bold rounded-[var(--radius-md,12px)] hover:bg-[var(--deep-anchor,#24216F)] transition-colors font-['Inter']"
+            >
+              {t('auth.returnToLogin')}
             </Link>
-          </div>
-        </form>
-      )}
+          </motion.div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-[var(--ink)] font-['Inter']">
+                {t('auth.emailLabel')}
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full min-h-[48px] px-4 py-3 rounded-[var(--radius-md,12px)] border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-shadow font-['Inter']"
+                placeholder={t('auth.emailPlaceholder')}
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 bg-[var(--primary)] text-[var(--surface)] font-bold rounded-[var(--radius-md,12px)] hover:bg-[var(--deep-anchor,#24216F)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] disabled:opacity-70 disabled:cursor-not-allowed font-['Inter']"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Mail className="w-5 h-5" />
+                  {t('auth.sendResetLink')}
+                </>
+              )}
+            </button>
+          </form>
+        )}
+      </motion.div>
     </div>
   );
-};
+}

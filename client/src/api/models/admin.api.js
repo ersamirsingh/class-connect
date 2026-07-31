@@ -40,9 +40,4 @@ export const adminApi = {
     const response = await api.put(`/admin/payments/${id}/refund`);
     return response.data;
   },
-
-  getCourseStudents: async (courseId) => {
-    const response = await api.get(`/admin/courses/${courseId}/students`);
-    return response.data;
-  },
 };

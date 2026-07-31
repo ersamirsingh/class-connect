@@ -64,6 +64,7 @@ export const ManageAdminsPage = () => {
         fetchAdmins();
       }
     } catch (err) {
+      // Displays safeguard message if trying to remove last active admin
       setMessage({ type: 'error', text: err.response?.data?.message || err.message });
     }
   };
@@ -73,11 +74,11 @@ export const ManageAdminsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#06B6D4]/10 text-[#06B6D4] text-xs font-bold mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF7A33]/10 text-[#FF7A33] text-xs font-bold mb-2">
             <ShieldAlert className="w-4 h-4" /> Admin Operations
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] dark:text-white">Manage Admin Accounts</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Create and manage admin team members with built-in safeguards.</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#1E1E2E]">Manage Admin Accounts</h1>
+          <p className="text-xs text-slate-500 font-medium">Create and manage admin team members with built-in safeguards.</p>
         </div>
 
         <button
@@ -92,7 +93,7 @@ export const ManageAdminsPage = () => {
         <div
           className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2.5 ${
             message.type === 'success'
-              ? 'bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981]'
+              ? 'bg-[#1FAE64]/10 border border-[#1FAE64]/20 text-[#1FAE64]'
               : 'bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444]'
           }`}
         >
@@ -104,8 +105,8 @@ export const ManageAdminsPage = () => {
       {/* Admin List Cards */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="w-10 h-10 text-[#6366F1] animate-spin mb-3" />
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Loading admin accounts...</span>
+          <Loader2 className="w-10 h-10 text-[#3730E0] animate-spin mb-3" />
+          <span className="text-xs font-bold text-slate-500">Loading admin accounts...</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -115,12 +116,12 @@ export const ManageAdminsPage = () => {
                 <img
                   src={admin.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
                   alt={admin.name}
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-[#06B6D4]"
+                  className="w-12 h-12 rounded-full object-cover ring-2 ring-[#FF7A33]"
                 />
                 <div>
-                  <h3 className="font-extrabold text-sm text-[#0F172A] dark:text-white">{admin.name}</h3>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{admin.email}</div>
-                  <div className="mt-1 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#6366F1]/10 text-[#6366F1]">
+                  <h3 className="font-extrabold text-sm text-[#1E1E2E]">{admin.name}</h3>
+                  <div className="text-xs text-slate-500 font-medium">{admin.email}</div>
+                  <div className="mt-1 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#3730E0]/10 text-[#3730E0]">
                     {admin.isActive ? 'Active Admin' : 'Deactivated'}
                   </div>
                 </div>
@@ -143,49 +144,49 @@ export const ManageAdminsPage = () => {
       {/* Create Admin Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#111827] p-6 sm:p-8 rounded-3xl max-w-md w-full space-y-6 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h2 className="font-black text-xl text-[#0F172A] dark:text-white flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-[#06B6D4]" /> Create Admin Account
+          <div className="bg-white p-6 sm:p-8 rounded-3xl max-w-md w-full space-y-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h2 className="font-black text-xl text-[#1E1E2E] flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-[#FF7A33]" /> Create Admin Account
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+              <button onClick={() => setShowModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateAdmin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Full Name</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-3 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-[#0F172A] dark:text-white"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3730E0]"
                   placeholder="Admin Name"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Email Address</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full p-3 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-[#0F172A] dark:text-white"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3730E0]"
                   placeholder="admin@classconnect.com"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Temporary Password</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Temporary Password</label>
                 <input
                   type="password"
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full p-3 bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-[#0F172A] dark:text-white"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3730E0]"
                   placeholder="Min 6 characters"
                 />
               </div>
@@ -194,7 +195,7 @@ export const ManageAdminsPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="btn-visual border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 w-full text-xs font-bold"
+                  className="btn-visual border border-slate-200 text-slate-700 w-full text-xs font-bold"
                 >
                   Cancel
                 </button>

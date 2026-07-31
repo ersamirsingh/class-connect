@@ -1,129 +1,143 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { BookOpen, User, Home, Receipt, Flag, GraduationCap, Video, Menu, X, ChevronRight, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+  LayoutDashboard, BookOpen, User, CreditCard, AlertTriangle, LogOut, Bell
+} from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../context/LanguageContext';
+import { LanguageSwitcher } from '../components/shared/LanguageSwitcher';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
 import { NotificationBell } from '../components/shared/NotificationBell';
-import { UserProfileDropdown } from '../components/shared/UserProfileDropdown';
 
-export const StudentLayout = () => {
+const studentNavItems = [
+  { key: 'nav.dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { key: 'nav.courses', path: '/courses', icon: BookOpen },
+  { key: 'nav.profile', path: '/profile', icon: User },
+  { key: 'nav.payments', path: '/payments', icon: CreditCard },
+  { key: 'nav.help', path: '/report-problem', icon: AlertTriangle },
+];
+
+export function StudentLayout() {
+  const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navItems = [
-    { label: 'View Courses', path: '/courses', icon: BookOpen },
-    { label: 'My Dashboard', path: '/dashboard', icon: Home },
-    { label: 'Payment Receipts', path: '/payments', icon: Receipt },
-    { label: 'Report Issue', path: '/report-problem', icon: Flag },
-    { label: 'My Profile', path: '/profile', icon: User },
-  ];
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] flex flex-col transition-colors duration-200">
-      
-      {/* Top Navbar Header */}
-      <nav className="bg-white/90 dark:bg-[#111827]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+    <div className="min-h-screen bg-[var(--canvas)]">
+      {/* Top bar */}
+      <header className="sticky top-0 z-50 glass border-b border-[var(--border)]">
+        <div className="page-container flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center
+              shadow-sm group-hover:scale-105 transition-transform">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-base font-extrabold tracking-tight text-[var(--ink)] hidden sm:block"
+              style={{ fontFamily: 'Manrope, sans-serif' }}>
+              ClassConnect
+            </span>
+          </Link>
 
-            <Link to="/dashboard" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-[#6366F1] flex items-center justify-center text-white font-black text-xl shadow-md shadow-[#6366F1]/30 group-hover:scale-105 transition-transform">
-                <GraduationCap className="w-6 h-6" />
-              </div>
-              <span className="font-black text-xl text-[#0F172A] dark:text-white tracking-tight hidden sm:inline">
-                Class<span className="text-[#06B6D4]">Connect</span>
-              </span>
-            </Link>
-          </div>
-
-          {/* Right Header Controls */}
-          <div className="flex items-center gap-3">
-            <NotificationBell />
-            <ThemeToggle />
-            <UserProfileDropdown />
-          </div>
-
-        </div>
-      </nav>
-
-      {/* Sidebar + Main Outlet */}
-      <div className="flex-1 max-w-7xl w-full mx-auto flex items-start gap-8 p-4 sm:p-6">
-        
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-        )}
-
-        {/* Sidebar */}
-        <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-slate-800 p-5 transform lg:transform-none lg:static lg:w-64 lg:rounded-3xl lg:border lg:shadow-md transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-          
-          <div className="flex items-center justify-between lg:hidden pb-4 border-b border-slate-100 dark:border-slate-800 mb-4">
-            <span className="font-extrabold text-sm text-[#0F172A] dark:text-white">Student Navigation</span>
-            <button onClick={() => setSidebarOpen(false)} className="text-slate-400">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-3 py-1 mb-1">Learning Hub</div>
-            {navItems.map((item) => {
-              const Icon = item.icon;
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-0.5">
+            {studentNavItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const Icon = item.icon;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-extrabold transition-all ${
-                    isActive
-                      ? 'bg-[#6366F1] text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200
+                    ${isActive
+                      ? 'text-[var(--primary)] bg-[var(--primary-soft)]'
+                      : 'text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]'
+                    }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </div>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5" />}
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden lg:inline">{t(item.key)}</span>
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
-          <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
-            <div className="p-3.5 rounded-2xl bg-[#06B6D4]/10 border border-[#06B6D4]/20 text-xs text-[#06B6D4] font-extrabold space-y-1">
-              <div className="flex items-center gap-1.5">
-                <Video className="w-4 h-4" /> Live Q&A Support
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Connect with TAs 10 AM - 10 PM IST daily.</p>
+          {/* Right actions */}
+          <div className="flex items-center gap-1.5">
+            <NotificationBell />
+            <LanguageSwitcher variant="compact" />
+            <ThemeToggle />
+            <div className="hidden md:flex items-center gap-2 ml-2 pl-2 border-l border-[var(--border)]">
+              <span className="text-sm font-medium text-[var(--ink-muted)]">
+                {user?.name?.split(' ')[0]}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-xl text-[var(--ink-muted)] hover:text-[var(--danger)]
+                  hover:bg-[var(--danger-soft)] transition-all duration-200"
+                aria-label={t('nav.logout')}
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
+        </div>
+      </header>
 
-        </aside>
-
-        {/* Main Content View */}
-        <main className="flex-1 w-full min-w-0">
-          {/* Back Button */}
-          <div className="mb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#6366F1] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-          </div>
+      {/* Content */}
+      <main className="page-container py-6 md:py-8">
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        >
           <Outlet />
-        </main>
+        </motion.div>
+      </main>
 
-      </div>
+      {/* Mobile bottom dock */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 glass border-t border-[var(--border)]
+        safe-area-inset-bottom">
+        <div className="flex items-center justify-around h-16 px-2">
+          {studentNavItems.slice(0, 5).map((item) => {
+            const isActive = location.pathname === item.path;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`relative flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-2xl transition-all duration-200
+                  ${isActive
+                    ? 'text-[var(--primary)]'
+                    : 'text-[var(--ink-faint)]'
+                  }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="student-dock-pill"
+                    className="absolute inset-0 bg-[var(--primary-soft)] rounded-2xl"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <Icon className="w-5 h-5 relative z-10" />
+                <span className="text-[10px] font-semibold relative z-10">
+                  {t(item.key).split(' ')[0]}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
 
+      {/* Bottom dock spacer on mobile */}
+      <div className="md:hidden h-20" />
     </div>
   );
-};
+}
