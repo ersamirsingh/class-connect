@@ -54,8 +54,8 @@ export const SignupPage = () => {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1FAE64]/10 text-[#1FAE64] text-xs font-bold mb-3">
           <UserCheck className="w-4 h-4" /> Student Registration
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1E1E2E]">Join ClassConnect</h2>
-        <p className="text-xs text-slate-500 mt-1">Start your visual learning journey today.</p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1E1E2E] dark:text-white">Join ClassConnect</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-300 mt-1">Start your visual learning journey today.</p>
       </div>
 
       {/* Error Banner */}
@@ -74,7 +74,7 @@ export const SignupPage = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1.5">
             <User className="w-4 h-4 text-[#3730E0]" /> Full Name
           </label>
           <input
@@ -84,13 +84,13 @@ export const SignupPage = () => {
             onChange={handleChange}
             placeholder="John Doe"
             required
-            className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white transition-all"
+            className="w-full px-4 py-2.5 bg-[#F7F8FC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium text-[#1E1E2E] dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white dark:focus:bg-slate-800 transition-all"
           />
         </div>
 
         {/* Email Address */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1.5">
             <Mail className="w-4 h-4 text-[#3730E0]" /> Email Address
           </label>
           <input
@@ -100,13 +100,13 @@ export const SignupPage = () => {
             onChange={handleChange}
             placeholder="student@example.com"
             required
-            className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white transition-all"
+            className="w-full px-4 py-2.5 bg-[#F7F8FC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium text-[#1E1E2E] dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white dark:focus:bg-slate-800 transition-all"
           />
         </div>
 
         {/* Password */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1.5">
             <Lock className="w-4 h-4 text-[#3730E0]" /> Password
           </label>
           <input
@@ -116,7 +116,7 @@ export const SignupPage = () => {
             onChange={handleChange}
             placeholder="At least 6 characters"
             required
-            className="w-full px-4 py-2.5 bg-[#F7F8FC] border border-slate-200 rounded-2xl text-xs font-medium text-[#1E1E2E] focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white transition-all"
+            className="w-full px-4 py-2.5 bg-[#F7F8FC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium text-[#1E1E2E] dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3730E0] focus:bg-white dark:focus:bg-slate-800 transition-all"
           />
         </div>
 
@@ -138,8 +138,8 @@ export const SignupPage = () => {
       </form>
 
       {/* Footer Switch */}
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-        <span className="text-slate-500 font-medium">Already have an account?</span>
+      <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+        <span className="text-slate-500 dark:text-slate-300 font-medium">Already have an account?</span>
         <Link to="/login" className="font-bold text-[#3730E0] hover:underline flex items-center gap-1">
           Sign In <ArrowRight className="w-3.5 h-3.5" />
         </Link>
