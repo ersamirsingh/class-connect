@@ -126,11 +126,19 @@ export function HomePage() {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] mb-6 pt-4">
               {isHindi ? (
                 <span>
-                  ऐसी स्किल्स सीखें जो <SquigglyText>आगे ले जाएं</SquigglyText>
+                  ऐसी{' '}
+                  <span className="font-extrabold italic text-[var(--accent)] bg-clip-text text-transparent bg-gradient-to-r from-[#FF6B35] via-[#FF8040] to-[#E85A24] inline-block px-1">
+                    स्किल्स
+                  </span>{' '}
+                  सीखें जो <SquigglyText>आगे ले जाएं</SquigglyText>
                 </span>
               ) : (
                 <span>
-                  Learn skills that <SquigglyText>move you forward</SquigglyText>
+                  Learn{' '}
+                  <span className="font-extrabold italic text-[var(--accent)] bg-clip-text text-transparent bg-gradient-to-r from-[#FF6B35] via-[#FF8040] to-[#E85A24] inline-block px-1">
+                    skills
+                  </span>{' '}
+                  that <SquigglyText>move you forward</SquigglyText>
                 </span>
               )}
             </h1>
