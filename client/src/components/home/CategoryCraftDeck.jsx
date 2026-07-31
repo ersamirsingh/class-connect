@@ -13,8 +13,7 @@ import {
   ShieldCheck,
   Cloud,
   ChevronLeft,
-  ChevronRight,
-  Layers
+  ChevronRight
 } from 'lucide-react';
 import { GlowingEffect } from '../motion/GlowingEffect';
 import { TextEffect } from '../motion/TextEffect';
@@ -63,17 +62,21 @@ export function CategoryCraftDeck({ categories = [] }) {
     { _id: 'c6', name: 'Cloud Computing', slug: 'cloud-computing', courseCount: 7, description: 'AWS, Docker & Kubernetes' },
   ];
 
-  // Split into 2 rows for dual-direction smooth scrolling
+  // Split into 2 rows for dual-direction auto scroll
   const halfLength = Math.ceil(fullCategories.length / 2);
   const row1 = fullCategories.slice(0, halfLength);
   const row2 = fullCategories.slice(halfLength).concat(fullCategories.slice(0, 2));
 
   const scrollLeft = () => {
-    if (scrollRef.current) scrollRef.current.scrollBy({ left: -360, behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -380, behavior: 'smooth' });
+    }
   };
 
   const scrollRight = () => {
-    if (scrollRef.current) scrollRef.current.scrollBy({ left: 360, behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 380, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -98,18 +101,18 @@ export function CategoryCraftDeck({ categories = [] }) {
           </p>
         </div>
 
-        {/* Interactive Manual Controls */}
+        {/* Interactive Left & Right Scroll Controls */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={scrollLeft}
-            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm"
+            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm active:scale-95"
             aria-label="Scroll left"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={scrollRight}
-            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm"
+            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm active:scale-95"
             aria-label="Scroll right"
           >
             <ChevronRight className="w-5 h-5" />
@@ -117,20 +120,24 @@ export function CategoryCraftDeck({ categories = [] }) {
         </div>
       </div>
 
-      {/* TWO ROWS ONLY: Powered by react-fast-marquee for high performance auto-scrolling with hover pause */}
-      <div className="relative w-full space-y-6">
+      {/* Interactive Deck Container with connected scrollRef & 2 Marquee Rows */}
+      <div 
+        ref={scrollRef} 
+        className="relative w-full space-y-6 overflow-x-auto scrollbar-hide select-none"
+        style={{ scrollBehavior: 'smooth' }}
+      >
         {/* Left & Right Fading Edge Overlay */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Row 1: Left Smooth Fast Marquee */}
+        {/* Row 1: Left Continuous Auto-Scroll & Scrollable */}
         <Marquee speed={35} direction="left" pauseOnHover gradient={false} className="py-2">
           {row1.map((cat, idx) => (
             <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
           ))}
         </Marquee>
 
-        {/* Row 2: Right Smooth Fast Marquee */}
+        {/* Row 2: Right Continuous Auto-Scroll & Scrollable */}
         <Marquee speed={35} direction="right" pauseOnHover gradient={false} className="py-2">
           {row2.map((cat, idx) => (
             <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
