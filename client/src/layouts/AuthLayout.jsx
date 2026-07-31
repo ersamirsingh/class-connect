@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { Sparkles, GraduationCap, PlayCircle, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ThemeToggle } from '../components/shared/ThemeToggle';
 
 export const AuthLayout = () => {
   return (
@@ -19,11 +18,8 @@ export const AuthLayout = () => {
           </div>
         </Link>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-[#1FAE64] bg-[#1FAE64]/10 px-3 py-1.5 rounded-full">
-            <ShieldCheck className="w-4 h-4" /> Secure Platform
-          </div>
-          <ThemeToggle />
+        <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-[#1FAE64] bg-[#1FAE64]/10 px-3 py-1.5 rounded-full">
+          <ShieldCheck className="w-4 h-4" /> Secure Platform
         </div>
       </header>
 
