@@ -30,6 +30,7 @@ import { NumberTicker } from '../../components/motion/NumberTicker';
 import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
 import { ConnectedConstellationSection } from '../../components/home/ConnectedConstellationSection';
 import { HowItWorksFlowSection } from '../../components/home/HowItWorksFlowSection';
+import { ArcOrbitStatsCtaSection } from '../../components/home/ArcOrbitStatsCtaSection';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { SquigglyText } from '../../components/motion/SquigglyText';
 import { courseApi } from '../../api/models/course.api';
@@ -314,30 +315,8 @@ export function HomePage() {
       {/* 5. How It Works Section (Reference Screenshot Matching Style) */}
       <HowItWorksFlowSection />
 
-      {/* 6. Stats Section */}
-      <section className="py-20 px-6 lg:px-[var(--space-page)] relative overflow-hidden bg-[var(--ink)] text-white">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0idHJhbnNwYXJlbnQiPjwvcmVjdD4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjE1KSI+PC9jaXJjbGU+Cjwvc3ZnPg==')] opacity-50" />
-        
-        <div className="max-w-[var(--max-width)] mx-auto relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-            {[
-              { label: "Students Worldwide", value: 10000, suffix: "+" },
-              { label: "Premium Courses", value: 50, suffix: "+" },
-              { label: "Average Rating", value: 4.8, suffix: "/5" },
-              { label: "Support", value: 24, suffix: "/7" }
-            ].map((stat, idx) => (
-              <InView key={idx} delay={idx * 0.1}>
-                <div className="flex flex-col items-center">
-                  <div className="text-4xl md:text-5xl font-manrope font-black mb-2 text-transparent bg-clip-text bg-gradient-to-br from-white to-white/60">
-                    <NumberTicker value={stat.value} />{stat.suffix}
-                  </div>
-                  <div className="text-white/70 font-medium text-sm md:text-base uppercase tracking-wider">{stat.label}</div>
-                </div>
-              </InView>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 6. Arc Orbit Stats & Merged CTA Section (Matching Uploaded Reference Screenshot Style) */}
+      <ArcOrbitStatsCtaSection />
 
       {/* 7. FAQ Section */}
       <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
@@ -386,38 +365,6 @@ export function HomePage() {
               </InView>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* 8. CTA Section */}
-      <section className="py-[calc(var(--space-section)*1.2)] px-6 lg:px-[var(--space-page)] relative overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute inset-0 bg-[var(--primary)] opacity-[0.03] z-0" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-b from-[var(--primary-soft)] to-transparent rounded-full blur-[100px] opacity-50 z-0 pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <InView>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-manrope font-extrabold tracking-tight mb-8">
-              Ready to start learning?
-            </h2>
-            <p className="text-xl text-[var(--ink-muted)] mb-12 max-w-2xl mx-auto">
-              Join our community of learners today and take the first step towards achieving your goals.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Link to="/courses">
-                <ShimmerButton className="px-10 py-5 text-lg font-semibold shadow-[var(--shadow-lg)]">
-                  Explore All Courses
-                </ShimmerButton>
-              </Link>
-              {!user && (
-                <Link to="/auth">
-                  <button className="px-10 py-5 rounded-[var(--radius-pill)] border-2 border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] font-semibold hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all duration-300 min-h-[44px] shadow-sm">
-                    Create Free Account
-                  </button>
-                </Link>
-              )}
-            </div>
-          </InView>
         </div>
       </section>
 
