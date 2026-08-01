@@ -28,6 +28,7 @@ import { ShimmerButton } from '../../components/motion/ShimmerButton';
 import { Marquee } from '../../components/motion/Marquee';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
+import { ConnectedConstellationSection } from '../../components/home/ConnectedConstellationSection';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { SquigglyText } from '../../components/motion/SquigglyText';
 import { courseApi } from '../../api/models/course.api';
@@ -235,24 +236,8 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 2. Trust Ribbon */}
-      <section className="py-8 border-y border-[var(--border)] bg-[var(--surface)]/50 backdrop-blur-sm overflow-hidden">
-        <Marquee pauseOnHover className="[--duration:40s]">
-          {[
-            { icon: Users, text: "10,000+ Learners" },
-            { icon: Star, text: "4.8★ Rating" },
-            { icon: GraduationCap, text: "Expert Instructors" },
-            { icon: Globe2, text: "Hindi & English" },
-            { icon: Award, text: "Verifiable Certificates" },
-            { icon: Briefcase, text: "Job-Ready Skills" }
-          ].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2 px-6 py-3 mx-4 rounded-full bg-[var(--canvas)] border border-[var(--border)] shadow-sm">
-              <item.icon className="w-5 h-5 text-[var(--primary)]" />
-              <span className="font-semibold text-[var(--ink)]">{item.text}</span>
-            </div>
-          ))}
-        </Marquee>
-      </section>
+      {/* 2. Connected Constellation Section (Reference Image Format with SVG Curve Lines & Animated Nodes) */}
+      <ConnectedConstellationSection />
 
       {/* 3. Category Crafts Deck (Find Your Path - Auto-scrolling Interface Crafts style) */}
       <CategoryCraftDeck categories={categories} />

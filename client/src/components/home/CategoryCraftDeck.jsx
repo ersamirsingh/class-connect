@@ -1,7 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import FastMarquee from 'react-fast-marquee';
-const Marquee = typeof FastMarquee === 'function' ? FastMarquee : (FastMarquee?.default || FastMarquee);
 import { 
   Code2, 
   Smartphone, 
@@ -50,9 +48,14 @@ const defaultGradientBadges = [
 export function CategoryCraftDeck({ categories = [] }) {
   const { language } = useLanguage();
   const isHindi = language === 'hi';
-  const scrollRef = useRef(null);
+  
+  const row1Ref = useRef(null);
+  const row2Ref = useRef(null);
 
-  // Ensure we have a rich set of items for scrolling
+  const [isHoveringRow1, setIsHoveringRow1] = useState(false);
+  const [isHoveringRow2, setIsHoveringRow2] = useState(false);
+
+  // Ensure rich category items
   const fullCategories = categories.length > 0 ? categories : [
     { _id: 'c1', name: 'Web Development', slug: 'web-development', courseCount: 12, description: 'HTML, CSS, React, Node.js & Next.js' },
     { _id: 'c2', name: 'App Development', slug: 'app-development', courseCount: 8, description: 'React Native & Flutter Apps' },
@@ -62,26 +65,65 @@ export function CategoryCraftDeck({ categories = [] }) {
     { _id: 'c6', name: 'Cloud Computing', slug: 'cloud-computing', courseCount: 7, description: 'AWS, Docker & Kubernetes' },
   ];
 
-  // Split into 2 rows for dual-direction auto scroll
-  const halfLength = Math.ceil(fullCategories.length / 2);
-  const row1 = fullCategories.slice(0, halfLength);
-  const row2 = fullCategories.slice(halfLength).concat(fullCategories.slice(0, 2));
+  // Repeat items for infinite loop feel
+  const row1Items = [...fullCategories, ...fullCategories, ...fullCategories];
+  const row2Items = [...fullCategories.slice(2), ...fullCategories, ...fullCategories];
 
+  // Auto-scroll loop for Row 1 (Left) & Row 2 (Right) when not hovering
+  useEffect(() => {
+    let animId1;
+    let animId2;
+
+    const autoScrollRow1 = () => {
+      if (row1Ref.current && !isHoveringRow1) {
+        row1Ref.current.scrollLeft += 1;
+        if (row1Ref.current.scrollLeft >= row1Ref.current.scrollWidth / 2) {
+          row1Ref.current.scrollLeft = 0;
+        }
+      }
+      animId1 = requestAnimationFrame(autoScrollRow1);
+    };
+
+    const autoScrollRow2 = () => {
+      if (row2Ref.current && !isHoveringRow2) {
+        row2Ref.current.scrollLeft -= 1;
+        if (row2Ref.current.scrollLeft <= 0) {
+          row2Ref.current.scrollLeft = row2Ref.current.scrollWidth / 2;
+        }
+      }
+      animId2 = requestAnimationFrame(autoScrollRow2);
+    };
+
+    animId1 = requestAnimationFrame(autoScrollRow1);
+    animId2 = requestAnimationFrame(autoScrollRow2);
+
+    return () => {
+      cancelAnimationFrame(animId1);
+      cancelAnimationFrame(animId2);
+    };
+  }, [isHoveringRow1, isHoveringRow2]);
+
+  // Button Click Handlers
   const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -380, behavior: 'smooth' });
-    }
+    if (row1Ref.current) row1Ref.current.scrollBy({ left: -380, behavior: 'smooth' });
+    if (row2Ref.current) row2Ref.current.scrollBy({ left: -380, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 380, behavior: 'smooth' });
+    if (row1Ref.current) row1Ref.current.scrollBy({ left: 380, behavior: 'smooth' });
+    if (row2Ref.current) row2Ref.current.scrollBy({ left: 380, behavior: 'smooth' });
+  };
+
+  // Convert vertical mouse wheel into horizontal scrolling when hovering cards
+  const handleWheel = (e, ref) => {
+    if (ref.current) {
+      ref.current.scrollLeft += e.deltaY * 0.9;
     }
   };
 
   return (
     <section className="relative py-20 overflow-hidden bg-[var(--canvas)]">
-      {/* Background Subtle Gradient Blobs */}
+      {/* Background Glow */}
       <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-7xl h-full overflow-hidden opacity-30">
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-[var(--aura-violet)] filter blur-3xl" />
         <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-3xl" />
@@ -101,48 +143,60 @@ export function CategoryCraftDeck({ categories = [] }) {
           </p>
         </div>
 
-        {/* Interactive Left & Right Scroll Controls */}
+        {/* Working Arrow Buttons */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={scrollLeft}
-            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm active:scale-95"
+            type="button"
+            className="w-12 h-12 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
             aria-label="Scroll left"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={scrollRight}
-            className="w-11 h-11 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--canvas)] hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-sm active:scale-95"
+            type="button"
+            className="w-12 h-12 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
             aria-label="Scroll right"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      {/* Interactive Deck Container with connected scrollRef & 2 Marquee Rows */}
-      <div 
-        ref={scrollRef} 
-        className="relative w-full space-y-6 overflow-x-auto scrollbar-hide select-none"
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        {/* Left & Right Fading Edge Overlay */}
+      {/* EXACTLY 2 ROWS: Auto-scrolling + Mouse Wheel Horizontal Scroll + Drag + Arrow Button Control */}
+      <div className="relative w-full space-y-6">
+        {/* Fading Edge Overlays */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Row 1: Left Continuous Auto-Scroll & Scrollable */}
-        <Marquee speed={35} direction="left" pauseOnHover gradient={false} className="py-2">
-          {row1.map((cat, idx) => (
+        {/* Row 1 */}
+        <div
+          ref={row1Ref}
+          onMouseEnter={() => setIsHoveringRow1(true)}
+          onMouseLeave={() => setIsHoveringRow1(false)}
+          onWheel={(e) => handleWheel(e, row1Ref)}
+          className="flex overflow-x-auto scrollbar-hide py-2 gap-6 cursor-grab active:cursor-grabbing select-none"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {row1Items.map((cat, idx) => (
             <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
           ))}
-        </Marquee>
+        </div>
 
-        {/* Row 2: Right Continuous Auto-Scroll & Scrollable */}
-        <Marquee speed={35} direction="right" pauseOnHover gradient={false} className="py-2">
-          {row2.map((cat, idx) => (
+        {/* Row 2 */}
+        <div
+          ref={row2Ref}
+          onMouseEnter={() => setIsHoveringRow2(true)}
+          onMouseLeave={() => setIsHoveringRow2(false)}
+          onWheel={(e) => handleWheel(e, row2Ref)}
+          className="flex overflow-x-auto scrollbar-hide py-2 gap-6 cursor-grab active:cursor-grabbing select-none"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {row2Items.map((cat, idx) => (
             <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
           ))}
-        </Marquee>
+        </div>
       </div>
     </section>
   );
@@ -154,14 +208,14 @@ function CategoryCraftCard({ category, index }) {
   const gradientClass = defaultGradientBadges[index % defaultGradientBadges.length];
 
   return (
-    <div className="w-[320px] sm:w-[360px] shrink-0 mx-3">
+    <div className="w-[320px] sm:w-[360px] shrink-0">
       <Link to={`/courses?category=${category.slug}`}>
         <GlowingEffect
           glowColor="rgba(67, 56, 242, 0.4)"
           accentGlow="rgba(255, 107, 53, 0.4)"
           containerClassName="h-full"
         >
-          <div className="relative h-full p-6 sm:p-7 flex flex-col justify-between overflow-hidden">
+          <div className="relative h-full p-6 sm:p-7 flex flex-col justify-between overflow-hidden bg-[var(--surface)]">
             {/* Background Subtle Pattern */}
             <div 
               className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"
