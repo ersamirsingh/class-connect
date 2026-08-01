@@ -17,12 +17,10 @@ export function ConnectedConstellationSection() {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: false, margin: '-50px' });
 
-  // References for dynamic position calculation
   const nodeRefs = useRef({});
   const centerTextRef = useRef(null);
   const [lines, setLines] = useState([]);
 
-  // Calculate exact connection coordinates dynamically based on actual DOM box positions!
   useEffect(() => {
     const calculateLines = () => {
       if (!sectionRef.current || !centerTextRef.current) return;
@@ -70,8 +68,8 @@ export function ConnectedConstellationSection() {
           startY = n.bottom - 10;
           endX = cText.left + 20;
           endY = cText.top + 20;
-          controlX = startX + 60;
-          controlY = startY + 40;
+          controlX = startX + 40;
+          controlY = startY + 30;
         } else if (key === 'node-certificates') {
           startX = n.x;
           startY = n.bottom;
@@ -84,15 +82,15 @@ export function ConnectedConstellationSection() {
           startY = n.bottom - 10;
           endX = cText.right - 20;
           endY = cText.top + 20;
-          controlX = startX - 60;
-          controlY = startY + 40;
+          controlX = startX - 40;
+          controlY = startY + 30;
         } else if (key === 'node-skills') {
           startX = n.right;
           startY = n.top + 10;
           endX = cText.left + 40;
           endY = cText.bottom - 20;
-          controlX = startX + 60;
-          controlY = startY - 40;
+          controlX = startX + 40;
+          controlY = startY - 30;
         } else if (key === 'node-learners') {
           startX = n.x;
           startY = n.top;
@@ -105,8 +103,8 @@ export function ConnectedConstellationSection() {
           startY = n.top + 10;
           endX = cText.right - 40;
           endY = cText.bottom - 20;
-          controlX = startX - 60;
-          controlY = startY - 40;
+          controlX = startX - 40;
+          controlY = startY - 30;
         }
 
         const pathD = `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`;
@@ -125,7 +123,6 @@ export function ConnectedConstellationSection() {
     };
   }, []);
 
-  // Soft Premium Pastel Colored Backgrounds & Dark Readable Typography
   const nodes = [
     {
       id: 'node-bilingual',
@@ -204,7 +201,7 @@ export function ConnectedConstellationSection() {
   return (
     <section 
       ref={sectionRef} 
-      className="relative py-24 px-4 sm:px-8 bg-[var(--canvas)] overflow-hidden min-h-[720px] flex flex-col justify-between"
+      className="relative py-16 sm:py-24 px-3 sm:px-8 bg-[var(--canvas)] overflow-hidden min-h-[640px] flex flex-col justify-between"
     >
       {/* Real-time Calculated SVG Connecting Lines */}
       <svg 
@@ -221,16 +218,6 @@ export function ConnectedConstellationSection() {
 
         {lines.map((line, index) => (
           <g key={line.id}>
-            {/* Background Glow Line */}
-            <motion.path
-              d={line.pathD}
-              stroke="url(#liveConstellationGrad)"
-              strokeWidth="4"
-              strokeLinecap="round"
-              opacity={0.3}
-              filter="blur(3px)"
-            />
-            {/* Primary Sharp Line */}
             <motion.path
               d={line.pathD}
               stroke="url(#liveConstellationGrad)"
@@ -244,8 +231,8 @@ export function ConnectedConstellationSection() {
         ))}
       </svg>
 
-      {/* Top Row Nodes */}
-      <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mb-10">
+      {/* Top Row Nodes: Responsive Flex Wrap */}
+      <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-10">
         <div ref={(el) => (nodeRefs.current['node-bilingual'] = el)}>
           <NodeCard node={nodes[0]} isInView={isInView} delay={0.1} />
         </div>
@@ -258,12 +245,12 @@ export function ConnectedConstellationSection() {
       </div>
 
       {/* Center Headline */}
-      <div ref={centerTextRef} className="relative z-20 max-w-2xl mx-auto text-center px-4 py-6">
+      <div ref={centerTextRef} className="relative z-20 max-w-2xl mx-auto text-center px-2 sm:px-4 py-4 sm:py-6">
         <motion.h2
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={isInView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-[1.25] mb-8"
+          className="text-xl sm:text-3xl md:text-4xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-[1.25] mb-6 sm:mb-8"
         >
           {isHindi ? (
             <span>
@@ -287,21 +274,21 @@ export function ConnectedConstellationSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, delay: 0.5 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left font-mono"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 text-left font-mono"
         >
-          <div className="p-3.5 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
+          <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
               {isHindi ? '100% द्विभाषी हिंदी और अंग्रेजी भाषा में लर्निंग OS' : '100% Bilingual Hindi & English visual learning OS.'}
             </div>
           </div>
 
-          <div className="p-3.5 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
+          <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
               {isHindi ? '10,000+ सक्रिय विद्यार्थी रियल स्किल्स सीख रहे हैं' : '10,000+ active learners mastering real skills.'}
             </div>
           </div>
 
-          <div className="p-3.5 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
+          <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
               {isHindi ? '4.8★ रेटिंग और 8 सत्यापन योग्य प्रमाण पत्र' : '4.8★ rating with 8 verifiable skill certificates.'}
             </div>
@@ -310,7 +297,7 @@ export function ConnectedConstellationSection() {
       </div>
 
       {/* Bottom Row Nodes */}
-      <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mt-10">
+      <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-3 sm:gap-4 mt-6 sm:mt-10">
         <div ref={(el) => (nodeRefs.current['node-skills'] = el)}>
           <NodeCard node={nodes[3]} isInView={isInView} delay={0.4} />
         </div>
@@ -329,8 +316,8 @@ function NodeCard({ node, isInView, delay }) {
   const IconComp = node.icon;
   return (
     <motion.div
-      initial={{ scale: 0, opacity: 0, y: 30 }}
-      animate={isInView ? { scale: 1, opacity: 1, y: 0 } : { scale: 0, opacity: 0, y: 30 }}
+      initial={{ scale: 0, opacity: 0, y: 20 }}
+      animate={isInView ? { scale: 1, opacity: 1, y: 0 } : { scale: 0, opacity: 0, y: 20 }}
       transition={{
         duration: 0.5,
         delay,
@@ -338,29 +325,29 @@ function NodeCard({ node, isInView, delay }) {
         stiffness: 260,
         damping: 20,
       }}
-      whileHover={{ scale: 1.06, y: -4 }}
+      whileHover={{ scale: 1.05, y: -3 }}
       className="relative pointer-events-auto group"
     >
       <GlowingEffect
         glowColor={node.glowColor}
         accentGlow="rgba(255, 107, 53, 0.4)"
-        containerClassName="h-full rounded-2xl"
+        containerClassName="h-full rounded-xl sm:rounded-2xl"
       >
-        <div className={`relative p-3.5 sm:p-4 rounded-2xl ${node.bgColor} border ${node.borderColor} shadow-[0_8px_24px_rgba(0,0,0,0.06)] backdrop-blur-md flex items-center gap-3 transition-all min-w-[140px] sm:min-w-[180px]`}>
+        <div className={`relative p-2.5 sm:p-4 rounded-xl sm:rounded-2xl ${node.bgColor} border ${node.borderColor} shadow-sm backdrop-blur-md flex items-center gap-2 sm:gap-3 min-w-[125px] sm:min-w-[170px]`}>
           {/* Red/Color Notification Pill Badge */}
-          <div className={`absolute -top-3 -right-2 px-2.5 py-0.5 rounded-full text-[11px] font-black text-white ${node.badgeBg} shadow-md border-2 border-white dark:border-slate-900 z-20`}>
+          <div className={`absolute -top-2.5 -right-1.5 px-2 py-0.5 rounded-full text-[10px] font-black text-white ${node.badgeBg} shadow-md border-2 border-white dark:border-slate-900 z-20`}>
             {node.badge}
           </div>
 
-          <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-center ${node.color} shrink-0`}>
-            <IconComp className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div className={`w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-center ${node.color} shrink-0`}>
+            <IconComp className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
 
           <div className="text-left pr-1">
             <div className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-tight">
               {node.title}
             </div>
-            <div className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+            <div className="text-[9px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-300">
               {node.sub}
             </div>
           </div>
