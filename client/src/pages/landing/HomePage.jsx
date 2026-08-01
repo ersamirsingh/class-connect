@@ -29,6 +29,7 @@ import { Marquee } from '../../components/motion/Marquee';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
 import { ConnectedConstellationSection } from '../../components/home/ConnectedConstellationSection';
+import { HowItWorksFlowSection } from '../../components/home/HowItWorksFlowSection';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { SquigglyText } from '../../components/motion/SquigglyText';
 import { courseApi } from '../../api/models/course.api';
@@ -310,52 +311,8 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 5. How It Works Section */}
-      <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] relative overflow-hidden">
-        <div className="max-w-[var(--max-width)] mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-manrope font-bold mb-4">
-              <TextEffect preset="fade-up">How it works</TextEffect>
-            </h2>
-            <p className="text-[var(--ink-muted)] text-lg max-w-2xl mx-auto">
-              Your journey to mastery starts here. It's simple, fast, and effective.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-[2px] bg-gradient-to-r from-[var(--primary-soft)] via-[var(--primary)] to-[var(--primary-soft)] z-0" />
-
-            {[
-              {
-                icon: BookOpen,
-                title: "1. Pick a course",
-                desc: "Browse our extensive catalog and find the perfect course that matches your goals."
-              },
-              {
-                icon: CreditCard,
-                title: "2. Pay securely",
-                desc: "Enroll with confidence using our secure, frictionless payment gateways."
-              },
-              {
-                icon: Play,
-                title: "3. Start learning",
-                desc: "Get instant, lifetime access to high-quality video lessons and resources."
-              }
-            ].map((step, idx) => (
-              <InView key={idx} delay={idx * 0.2}>
-                <div className="relative z-10 flex flex-col items-center text-center p-6 bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-sm)] border border-[var(--border)] hover:shadow-[var(--shadow-md)] transition-shadow">
-                  <div className="w-24 h-24 rounded-full bg-[var(--canvas)] border-4 border-[var(--surface)] shadow-sm flex items-center justify-center mb-6">
-                    <step.icon className="w-10 h-10 text-[var(--primary)]" />
-                  </div>
-                  <h3 className="text-xl font-bold font-manrope mb-3">{step.title}</h3>
-                  <p className="text-[var(--ink-muted)]">{step.desc}</p>
-                </div>
-              </InView>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 5. How It Works Section (Reference Screenshot Matching Style) */}
+      <HowItWorksFlowSection />
 
       {/* 6. Stats Section */}
       <section className="py-20 px-6 lg:px-[var(--space-page)] relative overflow-hidden bg-[var(--ink)] text-white">
