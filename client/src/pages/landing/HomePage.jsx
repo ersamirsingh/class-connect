@@ -31,6 +31,7 @@ import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
 import { ConnectedConstellationSection } from '../../components/home/ConnectedConstellationSection';
 import { HowItWorksFlowSection } from '../../components/home/HowItWorksFlowSection';
 import { ArcOrbitStatsCtaSection } from '../../components/home/ArcOrbitStatsCtaSection';
+import { GravityTestimonialsSection } from '../../components/home/GravityTestimonialsSection';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { SquigglyText } from '../../components/motion/SquigglyText';
 import { courseApi } from '../../api/models/course.api';
@@ -315,10 +316,13 @@ export function HomePage() {
       {/* 5. How It Works Section (Reference Screenshot Matching Style) */}
       <HowItWorksFlowSection />
 
-      {/* 6. Arc Orbit Stats & Merged CTA Section (Matching Uploaded Reference Screenshot Style) */}
+      {/* 6. Arc Orbit Stats & Merged CTA Section */}
       <ArcOrbitStatsCtaSection />
 
-      {/* 7. FAQ Section */}
+      {/* 7. Student Loved Stories (Aceternity Gravity Testimonials Grid) */}
+      <GravityTestimonialsSection />
+
+      {/* 8. FAQ Section */}
       <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
