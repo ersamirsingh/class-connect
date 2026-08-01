@@ -1,129 +1,149 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Code2, 
   Smartphone, 
   Palette, 
   Cpu, 
   TrendingUp, 
+  ShieldCheck, 
+  ChevronLeft, 
+  ChevronRight,
   ArrowRight,
-  Database,
-  ShieldCheck,
-  Cloud,
-  ChevronLeft,
-  ChevronRight
+  MonitorPlay,
+  Lightbulb,
+  Megaphone,
+  Compass,
+  Sparkles,
+  Zap
 } from 'lucide-react';
-import { GlowingEffect } from '../motion/GlowingEffect';
-import { TextEffect } from '../motion/TextEffect';
 import { useLanguage } from '../../context/LanguageContext';
-
-const categoryIcons = {
-  'web-development': Code2,
-  'app-development': Smartphone,
-  'ui-ux-design': Palette,
-  'ai-data-science': Cpu,
-  'digital-marketing': TrendingUp,
-  'cloud-computing': Cloud,
-  'cyber-security': ShieldCheck,
-  'data-engineering': Database,
-};
-
-const categoryTechStack = {
-  'web-development': ['React', 'Node.js', 'Next.js', 'MongoDB'],
-  'app-development': ['Flutter', 'React Native', 'Swift', 'Kotlin'],
-  'ui-ux-design': ['Figma', 'Framer', 'Prototyping', '3D Design'],
-  'ai-data-science': ['Python', 'OpenAI', 'PyTorch', 'LLMs'],
-  'digital-marketing': ['SEO', 'Google Ads', 'Meta', 'Analytics'],
-  'cloud-computing': ['AWS', 'Docker', 'Kubernetes', 'DevOps'],
-};
-
-const defaultGradientBadges = [
-  'from-indigo-500/15 via-purple-500/10 to-transparent',
-  'from-blue-500/15 via-cyan-500/10 to-transparent',
-  'from-orange-500/15 via-amber-500/10 to-transparent',
-  'from-emerald-500/15 via-teal-500/10 to-transparent',
-  'from-rose-500/15 via-pink-500/10 to-transparent',
-];
 
 export function CategoryCraftDeck({ categories = [] }) {
   const { language } = useLanguage();
   const isHindi = language === 'hi';
-  
-  const row1Ref = useRef(null);
-  const row2Ref = useRef(null);
+  const sliderRef = useRef(null);
 
-  const [isHoveringRow1, setIsHoveringRow1] = useState(false);
-  const [isHoveringRow2, setIsHoveringRow2] = useState(false);
-
-  // Ensure rich category items
-  const fullCategories = categories.length > 0 ? categories : [
-    { _id: 'c1', name: 'Web Development', slug: 'web-development', courseCount: 12, description: 'HTML, CSS, React, Node.js & Next.js' },
-    { _id: 'c2', name: 'App Development', slug: 'app-development', courseCount: 8, description: 'React Native & Flutter Apps' },
-    { _id: 'c3', name: 'UI/UX Design', slug: 'ui-ux-design', courseCount: 6, description: 'Figma, Visual & Motion Systems' },
-    { _id: 'c4', name: 'AI & Data Science', slug: 'ai-data-science', courseCount: 10, description: 'Python, Machine Learning & LLMs' },
-    { _id: 'c5', name: 'Digital Marketing', slug: 'digital-marketing', courseCount: 5, description: 'SEO, Ads & Brand Growth' },
-    { _id: 'c6', name: 'Cloud Computing', slug: 'cloud-computing', courseCount: 7, description: 'AWS, Docker & Kubernetes' },
+  // 6 Major Course Categories matching the reference image styling & colors
+  const majorCategories = [
+    {
+      id: 'web-dev',
+      name: isHindi ? 'वेब डेवलपमेंट' : 'Web Development',
+      slug: 'web-development',
+      sentence: isHindi ? 'HTML, React, Node.js और Next.js 15 सीखें।' : 'Master HTML, CSS, React, Node.js & Next.js 15.',
+      courseCount: 12,
+      gradient: 'from-[#FF4365] via-[#FF5E7E] to-[#E62E5C]', // Hot Pink / Crimson
+      shadowColor: 'shadow-[0_20px_50px_rgba(255,67,101,0.35)]',
+      pedestalBg: 'bg-white/20 backdrop-blur-md border-white/30',
+      icon: Code2,
+      stageIcon: MonitorPlay,
+    },
+    {
+      id: 'app-dev',
+      name: isHindi ? 'ऐप डेवलपमेंट' : 'App Development',
+      slug: 'app-development',
+      sentence: isHindi ? 'React Native और Flutter से मोबाइल ऐप्स बनाएं।' : 'Build native iOS & Android apps with Flutter & React Native.',
+      courseCount: 8,
+      gradient: 'from-[#10B981] via-[#34D399] to-[#059669]', // Emerald Green
+      shadowColor: 'shadow-[0_20px_50px_rgba(16,185,129,0.35)]',
+      pedestalBg: 'bg-white/20 backdrop-blur-md border-white/30',
+      icon: Smartphone,
+      stageIcon: Smartphone,
+    },
+    {
+      id: 'ui-ux',
+      name: isHindi ? 'यूआई/यूएक्स डिजाइन' : 'UI/UX Design',
+      slug: 'ui-ux-design',
+      sentence: isHindi ? 'Figma, मोशन डिजाइन और विजुअल सिस्टम सीखें।' : 'Figma, Visual Design Systems & Micro-Interactions.',
+      courseCount: 6,
+      gradient: 'from-[#6366F1] via-[#818CF8] to-[#4F46E5]', // Purple / Indigo
+      shadowColor: 'shadow-[0_20px_50px_rgba(99,102,241,0.35)]',
+      pedestalBg: 'bg-white/20 backdrop-blur-md border-white/30',
+      icon: Palette,
+      stageIcon: Lightbulb,
+    },
+    {
+      id: 'ai-data',
+      name: isHindi ? 'एआई और डेटा साइंस' : 'AI & Data Science',
+      slug: 'ai-data-science',
+      sentence: isHindi ? 'पायथन, मशीन लर्निंग और AI एजेंट बनाएं।' : 'Python, Machine Learning, OpenAI APIs & AI Agents.',
+      courseCount: 10,
+      gradient: 'from-[#14B8A6] via-[#2DD4BF] to-[#0D9488]', // Bright Teal / Cyan
+      shadowColor: 'shadow-[0_20px_50px_rgba(20,184,166,0.35)]',
+      pedestalBg: 'bg-white/20 backdrop-blur-md border-white/30',
+      icon: Cpu,
+      stageIcon: Zap,
+    },
+    {
+      id: 'marketing',
+      name: isHindi ? 'डिजिटल मार्केटिंग' : 'Digital Marketing',
+      slug: 'digital-marketing',
+      sentence: isHindi ? 'SEO, सोशल मीडिया विज्ञापन और ब्रांड ग्रोथ सीखें।' : 'Performance Marketing, Google Ads, Meta & Brand Growth.',
+      courseCount: 5,
+      gradient: 'from-[#3B82F6] via-[#60A5FA] to-[#2563EB]', // Royal Blue
+      shadowColor: 'shadow-[0_20px_50px_rgba(59,130,246,0.35)]',
+      pedestalBg: 'bg-white/20 backdrop-blur-md border-white/30',
+      icon: TrendingUp,
+      stageIcon: Megaphone,
+    },
+    {
+      id: 'cloud-sec',
+      name: isHindi ? 'क्लाउड और सिक्योरिटी' : 'Cloud & Security',
+      slug: 'cloud-computing',
+      sentence: isHindi ? 'AWS, डॉकर, कुबेरनेट्स और साइबर सुरक्षा सीखें।' : 'AWS, Docker, Kubernetes & Cybersecurity Defense.',
+      courseCount: 7,
+      gradient: 'from-[#F59E0B] via-[#FBBF24] to-[#D97706]', // Gold / Yellow
+      shadowColor: 'shadow-[0_20px_50px_rgba(245,158,11,0.35)]',
+      pedestalBg: 'bg-white/20 backdrop-blur-md border-white/30',
+      icon: ShieldCheck,
+      stageIcon: Compass,
+    },
   ];
 
-  // Repeat items for infinite loop feel
-  const row1Items = [...fullCategories, ...fullCategories, ...fullCategories];
-  const row2Items = [...fullCategories.slice(2), ...fullCategories, ...fullCategories];
+  // Infinite items array for seamless drag & scroll loop
+  const displayItems = [...majorCategories, ...majorCategories, ...majorCategories];
 
-  // Auto-scroll loop for Row 1 (Left) & Row 2 (Right) when not hovering
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Auto-scroll track loop when not dragging or hovering
   useEffect(() => {
-    let animId1;
-    let animId2;
-
-    const autoScrollRow1 = () => {
-      if (row1Ref.current && !isHoveringRow1) {
-        row1Ref.current.scrollLeft += 1;
-        if (row1Ref.current.scrollLeft >= row1Ref.current.scrollWidth / 2) {
-          row1Ref.current.scrollLeft = 0;
+    let animId;
+    const autoSlide = () => {
+      if (sliderRef.current && !isHovered) {
+        sliderRef.current.scrollLeft += 0.8;
+        if (sliderRef.current.scrollLeft >= sliderRef.current.scrollWidth / 3) {
+          sliderRef.current.scrollLeft = 0;
         }
       }
-      animId1 = requestAnimationFrame(autoScrollRow1);
+      animId = requestAnimationFrame(autoSlide);
     };
 
-    const autoScrollRow2 = () => {
-      if (row2Ref.current && !isHoveringRow2) {
-        row2Ref.current.scrollLeft -= 1;
-        if (row2Ref.current.scrollLeft <= 0) {
-          row2Ref.current.scrollLeft = row2Ref.current.scrollWidth / 2;
-        }
-      }
-      animId2 = requestAnimationFrame(autoScrollRow2);
-    };
+    animId = requestAnimationFrame(autoSlide);
+    return () => cancelAnimationFrame(animId);
+  }, [isHovered]);
 
-    animId1 = requestAnimationFrame(autoScrollRow1);
-    animId2 = requestAnimationFrame(autoScrollRow2);
-
-    return () => {
-      cancelAnimationFrame(animId1);
-      cancelAnimationFrame(animId2);
-    };
-  }, [isHoveringRow1, isHoveringRow2]);
-
-  // Button Click Handlers
-  const scrollLeft = () => {
-    if (row1Ref.current) row1Ref.current.scrollBy({ left: -380, behavior: 'smooth' });
-    if (row2Ref.current) row2Ref.current.scrollBy({ left: -380, behavior: 'smooth' });
+  const slideLeft = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: -380, behavior: 'smooth' });
+    }
   };
 
-  const scrollRight = () => {
-    if (row1Ref.current) row1Ref.current.scrollBy({ left: 380, behavior: 'smooth' });
-    if (row2Ref.current) row2Ref.current.scrollBy({ left: 380, behavior: 'smooth' });
+  const slideRight = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: 380, behavior: 'smooth' });
+    }
   };
 
-  // Convert vertical mouse wheel into horizontal scrolling when hovering cards
-  const handleWheel = (e, ref) => {
-    if (ref.current) {
-      ref.current.scrollLeft += e.deltaY * 0.9;
+  const handleWheel = (e) => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollLeft += e.deltaY * 0.9;
     }
   };
 
   return (
-    <section className="relative py-20 overflow-hidden bg-[var(--canvas)]">
-      {/* Background Glow */}
+    <section className="relative py-24 overflow-hidden bg-[var(--canvas)]">
+      {/* Background Soft Glow Blobs */}
       <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-7xl h-full overflow-hidden opacity-30">
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-[var(--aura-violet)] filter blur-3xl" />
         <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-3xl" />
@@ -132,21 +152,21 @@ export function CategoryCraftDeck({ categories = [] }) {
       {/* Header */}
       <div className="page-container flex flex-col md:flex-row md:items-end justify-between mb-12 relative z-10 gap-6">
         <div className="text-left">
-          <TextEffect preset="fade-in-blur" className="section-heading mb-3">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-manrope text-[var(--ink)] tracking-tight mb-3">
             {isHindi ? 'अपना रास्ता चुनें (Find Your Path)' : 'Find Your Path'}
-          </TextEffect>
+          </h2>
 
-          <p className="section-subheading max-w-xl">
+          <p className="text-base sm:text-lg text-[var(--ink-muted)] max-w-xl font-normal">
             {isHindi 
               ? 'शुरुआती से लेकर प्रोफेशनल बनने तक के लिए तैयार किए गए हमारे विशेष कोर्स श्रेणियों को देखें।'
               : 'Explore our curated selection of disciplines designed to take you from beginner to professional.'}
           </p>
         </div>
 
-        {/* Working Arrow Buttons */}
+        {/* Working Arrow Navigation Controls */}
         <div className="flex items-center gap-3 shrink-0">
           <button
-            onClick={scrollLeft}
+            onClick={slideLeft}
             type="button"
             className="w-12 h-12 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
             aria-label="Scroll left"
@@ -154,7 +174,7 @@ export function CategoryCraftDeck({ categories = [] }) {
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
-            onClick={scrollRight}
+            onClick={slideRight}
             type="button"
             className="w-12 h-12 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
             aria-label="Scroll right"
@@ -164,37 +184,23 @@ export function CategoryCraftDeck({ categories = [] }) {
         </div>
       </div>
 
-      {/* EXACTLY 2 ROWS: Auto-scrolling + Mouse Wheel Horizontal Scroll + Drag + Arrow Button Control */}
-      <div className="relative w-full space-y-6">
-        {/* Fading Edge Overlays */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-16 md:w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
+      {/* Interactive Drag & Click Infinite Slider Container */}
+      <div className="relative w-full">
+        {/* Left & Right Fading Overlays */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-12 md:w-20 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-12 md:w-20 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Row 1 */}
+        {/* Drag / Scroll Track */}
         <div
-          ref={row1Ref}
-          onMouseEnter={() => setIsHoveringRow1(true)}
-          onMouseLeave={() => setIsHoveringRow1(false)}
-          onWheel={(e) => handleWheel(e, row1Ref)}
-          className="flex overflow-x-auto scrollbar-hide py-2 gap-6 cursor-grab active:cursor-grabbing select-none"
+          ref={sliderRef}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onWheel={handleWheel}
+          className="flex overflow-x-auto scrollbar-hide py-4 px-6 md:px-12 gap-6 sm:gap-8 cursor-grab active:cursor-grabbing select-none"
           style={{ scrollBehavior: 'smooth' }}
         >
-          {row1Items.map((cat, idx) => (
-            <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
-          ))}
-        </div>
-
-        {/* Row 2 */}
-        <div
-          ref={row2Ref}
-          onMouseEnter={() => setIsHoveringRow2(true)}
-          onMouseLeave={() => setIsHoveringRow2(false)}
-          onWheel={(e) => handleWheel(e, row2Ref)}
-          className="flex overflow-x-auto scrollbar-hide py-2 gap-6 cursor-grab active:cursor-grabbing select-none"
-          style={{ scrollBehavior: 'smooth' }}
-        >
-          {row2Items.map((cat, idx) => (
-            <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
+          {displayItems.map((cat, idx) => (
+            <ReferenceStyleCard key={`${cat.id}-${idx}`} category={cat} />
           ))}
         </div>
       </div>
@@ -202,68 +208,58 @@ export function CategoryCraftDeck({ categories = [] }) {
   );
 }
 
-function CategoryCraftCard({ category, index }) {
-  const IconComponent = categoryIcons[category.slug] || Code2;
-  const techList = categoryTechStack[category.slug] || ['React', 'Python', 'Figma', 'Node.js'];
-  const gradientClass = defaultGradientBadges[index % defaultGradientBadges.length];
+// 3D Pedestal Stage Reference Card Component (Exact Reference Image Style)
+function ReferenceStyleCard({ category }) {
+  const MainIcon = category.icon;
+  const StageIcon = category.stageIcon;
 
   return (
-    <div className="w-[320px] sm:w-[360px] shrink-0">
+    <div className="w-[340px] sm:w-[380px] md:w-[400px] shrink-0">
       <Link to={`/courses?category=${category.slug}`}>
-        <GlowingEffect
-          glowColor="rgba(67, 56, 242, 0.4)"
-          accentGlow="rgba(255, 107, 53, 0.4)"
-          containerClassName="h-full"
+        <motion.div
+          whileHover={{ y: -8, scale: 1.02 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={`relative h-[260px] sm:h-[280px] rounded-[28px] bg-gradient-to-br ${category.gradient} p-7 flex flex-col justify-between overflow-hidden text-white ${category.shadowColor} border border-white/20`}
         >
-          <div className="relative h-full p-6 sm:p-7 flex flex-col justify-between overflow-hidden bg-[var(--surface)]">
-            {/* Background Subtle Pattern */}
-            <div 
-              className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"
-              style={{
-                backgroundImage: `radial-gradient(circle at 1px 1px, var(--ink) 1px, transparent 0)`,
-                backgroundSize: '16px 16px',
-              }}
-            />
+          {/* Top Row: Category Name + Subtitle (Layer 1 Text) */}
+          <div className="relative z-10 max-w-[65%] text-left">
+            <h3 className="text-2xl sm:text-3xl font-extrabold font-manrope leading-tight mb-2 tracking-tight text-white drop-shadow-sm">
+              {category.name}
+            </h3>
 
-            {/* Gradient Corner Accent */}
-            <div className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl ${gradientClass} rounded-bl-full pointer-events-none`} />
-
-            {/* Top Row: Icon + Course Tag */}
-            <div className="flex items-center justify-between mb-5 relative z-10">
-              <div className="w-12 h-12 rounded-xl bg-[var(--primary-soft)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)] shadow-sm group-hover:scale-110 transition-transform duration-300">
-                <IconComponent className="w-6 h-6" />
-              </div>
-
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--ink-muted)]">
-                {category.courseCount || 10} courses
-              </span>
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 mb-4">
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2 group-hover:text-[var(--primary)] transition-colors flex items-center gap-2 font-manrope">
-                {category.name}
-                <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[var(--primary)]" />
-              </h3>
-
-              <p className="text-sm text-[var(--ink-muted)] line-clamp-2 leading-relaxed font-normal">
-                {category.description || 'Master key concepts with hands-on real-world projects.'}
-              </p>
-            </div>
-
-            {/* Micro Tech Stack Badge Pills inside Card */}
-            <div className="relative z-10 pt-3 border-t border-[var(--border)] flex flex-wrap gap-1.5">
-              {techList.map((tech, i) => (
-                <span 
-                  key={i} 
-                  className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--canvas)] text-[var(--ink-muted)] border border-[var(--border)]"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+            <p className="text-xs sm:text-sm font-medium text-white/90 line-clamp-2 leading-relaxed">
+              {category.sentence}
+            </p>
           </div>
-        </GlowingEffect>
+
+          {/* Bottom Row: Course Count Badge */}
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-sm">
+              <Sparkles className="w-3.5 h-3.5" />
+              {category.courseCount} Courses
+            </span>
+          </div>
+
+          {/* 3D Pedestal Stage & Icon Art (Matching Uploaded Reference Screenshot Style) */}
+          <div className="absolute right-3 bottom-3 sm:right-5 sm:bottom-4 w-44 sm:w-48 h-44 sm:h-48 pointer-events-none flex flex-col items-center justify-end">
+            {/* Top 3D Floating Icon Element */}
+            <motion.div 
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-white text-slate-900 shadow-[0_16px_36px_rgba(0,0,0,0.25)] flex items-center justify-center relative z-20 border-2 border-white/80"
+            >
+              <StageIcon className="w-8 h-8 sm:w-9 sm:h-9 text-slate-800" />
+            </motion.div>
+
+            {/* Middle 3D Step Pedestal Stage 1 */}
+            <div className="w-32 sm:w-36 h-10 sm:h-12 bg-white/30 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 -mt-5 relative z-10 flex items-center justify-center">
+              <MainIcon className="w-5 h-5 text-white/80" />
+            </div>
+
+            {/* Base 3D Step Pedestal Stage 2 */}
+            <div className="w-40 sm:w-44 h-12 sm:h-14 bg-white/20 backdrop-blur-sm rounded-3xl shadow-md border border-white/30 -mt-5 relative z-0" />
+          </div>
+        </motion.div>
       </Link>
     </div>
   );
