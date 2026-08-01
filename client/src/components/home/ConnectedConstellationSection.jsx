@@ -19,81 +19,93 @@ export function ConnectedConstellationSection() {
   // References for dynamic position calculation
   const nodeRefs = useRef({});
   const centerTextRef = useRef(null);
-  const bottomBoxesRef = useRef(null);
   const [lines, setLines] = useState([]);
 
   // Calculate exact connection coordinates dynamically based on actual DOM box positions!
   useEffect(() => {
     const calculateLines = () => {
-      if (!sectionRef.current) return;
+      if (!sectionRef.current || !centerTextRef.current) return;
       const secRect = sectionRef.current.getBoundingClientRect();
+      const centerRect = centerTextRef.current.getBoundingClientRect();
+
       const newLines = [];
 
-      // Helper to get center of an element relative to section
-      const getCenter = (ref) => {
-        if (!ref) return null;
-        const r = ref.getBoundingClientRect();
-        return {
-          x: r.left + r.width / 2 - secRect.left,
-          y: r.top + r.height / 2 - secRect.top,
-          width: r.width,
-          height: r.height,
-        };
+      // Center container bounds relative to section
+      const cText = {
+        x: centerRect.left + centerRect.width / 2 - secRect.left,
+        y: centerRect.top + centerRect.height / 2 - secRect.top,
+        top: centerRect.top - secRect.top,
+        bottom: centerRect.bottom - secRect.top,
+        left: centerRect.left - secRect.left,
+        right: centerRect.right - secRect.left,
+        width: centerRect.width,
+        height: centerRect.height,
       };
-
-      const centerText = getCenter(centerTextRef.current);
-      if (!centerText) return;
 
       Object.keys(nodeRefs.current).forEach((key) => {
         const nodeEl = nodeRefs.current[key];
-        const node = getCenter(nodeEl);
-        if (!node) return;
+        if (!nodeEl) return;
+        const r = nodeEl.getBoundingClientRect();
 
-        // Determine connection points
-        let startX = node.x;
-        let startY = node.y;
-        let endX = centerText.x;
-        let endY = centerText.y;
+        const n = {
+          x: r.left + r.width / 2 - secRect.left,
+          y: r.top + r.height / 2 - secRect.top,
+          top: r.top - secRect.top,
+          bottom: r.bottom - secRect.top,
+          left: r.left - secRect.left,
+          right: r.right - secRect.left,
+          width: r.width,
+          height: r.height,
+        };
 
-        // Custom curve offsets based on node position
+        let startX = n.x;
+        let startY = n.y;
+        let endX = cText.x;
+        let endY = cText.y;
         let controlX = (startX + endX) / 2;
         let controlY = (startY + endY) / 2;
 
         if (key === 'node-bilingual') {
-          startX = node.x + node.width / 3;
-          startY = node.y + node.height / 2;
-          endX = centerText.x - centerText.width / 3;
-          endY = centerText.y - centerText.height / 4;
+          startX = n.right;
+          startY = n.bottom - 10;
+          endX = cText.left + 20;
+          endY = cText.top + 20;
+          controlX = startX + 60;
           controlY = startY + 40;
         } else if (key === 'node-certificates') {
-          startX = node.x;
-          startY = node.y + node.height / 2;
-          endX = centerText.x;
-          endY = centerText.y - centerText.height / 2;
+          startX = n.x;
+          startY = n.bottom;
+          endX = cText.x;
+          endY = cText.top - 5;
+          controlX = n.x;
           controlY = (startY + endY) / 2;
         } else if (key === 'node-instructors') {
-          startX = node.x - node.width / 3;
-          startY = node.y + node.height / 2;
-          endX = centerText.x + centerText.width / 3;
-          endY = centerText.y - centerText.height / 4;
+          startX = n.left;
+          startY = n.bottom - 10;
+          endX = cText.right - 20;
+          endY = cText.top + 20;
+          controlX = startX - 60;
           controlY = startY + 40;
         } else if (key === 'node-skills') {
-          startX = node.x + node.width / 3;
-          startY = node.y - node.height / 2;
-          endX = centerText.x - centerText.width / 3;
-          endY = centerText.y + centerText.height / 3;
+          startX = n.right;
+          startY = n.top + 10;
+          endX = cText.left + 40;
+          endY = cText.bottom - 20;
+          controlX = startX + 60;
           controlY = startY - 40;
         } else if (key === 'node-learners') {
-          startX = node.x;
-          startY = node.y - node.height / 2;
-          endX = centerText.x;
-          endY = centerText.y + centerText.height / 2;
+          startX = n.x;
+          startY = n.top;
+          endX = cText.x;
+          endY = cText.bottom + 5;
+          controlX = n.x;
           controlY = (startY + endY) / 2;
         } else if (key === 'node-rating') {
-          startX = node.x - node.width / 3;
-          startY = node.y - node.height / 2;
-          endX = centerText.x + centerText.width / 3;
-          endY = centerText.y + centerText.height / 3;
+          startX = n.left;
+          startY = n.top + 10;
+          endX = cText.right - 40;
+          endY = cText.bottom - 20;
+          controlX = startX - 60;
           controlY = startY - 40;
         }
 
@@ -106,7 +118,7 @@ export function ConnectedConstellationSection() {
 
     calculateLines();
     window.addEventListener('resize', calculateLines);
-    const timer = setTimeout(calculateLines, 300);
+    const timer = setTimeout(calculateLines, 250);
     return () => {
       window.removeEventListener('resize', calculateLines);
       clearTimeout(timer);
@@ -185,9 +197,9 @@ export function ConnectedConstellationSection() {
   return (
     <section 
       ref={sectionRef} 
-      className="relative py-20 px-4 sm:px-8 bg-[var(--canvas)] overflow-hidden min-h-[700px] flex flex-col justify-between"
+      className="relative py-24 px-4 sm:px-8 bg-[var(--canvas)] overflow-hidden min-h-[720px] flex flex-col justify-between"
     >
-      {/* Real-time Calculated SVG Connecting Lines */}
+      {/* Real-time Calculated SVG Connecting Lines (Connecting all 6 boxes) */}
       <svg 
         className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible"
         fill="none"
@@ -215,18 +227,18 @@ export function ConnectedConstellationSection() {
             <motion.path
               d={line.pathD}
               stroke="url(#liveConstellationGrad)"
-              strokeWidth="3"
+              strokeWidth="3.5"
               strokeLinecap="round"
               initial={{ pathLength: 0, opacity: 0 }}
-              animate={isInView ? { pathLength: 1, opacity: 0.9 } : { pathLength: 0, opacity: 0 }}
-              transition={{ duration: 1.2, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              animate={isInView ? { pathLength: 1, opacity: 0.95 } : { pathLength: 0, opacity: 0 }}
+              transition={{ duration: 1.2, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
             />
           </g>
         ))}
       </svg>
 
       {/* Top Row Nodes: Bilingual (Left), Certificates (Center), Mentors (Right) */}
-      <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mb-8">
+      <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mb-10">
         <div ref={(el) => (nodeRefs.current['node-bilingual'] = el)}>
           <NodeCard node={nodes[0]} isInView={isInView} delay={0.1} />
         </div>
@@ -238,40 +250,51 @@ export function ConnectedConstellationSection() {
         </div>
       </div>
 
-      {/* Center Headline */}
-      <div ref={centerTextRef} className="relative z-20 max-w-3xl mx-auto text-center px-4 py-8">
+      {/* Center Headline with Refined Typography & Sleeker Font Size */}
+      <div ref={centerTextRef} className="relative z-20 max-w-2xl mx-auto text-center px-4 py-6">
         <motion.h2
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={isInView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-[1.2] mb-8"
+          className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-[1.25] mb-8"
         >
-          {isHindi 
-            ? 'पारंपरिक ऑनलाइन शिक्षा अव्यवस्थित है। क्लासकनेक्ट सब कुछ जोड़ता है।'
-            : 'Traditional online learning is fragmented. ClassConnect unites everything.'}
+          {isHindi ? (
+            <span>
+              पारंपरिक ऑनलाइन शिक्षा अव्यवस्थित है।{' '}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4338F2] via-[#7C3AED] to-[#FF6B35]">
+                क्लासकनेक्ट सब कुछ जोड़ता है।
+              </span>
+            </span>
+          ) : (
+            <span>
+              Traditional online learning is fragmented.{' '}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4338F2] via-[#7C3AED] to-[#FF6B35]">
+                ClassConnect unites everything.
+              </span>
+            </span>
+          )}
         </motion.h2>
 
         {/* 3 Sub-Text Bullet Items */}
         <motion.div
-          ref={bottomBoxesRef}
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, delay: 0.5 }}
           className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left font-mono"
         >
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
               {isHindi ? '100% द्विभाषी हिंदी और अंग्रेजी भाषा में लर्निंग OS' : '100% Bilingual Hindi & English visual learning OS.'}
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
               {isHindi ? '10,000+ सक्रिय विद्यार्थी रियल स्किल्स सीख रहे हैं' : '10,000+ active learners mastering real skills.'}
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md hover:border-[var(--primary)]/50 transition-colors">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
               {isHindi ? '4.8★ रेटिंग और 8 सत्यापन योग्य प्रमाण पत्र' : '4.8★ rating with 8 verifiable skill certificates.'}
             </div>
@@ -280,7 +303,7 @@ export function ConnectedConstellationSection() {
       </div>
 
       {/* Bottom Row Nodes: Job Skills (Left), Learners (Center), Rating (Right) */}
-      <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mt-8">
+      <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mt-10">
         <div ref={(el) => (nodeRefs.current['node-skills'] = el)}>
           <NodeCard node={nodes[3]} isInView={isInView} delay={0.4} />
         </div>
@@ -311,7 +334,7 @@ function NodeCard({ node, isInView, delay }) {
       whileHover={{ scale: 1.06, y: -4 }}
       className="relative pointer-events-auto"
     >
-      <div className={`relative p-3.5 sm:p-4 rounded-2xl ${node.bgColor} border-2 ${node.borderColor} shadow-[0_14px_32px_rgba(0,0,0,0.12)] backdrop-blur-md flex items-center gap-3 transition-transform min-w-[150px] sm:min-w-[190px]`}>
+      <div className={`relative p-3.5 sm:p-4 rounded-2xl ${node.bgColor} border-2 ${node.borderColor} shadow-[0_14px_32px_rgba(0,0,0,0.12)] backdrop-blur-md flex items-center gap-3 transition-transform min-w-[140px] sm:min-w-[180px]`}>
         {/* Red/Color Notification Pill Badge */}
         <div className={`absolute -top-3 -right-2 px-2.5 py-0.5 rounded-full text-[11px] font-black text-white ${node.badgeBg} shadow-md border-2 border-white dark:border-slate-900`}>
           {node.badge}
