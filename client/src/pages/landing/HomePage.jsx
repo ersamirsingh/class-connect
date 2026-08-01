@@ -177,27 +177,6 @@ export function HomePage() {
                 {isHindi ? 'सीखना शुरू करें' : 'Start Learning'}
               </button>
             </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="mt-12 flex items-center gap-8 border-t border-[var(--border)] pt-8 w-full max-w-md"
-            >
-              <div>
-                <div className="flex items-baseline gap-0.5 text-2xl font-bold font-manrope">
-                  <NumberTicker value={10000} />+
-                </div>
-                <div className="text-sm text-[var(--ink-muted)] font-medium">Active Learners</div>
-              </div>
-              <div className="w-px h-10 bg-[var(--border)]"></div>
-              <div>
-                <div className="flex items-baseline gap-1 text-2xl font-bold font-manrope">
-                  <NumberTicker value={4} />.<NumberTicker value={8} /> <Star className="w-5 h-5 fill-[var(--accent)] text-[var(--accent)]" />
-                </div>
-                <div className="text-sm text-[var(--ink-muted)] font-medium">Average Rating</div>
-              </div>
-            </motion.div>
           </div>
 
           {/* Hero Visual */}
