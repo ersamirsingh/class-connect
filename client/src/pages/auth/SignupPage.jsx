@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Eye, EyeOff, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
 
 export function SignupPage() {
@@ -34,13 +33,11 @@ export function SignupPage() {
     if (pass.length > 8) strength += 1;
     if (/[A-Z]/.test(pass)) strength += 1;
     if (/[0-9]/.test(pass)) strength += 1;
-    if (/[^A-Za-z0-9]/.test(pass)) strength += 1;
-    return Math.min(4, strength);
+    return Math.min(3, strength);
   };
 
   const strength = getPasswordStrength(formData.password);
-  const strengthColors = ['var(--danger)', 'var(--energy-accent,#FF6B35)', 'var(--energy-accent,#FF6B35)', 'var(--success)', 'var(--success)'];
-  const strengthColor = formData.password ? strengthColors[strength] : 'var(--border)';
+  const strengthColors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,90 +45,89 @@ export function SignupPage() {
     setError('');
     
     try {
-      await signup(formData.name, formData.email, formData.password, formData.phone, null);
-      navigate('/login', { state: { message: t('auth.signupSuccess') } });
+      const user = await signup(formData.name, formData.email, formData.password, formData.phone, null);
+      if (user?.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
-      setError(err.message || t('auth.signupError'));
+      setError(err.response?.data?.message || err.message || t('auth.signupError') || 'Failed to create account');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--canvas)] p-4 sm:p-6 lg:p-8 py-12">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-md bg-[var(--surface)] rounded-[var(--radius-lg,20px)] shadow-[var(--shadow-card,0_4px_32px_rgba(34,32,90,0.08))] p-8 border border-[var(--border)]"
-      >
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold font-['Manrope'] text-[var(--ink)] mb-2">
-            {t('auth.createAccount')}
-          </h1>
-          <p className="text-[var(--ink-muted)] font-['Inter']">
-            {t('auth.signupSubtitle')}
-          </p>
+    <div className="w-full">
+      <div className="mb-5">
+        <h1 className="text-2xl sm:text-3xl font-extrabold font-manrope text-[var(--ink)] mb-1">
+          {t('auth.createAccount') || 'Create Account'}
+        </h1>
+        <p className="text-xs sm:text-sm text-[var(--ink-muted)] font-medium">
+          {t('auth.signupSubtitle') || 'Join ClassConnect to access all courses and interactive live classes.'}
+        </p>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3.5 bg-red-50 text-red-600 border border-red-200 rounded-xl flex items-center gap-2.5 text-xs font-bold">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-3.5">
+        <div className="space-y-1">
+          <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
+            {t('auth.nameLabel') || 'Full Name'}
+          </label>
+          <input
+            type="text"
+            name="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full min-h-[42px] px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all"
+            placeholder="Enter your full name"
+            disabled={loading}
+          />
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-[var(--danger-soft,rgba(255,0,0,0.1))] text-[var(--danger,red)] rounded-[var(--radius-md,12px)] flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-            <p className="text-sm font-medium">{error}</p>
-          </div>
-        )}
+        <div className="space-y-1">
+          <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
+            {t('auth.emailLabel') || 'Email Address'}
+          </label>
+          <input
+            type="email"
+            name="email"
+            required
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full min-h-[42px] px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all"
+            placeholder="name@example.com"
+            disabled={loading}
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--ink)] font-['Inter']">
-              {t('auth.nameLabel')}
-            </label>
-            <input
-              type="text"
-              name="name"
-              required
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full min-h-[48px] px-4 py-3 rounded-[var(--radius-md,12px)] border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-shadow font-['Inter']"
-              placeholder={t('auth.namePlaceholder')}
-              disabled={loading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--ink)] font-['Inter']">
-              {t('auth.emailLabel')}
-            </label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full min-h-[48px] px-4 py-3 rounded-[var(--radius-md,12px)] border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-shadow font-['Inter']"
-              placeholder={t('auth.emailPlaceholder')}
-              disabled={loading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--ink)] font-['Inter']">
-              {t('auth.phoneLabel')}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
+              {t('auth.phoneLabel') || 'Phone Number'}
             </label>
             <input
               type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full min-h-[48px] px-4 py-3 rounded-[var(--radius-md,12px)] border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-shadow font-['Inter']"
-              placeholder={t('auth.phonePlaceholder')}
+              className="w-full min-h-[42px] px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all"
+              placeholder="Enter phone number"
               disabled={loading}
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-[var(--ink)] font-['Inter']">
-              {t('auth.passwordLabel')}
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
+              {t('auth.passwordLabel') || 'Password'}
             </label>
             <div className="relative">
               <input
@@ -140,62 +136,63 @@ export function SignupPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full min-h-[48px] px-4 py-3 pr-12 rounded-[var(--radius-md,12px)] border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-shadow font-['Inter']"
-                placeholder={t('auth.passwordPlaceholder')}
+                className="w-full min-h-[42px] px-4 py-2 pr-10 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all"
+                placeholder="••••••••"
                 disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] hover:text-[var(--ink)] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
-                aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] hover:text-[var(--ink)] p-1 rounded-lg transition-colors cursor-pointer"
+                aria-label={showPassword ? 'Hide Password' : 'Show Password'}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            
-            {/* Password Strength Indicator */}
-            {formData.password && (
-              <div className="pt-2 flex gap-1">
-                {[...Array(4)].map((_, i) => (
-                  <div 
-                    key={i} 
-                    className="h-1 flex-1 rounded-full transition-colors duration-300"
-                    style={{ backgroundColor: i <= strength ? strengthColor : 'var(--border)' }}
-                  />
-                ))}
-              </div>
-            )}
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full min-h-[48px] mt-2 flex items-center justify-center gap-2 bg-[var(--primary)] text-[var(--surface)] font-bold rounded-[var(--radius-md,12px)] hover:bg-[var(--deep-anchor,#24216F)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] disabled:opacity-70 disabled:cursor-not-allowed font-['Inter']"
-          >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <UserPlus className="w-5 h-5" />
-                {t('auth.signupButton')}
-              </>
-            )}
-          </button>
-        </form>
-
-        <div className="mt-8 text-center font-['Inter']">
-          <span className="text-[var(--ink-muted)] text-sm">
-            {t('auth.alreadyHaveAccount')}
-          </span>{' '}
-          <Link 
-            to="/login" 
-            className="text-[var(--primary)] font-bold hover:underline text-sm ml-1"
-          >
-            {t('auth.loginLink')}
-          </Link>
         </div>
-      </motion.div>
+
+        {/* Password Strength Bar */}
+        {formData.password && (
+          <div className="pt-1 flex gap-1 items-center">
+            <span className="text-[10px] font-bold text-[var(--ink-muted)] uppercase mr-1">Strength:</span>
+            {[...Array(4)].map((_, i) => (
+              <div 
+                key={i} 
+                className="h-1.5 flex-1 rounded-full transition-all duration-300"
+                style={{ backgroundColor: i <= strength ? strengthColors[strength] : 'var(--border)' }}
+              />
+            ))}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full min-h-[44px] mt-3 flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--deep-anchor,#24216F)] text-white text-xs font-extrabold rounded-full shadow-md transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              <UserPlus className="w-4 h-4" />
+              <span>{t('auth.signupButton') || 'Create Free Account'}</span>
+            </>
+          )}
+        </button>
+      </form>
+
+      <div className="mt-5 pt-3 border-t border-[var(--border)] text-center text-xs">
+        <span className="text-[var(--ink-muted)] font-medium">
+          {t('auth.alreadyHaveAccount') || 'Already have an account?'}
+        </span>{' '}
+        <Link 
+          to="/login" 
+          className="text-[var(--primary)] font-extrabold hover:underline ml-1"
+        >
+          {t('auth.loginLink') || 'Sign In'}
+        </Link>
+      </div>
     </div>
   );
 }

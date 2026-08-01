@@ -13,7 +13,10 @@ import {
   ChevronDown, 
   ArrowRight,
   MonitorPlay,
-  Briefcase
+  Briefcase,
+  Radio,
+  Quote,
+  CheckCircle2
 } from 'lucide-react';
 
 import { useLanguage } from '../../context/LanguageContext';
@@ -32,6 +35,59 @@ import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
+
+// --- Sample Testimonials Data ---
+const testimonials = [
+  {
+    name: "Aarav Sharma",
+    role: "Full-Stack Developer at TechCorp",
+    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+    text: "ClassConnect transformed how I learn. The visual course breakdown and live sessions gave me the practical confidence to crack my dream interview!",
+    course: "Full-Stack Web Engineering"
+  },
+  {
+    name: "Priya Patel",
+    role: "UI/UX Designer",
+    photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+    text: "The bilingual teaching style (Hindi + English) was a game changer for me. Concepts are explained so clearly with real-world projects.",
+    course: "UI/UX Design Masterclass"
+  },
+  {
+    name: "Rohan Verma",
+    role: "Data Analyst",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+    text: "Lifetime access and verifiable certificates gave my resume an instant boost. Highly recommended for anyone starting from scratch!",
+    course: "Data Science & Analytics"
+  }
+];
+
+// --- Live Classes Mock Data ---
+const liveClassesSample = [
+  {
+    id: 'live-1',
+    title: 'Advanced React 19 & Server Components Masterclass',
+    instructor: 'Rohan Sharma',
+    time: 'Today • 7:00 PM IST',
+    attendees: 340,
+    isLiveNow: true,
+  },
+  {
+    id: 'live-2',
+    title: 'Full-Stack Architecture & Microservices Q&A',
+    instructor: 'Sneha Gupta',
+    time: 'Tomorrow • 6:00 PM IST',
+    attendees: 215,
+    isLiveNow: false,
+  },
+  {
+    id: 'live-3',
+    title: 'AI Engineering & LLM Integration Live Workshop',
+    instructor: 'Vikram Mehta',
+    time: 'Aug 4 • 8:00 PM IST',
+    attendees: 490,
+    isLiveNow: false,
+  }
+];
 
 // --- Placeholder Translations (Fallback if keys missing) ---
 const getTranslation = (t, key, fallback) => {
@@ -327,7 +383,56 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 5. How It Works Section */}
+      {/* 4.5. Live Classes Strip (Flat Row with Live Now Pulsing Badge) */}
+      <section className="py-12 px-6 lg:px-[var(--space-page)] bg-[var(--canvas)] border-y border-[var(--border)]">
+        <div className="max-w-[var(--max-width)] mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+              <h2 className="text-2xl font-bold font-manrope">Live Classes & Workshops</h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-red-500 text-white uppercase tracking-wider">Live Now</span>
+            </div>
+            <Link to="/courses" className="text-sm font-semibold text-[var(--primary)] hover:underline flex items-center gap-1">
+              View Schedule <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Flat Horizontal Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {liveClassesSample.map((session) => (
+              <div key={session.id} className="p-6 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-sm)] flex flex-col justify-between hover:border-[var(--primary)]/50 transition-all">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    {session.isLiveNow ? (
+                      <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-600 text-xs font-bold flex items-center gap-1">
+                        <Radio className="w-3.5 h-3.5 animate-pulse" /> LIVE NOW
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold">
+                        {session.time}
+                      </span>
+                    )}
+                    <span className="text-xs text-[var(--ink-muted)] font-medium">{session.attendees} registered</span>
+                  </div>
+                  <h3 className="font-bold text-lg font-manrope mb-2 line-clamp-2">{session.title}</h3>
+                  <p className="text-sm text-[var(--ink-muted)]">Host: <span className="font-semibold text-[var(--ink)]">{session.instructor}</span></p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-[var(--border)] flex items-center justify-between">
+                  <span className="text-xs font-semibold text-[var(--primary)]">Interactive Session</span>
+                  <Link to="/courses" className="px-4 py-2 text-xs font-bold rounded-full bg-[var(--primary)] text-white hover:bg-[var(--primary-deep)] transition-colors">
+                    {session.isLiveNow ? 'Join Room' : 'Reserve Spot'}
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. How It Works Section (4-Step Visual: Browse -> Buy -> Learn -> Get Certified) */}
       <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] relative overflow-hidden">
         <div className="max-w-[var(--max-width)] mx-auto">
           <div className="text-center mb-16">
@@ -335,38 +440,93 @@ export function HomePage() {
               <TextEffect preset="fade-up">How it works</TextEffect>
             </h2>
             <p className="text-[var(--ink-muted)] text-lg max-w-2xl mx-auto">
-              Your journey to mastery starts here. It's simple, fast, and effective.
+              Your 4-step path from curiosity to certified expertise.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-[2px] bg-gradient-to-r from-[var(--primary-soft)] via-[var(--primary)] to-[var(--primary-soft)] z-0" />
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
             {[
               {
                 icon: BookOpen,
-                title: "1. Pick a course",
-                desc: "Browse our extensive catalog and find the perfect course that matches your goals."
+                step: "1. Browse",
+                title: "Explore Courses",
+                desc: "Filter through structured live and recorded courses across tech, business, and design."
               },
               {
                 icon: CreditCard,
-                title: "2. Pay securely",
-                desc: "Enroll with confidence using our secure, frictionless payment gateways."
+                step: "2. Buy",
+                title: "Instant Access",
+                desc: "Seamless, secure checkout with Razorpay UPI QR or Stripe card payments."
               },
               {
                 icon: Play,
-                title: "3. Start learning",
-                desc: "Get instant, lifetime access to high-quality video lessons and resources."
+                step: "3. Learn",
+                title: "Interactive Practice",
+                desc: "Watch HLS video lectures, join live interactive rooms, and solve hands-on tasks."
+              },
+              {
+                icon: Award,
+                step: "4. Get Certified",
+                title: "Earn Certificate",
+                desc: "Track your progress to 100% completion and download your verifiable certificate."
               }
-            ].map((step, idx) => (
-              <InView key={idx} delay={idx * 0.2}>
-                <div className="relative z-10 flex flex-col items-center text-center p-6 bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-sm)] border border-[var(--border)] hover:shadow-[var(--shadow-md)] transition-shadow">
-                  <div className="w-24 h-24 rounded-full bg-[var(--canvas)] border-4 border-[var(--surface)] shadow-sm flex items-center justify-center mb-6">
-                    <step.icon className="w-10 h-10 text-[var(--primary)]" />
+            ].map((item, idx) => (
+              <InView key={idx} delay={idx * 0.15}>
+                <div className="relative z-10 flex flex-col items-center text-center p-6 bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-sm)] border border-[var(--border)] hover:shadow-[var(--shadow-md)] hover:border-[var(--primary)]/30 transition-all h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center mb-5 font-bold shadow-sm">
+                    <item.icon className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl font-bold font-manrope mb-3">{step.title}</h3>
-                  <p className="text-[var(--ink-muted)]">{step.desc}</p>
+                  <span className="text-xs font-black text-[var(--primary)] uppercase tracking-wider mb-1">{item.step}</span>
+                  <h3 className="text-lg font-bold font-manrope mb-2">{item.title}</h3>
+                  <p className="text-sm text-[var(--ink-muted)] leading-relaxed">{item.desc}</p>
+                </div>
+              </InView>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5.5. Testimonials Carousel (Photo-First) */}
+      <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)] border-y border-[var(--border)]">
+        <div className="max-w-[var(--max-width)] mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-bold mb-4">
+              <Quote className="w-3.5 h-3.5" /> Student Stories
+            </div>
+            <h2 className="text-3xl md:text-4xl font-manrope font-bold mb-4">
+              Loved by 10,000+ Learners
+            </h2>
+            <p className="text-[var(--ink-muted)] text-lg max-w-xl mx-auto">
+              Read how students across India built career skills and transformed their futures.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((item, idx) => (
+              <InView key={idx} delay={idx * 0.15}>
+                <div className="bg-[var(--canvas)] p-8 rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] flex flex-col justify-between h-full hover:shadow-[var(--shadow-md)] transition-all">
+                  <div>
+                    <div className="flex items-center gap-1 text-[var(--accent)] mb-6">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-[var(--accent)]" />
+                      ))}
+                    </div>
+                    <p className="text-[var(--ink)] font-medium leading-relaxed mb-8 italic">
+                      "{item.text}"
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 pt-4 border-t border-[var(--border)]">
+                    <img 
+                      src={item.photo} 
+                      alt={item.name} 
+                      className="w-12 h-12 rounded-full object-cover border-2 border-[var(--primary-soft)]"
+                    />
+                    <div>
+                      <h4 className="font-bold text-sm font-manrope text-[var(--ink)]">{item.name}</h4>
+                      <p className="text-xs text-[var(--ink-muted)]">{item.role}</p>
+                      <span className="text-[10px] font-semibold text-[var(--primary)]">{item.course}</span>
+                    </div>
+                  </div>
                 </div>
               </InView>
             ))}

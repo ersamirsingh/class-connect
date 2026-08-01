@@ -34,23 +34,29 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await authApi.login({ email, password });
     if (res.success && res.data) {
-      setToken(res.data.token);
-      setUser(res.data.user);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      const loggedUser = res.data.user;
+      const userToken = res.data.token;
+      setToken(userToken);
+      setUser(loggedUser);
+      localStorage.setItem('token', userToken);
+      localStorage.setItem('user', JSON.stringify(loggedUser));
+      return loggedUser;
     }
-    return res;
+    throw new Error(res.message || 'Login failed');
   };
 
   const signup = async (name, email, password, phone, photo) => {
     const res = await authApi.signup({ name, email, password, phone, photo });
     if (res.success && res.data) {
-      setToken(res.data.token);
-      setUser(res.data.user);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      const createdUser = res.data.user;
+      const userToken = res.data.token;
+      setToken(userToken);
+      setUser(createdUser);
+      localStorage.setItem('token', userToken);
+      localStorage.setItem('user', JSON.stringify(createdUser));
+      return createdUser;
     }
-    return res;
+    throw new Error(res.message || 'Signup failed');
   };
 
   const logout = async () => {

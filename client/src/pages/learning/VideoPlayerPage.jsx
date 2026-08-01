@@ -4,7 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { courseApi } from '../../api/models/course.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
-import { CheckCircle2, Circle, ChevronLeft, Menu, X, Play } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronLeft, Menu, X, PlayCircle, BookOpen } from 'lucide-react';
+import { CustomVideoPlayer } from '../../components/video/CustomVideoPlayer';
 
 export function VideoPlayerPage() {
   const { courseId } = useParams();
@@ -19,9 +20,18 @@ export function VideoPlayerPage() {
     async function loadCourse() {
       try {
         const res = await courseApi.getCourseByIdOrSlug(courseId);
-        setCourse(res?.data);
-        if (res?.data?.lectures?.length > 0) {
-          setCurrentLecture(res.data.lectures[0]);
+        const loadedCourse = res?.data;
+        setCourse(loadedCourse);
+
+        // Find first lecture across sections or lectures array
+        if (loadedCourse) {
+          const allLectures = loadedCourse.sections && loadedCourse.sections.length > 0
+            ? loadedCourse.sections.flatMap(s => s.lectures || [])
+            : (loadedCourse.lectures || []);
+
+          if (allLectures.length > 0) {
+            setCurrentLecture(allLectures[0]);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -33,102 +43,210 @@ export function VideoPlayerPage() {
   }, [courseId]);
 
   const handleMarkComplete = async () => {
-    if (!currentLecture) return;
+    if (!currentLecture || !course) return;
+    const lectureId = currentLecture._id || currentLecture.id || currentLecture.title;
     try {
-      await enrollmentApi.markComplete(courseId, currentLecture.id);
+      await enrollmentApi.markComplete(courseId, lectureId);
+      
       // Update local state to reflect completion
       setCourse(prev => {
-        if(!prev) return prev;
-        const newLectures = prev.lectures.map(l => l.id === currentLecture.id ? { ...l, completed: true } : l);
-        return { ...prev, lectures: newLectures };
+        if (!prev) return prev;
+        const updatedSections = (prev.sections || []).map(section => ({
+          ...section,
+          lectures: (section.lectures || []).map(l => 
+            (l._id || l.id || l.title) === lectureId ? { ...l, completed: true } : l
+          )
+        }));
+        return { ...prev, sections: updatedSections };
       });
+      setCurrentLecture(prev => prev ? { ...prev, completed: true } : prev);
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (loading) return <div className="h-screen bg-[var(--canvas)] flex items-center justify-center text-[var(--ink)]">Loading...</div>;
-  if (!course) return <div className="h-screen bg-[var(--canvas)] flex items-center justify-center text-[var(--ink)]">Course not found</div>;
+  if (loading) {
+    return (
+      <div className="h-screen bg-[var(--canvas)] flex items-center justify-center text-[var(--ink)] font-sans">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+          <span className="font-bold text-sm">Loading course video player...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="h-screen bg-[var(--canvas)] flex flex-col items-center justify-center text-[var(--ink)] gap-4 font-sans">
+        <p className="text-lg font-bold">Course not found.</p>
+        <button onClick={() => navigate('/dashboard')} className="px-5 py-2 bg-[var(--primary)] text-white text-xs font-bold rounded-full">
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  const allLecturesList = course.sections && course.sections.length > 0
+    ? course.sections.flatMap(s => s.lectures || [])
+    : (course.lectures || []);
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-hidden font-sans">
       
-      {/* Main Content area */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         {/* Header */}
-        <header className="h-16 shrink-0 bg-[var(--surface)] border-b border-[var(--border)] flex items-center px-4 justify-between">
+        <header className="h-16 shrink-0 bg-[var(--surface)] border-b border-[var(--border)] flex items-center px-4 md:px-6 justify-between z-10">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-[var(--canvas)] rounded-full transition-colors min-h-[44px]">
-              <ChevronLeft className="w-5 h-5" />
+            <button 
+              onClick={() => navigate('/dashboard')} 
+              className="p-2 hover:bg-[var(--canvas)] rounded-full transition-colors min-h-[44px] cursor-pointer"
+              title="Back to Dashboard"
+            >
+              <ChevronLeft className="w-5 h-5 text-[var(--ink)]" />
             </button>
-            <h1 className="font-bold truncate hidden sm:block">{course.title}</h1>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase text-[var(--primary)] tracking-wider">Course Player</span>
+              <h1 className="font-extrabold text-sm sm:text-base font-manrope text-[var(--ink)] truncate max-w-md sm:max-w-xl">{course.title}</h1>
+            </div>
           </div>
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-[var(--canvas)] rounded-lg min-h-[44px]">
-            <Menu className="w-5 h-5" />
+          <button 
+            onClick={() => setSidebarOpen(true)} 
+            className="lg:hidden p-2 hover:bg-[var(--canvas)] rounded-xl min-h-[44px] cursor-pointer border border-[var(--border)] flex items-center gap-1.5 text-xs font-bold"
+          >
+            <Menu className="w-4 h-4 text-[var(--primary)]" />
+            <span>Modules</span>
           </button>
         </header>
 
-        {/* Video Area */}
-        <div className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col max-w-6xl mx-auto w-full">
-          <div className="aspect-video bg-black rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-md)] mb-6 flex items-center justify-center relative">
-            {currentLecture?.videoUrl ? (
-              <video src={currentLecture.videoUrl} controls className="w-full h-full" />
-            ) : (
-              <div className="text-white/50 flex flex-col items-center">
-                <Play className="w-12 h-12 mb-2" />
-                <span>Video content here</span>
-              </div>
-            )}
+        {/* Video Player & Info Area */}
+        <div className="flex-1 p-4 md:p-6 flex flex-col max-w-3xl mx-auto w-full space-y-6">
+          
+          {/* CUSTOM VIDEO PLAYER (Compact initial size, expands to 100% display in Fullscreen mode) */}
+          <div className="w-full max-w-3xl mx-auto shadow-xl rounded-2xl overflow-hidden border border-[var(--border)]">
+            <CustomVideoPlayer 
+              src={currentLecture?.videoUrl} 
+              title={currentLecture?.title || course.title}
+              poster={course.thumbnail}
+            />
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h2 className="text-2xl font-bold font-['Manrope']">{currentLecture?.title || 'Lecture Title'}</h2>
+          {/* Lecture Info Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[var(--border)] pb-6">
+            <div>
+              <span className="text-xs font-bold text-[var(--primary)] uppercase tracking-wider">
+                Lesson: {currentLecture?.title || 'Overview'}
+              </span>
+              <h2 className="text-xl sm:text-2xl font-extrabold font-manrope mt-0.5 text-[var(--ink)]">
+                {currentLecture?.title || 'Welcome to the Course'}
+              </h2>
+            </div>
+            
             <button 
               onClick={handleMarkComplete}
-              className="px-6 py-2.5 min-h-[44px] bg-[var(--success)] text-white font-medium rounded-[var(--radius-pill)] hover:opacity-90 transition-opacity flex items-center gap-2"
+              className={`px-6 py-2.5 min-h-[44px] rounded-full font-extrabold text-xs transition-all flex items-center gap-2 shadow-sm cursor-pointer ${
+                currentLecture?.completed 
+                  ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' 
+                  : 'bg-[var(--primary)] text-white hover:bg-[var(--deep-anchor,#24216F)]'
+              }`}
             >
-              <CheckCircle2 className="w-5 h-5" />
-              {t('mark_complete') || 'Mark Complete'}
+              <CheckCircle2 className="w-4.5 h-4.5" />
+              <span>{currentLecture?.completed ? 'Completed ✓' : (t('mark_complete') || 'Mark Complete')}</span>
             </button>
           </div>
 
-          <div className="prose max-w-none text-[var(--ink-muted)] pb-10">
-            <p>{currentLecture?.description || 'No description provided for this lecture.'}</p>
+          {/* Description & Resources */}
+          <div className="prose max-w-none text-sm text-[var(--ink-muted)] leading-relaxed space-y-3 pb-10">
+            <h3 className="text-sm font-bold text-[var(--ink)] uppercase tracking-wider">Lecture Overview & Resources</h3>
+            <p>{currentLecture?.description || 'No additional description provided for this lecture.'}</p>
           </div>
         </div>
       </div>
 
       {/* Sidebar - Desktop */}
       <div className="hidden lg:flex w-80 shrink-0 bg-[var(--surface)] border-l border-[var(--border)] flex-col h-full z-10">
-        <div className="p-4 border-b border-[var(--border)]">
-          <h3 className="font-bold font-['Manrope']">Course Content</h3>
+        <div className="p-4 border-b border-[var(--border)] bg-[var(--canvas)] flex items-center justify-between">
+          <div>
+            <h3 className="font-extrabold text-sm font-manrope text-[var(--ink)]">Course Content</h3>
+            <p className="text-[10px] text-[var(--ink-muted)] font-medium">{allLecturesList.length} Lectures Total</p>
+          </div>
+          <BookOpen className="w-4 h-4 text-[var(--primary)]" />
         </div>
-        <div className="flex-1 overflow-y-auto">
-          {course.lectures?.map((lecture, idx) => (
-            <button 
-              key={lecture.id}
-              onClick={() => setCurrentLecture(lecture)}
-              className={`w-full text-left p-4 min-h-[44px] flex gap-3 border-b border-[var(--border)] transition-colors hover:bg-[var(--canvas)] ${currentLecture?.id === lecture.id ? 'bg-[var(--aura-blue)]/50' : ''}`}
-            >
-              <div className="shrink-0 mt-0.5 text-[var(--primary)]">
-                {lecture.completed ? <CheckCircle2 className="w-5 h-5 text-[var(--success)]" /> : <Circle className="w-5 h-5 text-[var(--ink-muted)]" />}
+
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+          {course.sections && course.sections.length > 0 ? (
+            course.sections.map((section, sIdx) => (
+              <div key={section._id || sIdx} className="space-y-1 mb-3">
+                <div className="px-3 py-1.5 text-[11px] font-black uppercase text-[var(--ink-muted)] tracking-wider">
+                  {section.title}
+                </div>
+                {(section.lectures || []).map((lecture, lIdx) => {
+                  const isSelected = (currentLecture?._id || currentLecture?.id || currentLecture?.title) === (lecture._id || lecture.id || lecture.title);
+                  return (
+                    <button 
+                      key={lecture._id || lIdx}
+                      onClick={() => setCurrentLecture(lecture)}
+                      className={`w-full text-left p-3 rounded-xl min-h-[44px] flex items-center gap-3 transition-all cursor-pointer ${
+                        isSelected 
+                          ? 'bg-[var(--primary-soft)] border border-[var(--primary)] text-[var(--primary)]' 
+                          : 'hover:bg-[var(--canvas)] text-[var(--ink)]'
+                      }`}
+                    >
+                      <div className="shrink-0 text-[var(--primary)]">
+                        {lecture.completed ? (
+                          <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" />
+                        ) : (
+                          <PlayCircle className="w-4.5 h-4.5 text-[var(--ink-muted)]" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-extrabold text-xs line-clamp-1">{lecture.title}</div>
+                        <div className="text-[10px] text-[var(--ink-muted)] font-mono">{lecture.duration || '10 mins'}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-              <div>
-                <div className="text-xs text-[var(--ink-muted)] mb-1">Lesson {idx + 1}</div>
-                <div className="font-medium text-sm line-clamp-2">{lecture.title}</div>
-              </div>
-            </button>
-          ))}
+            ))
+          ) : (
+            allLecturesList.map((lecture, idx) => {
+              const isSelected = (currentLecture?._id || currentLecture?.id || currentLecture?.title) === (lecture._id || lecture.id || lecture.title);
+              return (
+                <button 
+                  key={lecture._id || idx}
+                  onClick={() => setCurrentLecture(lecture)}
+                  className={`w-full text-left p-3 rounded-xl min-h-[44px] flex items-center gap-3 transition-all cursor-pointer ${
+                    isSelected 
+                      ? 'bg-[var(--primary-soft)] border border-[var(--primary)] text-[var(--primary)]' 
+                      : 'hover:bg-[var(--canvas)] text-[var(--ink)]'
+                  }`}
+                >
+                  <div className="shrink-0 text-[var(--primary)]">
+                    {lecture.completed ? (
+                      <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" />
+                    ) : (
+                      <PlayCircle className="w-4.5 h-4.5 text-[var(--ink-muted)]" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-extrabold text-xs line-clamp-1">{lecture.title}</div>
+                    <div className="text-[10px] text-[var(--ink-muted)] font-mono">{lecture.duration || '10 mins'}</div>
+                  </div>
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
 
-      {/* Sidebar - Mobile Modal */}
+      {/* Sidebar - Mobile Drawer */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
             <motion.div 
@@ -136,25 +254,23 @@ export function VideoPlayerPage() {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed inset-y-0 right-0 w-80 bg-[var(--surface)] shadow-2xl z-50 flex flex-col lg:hidden"
             >
-              <div className="p-4 border-b border-[var(--border)] flex justify-between items-center">
-                <h3 className="font-bold font-['Manrope']">Course Content</h3>
-                <button onClick={() => setSidebarOpen(false)} className="p-2 min-h-[44px] hover:bg-[var(--canvas)] rounded-full">
-                  <X className="w-5 h-5" />
+              <div className="p-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--canvas)]">
+                <h3 className="font-extrabold text-sm font-manrope">Course Content</h3>
+                <button onClick={() => setSidebarOpen(false)} className="p-2 min-h-[44px] hover:bg-[var(--surface)] rounded-full cursor-pointer">
+                  <X className="w-5 h-5 text-[var(--ink)]" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto">
-                {course.lectures?.map((lecture, idx) => (
+              <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                {allLecturesList.map((lecture, idx) => (
                   <button 
-                    key={lecture.id}
+                    key={lecture._id || idx}
                     onClick={() => { setCurrentLecture(lecture); setSidebarOpen(false); }}
-                    className={`w-full text-left p-4 min-h-[44px] flex gap-3 border-b border-[var(--border)] transition-colors hover:bg-[var(--canvas)] ${currentLecture?.id === lecture.id ? 'bg-[var(--aura-blue)]/50' : ''}`}
+                    className="w-full text-left p-3 rounded-xl min-h-[44px] flex items-center gap-3 border-b border-[var(--border)] hover:bg-[var(--canvas)] cursor-pointer"
                   >
-                    <div className="shrink-0 mt-0.5 text-[var(--primary)]">
-                      {lecture.completed ? <CheckCircle2 className="w-5 h-5 text-[var(--success)]" /> : <Circle className="w-5 h-5 text-[var(--ink-muted)]" />}
-                    </div>
-                    <div>
-                      <div className="text-xs text-[var(--ink-muted)] mb-1">Lesson {idx + 1}</div>
-                      <div className="font-medium text-sm line-clamp-2">{lecture.title}</div>
+                    <PlayCircle className="w-4.5 h-4.5 text-[var(--primary)] shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-extrabold text-xs line-clamp-1">{lecture.title}</div>
+                      <div className="text-[10px] text-[var(--ink-muted)] font-mono">{lecture.duration || '10 mins'}</div>
                     </div>
                   </button>
                 ))}
@@ -163,6 +279,7 @@ export function VideoPlayerPage() {
           </>
         )}
       </AnimatePresence>
+
     </div>
   );
 }

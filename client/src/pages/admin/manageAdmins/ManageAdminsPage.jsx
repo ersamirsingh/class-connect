@@ -110,34 +110,44 @@ export const ManageAdminsPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {admins.map((admin) => (
-            <div key={admin._id} className="card-visual p-5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <img
-                  src={admin.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
-                  alt={admin.name}
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-[#FF7A33]"
-                />
-                <div>
-                  <h3 className="font-extrabold text-sm text-[#1E1E2E]">{admin.name}</h3>
-                  <div className="text-xs text-slate-500 font-medium">{admin.email}</div>
-                  <div className="mt-1 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#3730E0]/10 text-[#3730E0]">
-                    {admin.isActive ? 'Active Admin' : 'Deactivated'}
+          {admins.map((admin) => {
+            const activeAdminCount = admins.filter(a => a.isActive).length;
+            const isLastActiveAdmin = admin.isActive && activeAdminCount <= 1;
+
+            return (
+              <div key={admin._id} className="card-visual p-5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={admin.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
+                    alt={admin.name}
+                    className="w-12 h-12 rounded-full object-cover ring-2 ring-[#FF7A33]"
+                  />
+                  <div>
+                    <h3 className="font-extrabold text-sm text-[#1E1E2E]">{admin.name}</h3>
+                    <div className="text-xs text-slate-500 font-medium">{admin.email}</div>
+                    <div className="mt-1 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#3730E0]/10 text-[#3730E0]">
+                      {admin.isActive ? 'Active Admin' : 'Deactivated'}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {admin.isActive && (
-                <button
-                  onClick={() => handleDeactivate(admin._id)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
-                  title="Deactivate Admin Account"
-                >
-                  <UserX className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-          ))}
+                {admin.isActive && (
+                  <button
+                    onClick={() => handleDeactivate(admin._id)}
+                    disabled={isLastActiveAdmin}
+                    className={`p-2 rounded-xl transition-colors ${
+                      isLastActiveAdmin 
+                        ? 'opacity-40 cursor-not-allowed text-slate-300 bg-slate-100' 
+                        : 'text-slate-400 hover:text-[#EF4444] hover:bg-[#EF4444]/10'
+                    }`}
+                    title={isLastActiveAdmin ? 'Cannot remove the last remaining active admin' : 'Deactivate Admin Account'}
+                  >
+                    {isLastActiveAdmin ? <Lock className="w-5 h-5" /> : <UserX className="w-5 h-5" />}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

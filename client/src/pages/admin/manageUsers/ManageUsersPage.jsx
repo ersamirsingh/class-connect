@@ -11,9 +11,10 @@ export const ManageUsersPage = () => {
     try {
       setLoading(true);
       const res = await adminApi.getStudents();
-      if (res.success && res.data) {
-        setStudents(res.data);
-      }
+      const list = Array.isArray(res.data)
+        ? res.data
+        : (res.data?.students || (Array.isArray(res) ? res : []));
+      setStudents(list);
     } catch (err) {
       setMessage({ type: 'error', text: 'Failed to load students.' });
     } finally {
