@@ -64,31 +64,6 @@ export function AboutPage() {
     <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden">
       <FloatingNav />
 
-      {/* Floating Jump-to Sub-Navigation Pill Bar */}
-      <div className="sticky top-[72px] z-40 py-3 bg-[var(--canvas)]/85 backdrop-blur-md border-b border-[var(--border)] transition-all">
-        <div className="max-w-7xl mx-auto px-6 flex items-center gap-3 overflow-x-auto scrollbar-hide">
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--ink-muted)] shrink-0 mr-1">
-            Jump to:
-          </span>
-          {jumpLinks.map((link) => {
-            const isActive = activeTab === link.id;
-            return (
-              <button
-                key={link.id}
-                onClick={() => scrollToSection(link.id)}
-                className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 shrink-0 min-h-[36px] flex items-center ${
-                  isActive
-                    ? 'bg-[var(--ink)] text-[var(--surface)] shadow-sm'
-                    : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--canvas)]'
-                }`}
-              >
-                {link.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Hero Overview */}
       <section id="overview" className="pt-20 pb-16 px-6 max-w-5xl mx-auto text-center relative">
         {/* Subtle Background Glow Aura */}
