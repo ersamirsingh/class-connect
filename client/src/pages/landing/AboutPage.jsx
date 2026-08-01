@@ -8,12 +8,14 @@ import { SplitText } from '../../components/motion/SplitText';
 import { InView } from '../../components/motion/InView';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { useLanguage } from '../../context/LanguageContext';
+import { ContactSupportSection } from '../../components/about/ContactSupportSection';
 
 const jumpLinks = [
   { id: 'overview', label: 'Overview' },
   { id: 'stats', label: 'Impact' },
   { id: 'values', label: 'Our Values' },
   { id: 'career', label: 'Career Banner' },
+  { id: 'contact', label: 'Contact Support' },
 ];
 
 const values = [
@@ -290,6 +292,9 @@ export function AboutPage() {
           </div>
         </InView>
       </section>
+
+      {/* 5. Contact Support Section (Matching Uploaded Reference Design) */}
+      <ContactSupportSection />
 
       <Footer />
     </div>
