@@ -10,11 +10,11 @@ export interface SeededCourses {
 }
 
 const SAMPLE_VIDEOS = [
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+  'https://www.w3schools.com/html/mov_bbb.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+  'https://www.w3schools.com/html/mov_bbb.mp4',
 ];
 
 export async function seedCourses(categories: SeededCategories): Promise<SeededCourses> {
@@ -276,13 +276,12 @@ export async function seedCourses(categories: SeededCategories): Promise<SeededC
   const resultMap: Record<string, ICourse> = {};
 
   for (const item of coursesList) {
-    let course = await CourseModel.findOne({ slug: item.slug });
-    if (!course) {
-      course = await CourseModel.create(item);
-      console.log(`  ✓ Created course: "${item.title}" (Topics: ${item.sections.length})`);
-    } else {
-      console.log(`  ℹ Course already exists: "${item.title}"`);
-    }
+    let course = await CourseModel.findOneAndUpdate(
+      { slug: item.slug },
+      { $set: item },
+      { new: true, upsert: true }
+    );
+    console.log(`  ✓ Seeded/Updated course: "${item.title}" with valid video streams`);
     resultMap[item.slug] = course;
   }
 

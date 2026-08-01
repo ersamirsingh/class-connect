@@ -65,7 +65,17 @@ export class CourseService {
   static async createCourse(payload: Partial<ICourse>): Promise<ICourse> {
     const slug = payload.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `course-${Date.now()}`;
     const course = new CourseModel({ ...payload, slug });
-    return course.save();
+    const saved = await course.save();
+
+    // Trigger notification to all active students
+    try {
+      const { NotificationService } = await import('../notification/notification.service');
+      await NotificationService.notifyAllStudentsOnCourseLaunch(saved);
+    } catch (err) {
+      console.warn('Could not dispatch course launch notification:', err);
+    }
+
+    return saved;
   }
 
   static async updateCourse(id: string, payload: Partial<ICourse>): Promise<ICourse> {

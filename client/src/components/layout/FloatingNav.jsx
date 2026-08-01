@@ -21,8 +21,8 @@ import { ThemeToggle } from '../shared/ThemeToggle';
 import { NotificationBell } from '../shared/NotificationBell';
 
 const mainNavItems = [
-  { key: 'nav.courses', label: 'Courses', path: '/courses', icon: BookOpen },
   { key: 'nav.categories', label: 'Categories', path: '/categories', icon: Layers },
+  { key: 'nav.courses', label: 'Courses', path: '/courses', icon: BookOpen },
   { key: 'nav.about', label: 'About', path: '/about', icon: Sparkles },
 ];
 

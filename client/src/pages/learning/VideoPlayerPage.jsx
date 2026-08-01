@@ -129,6 +129,7 @@ export function VideoPlayerPage() {
               src={currentLecture?.videoUrl} 
               title={currentLecture?.title || course.title}
               poster={course.thumbnail}
+              onEnded={handleMarkComplete}
             />
           </div>
 

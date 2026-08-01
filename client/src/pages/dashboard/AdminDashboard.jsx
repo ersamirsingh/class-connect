@@ -79,8 +79,8 @@ export function AdminDashboard() {
   }, [t]);
 
   const modules = [
-    { title: 'Manage Courses', icon: <BookOpen />, path: '/admin/courses', color: '#5B54E8' },
     { title: 'Manage Categories', icon: <ListTree />, path: '/admin/categories', color: '#FF7A59' },
+    { title: 'Manage Courses', icon: <BookOpen />, path: '/admin/courses', color: '#5B54E8' },
     { title: 'Manage Students', icon: <Users />, path: '/admin/students', color: '#2FA876' },
     { title: 'Manage Admins', icon: <Settings />, path: '/admin/admins', color: '#2B2B38' },
     { title: 'Manage Payments', icon: <CreditCard />, path: '/admin/payments', color: '#D97706' },
