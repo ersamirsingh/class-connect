@@ -9,6 +9,7 @@ import {
   Code2
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { GlowingEffect } from '../motion/GlowingEffect';
 
 export function ConnectedConstellationSection() {
   const { language } = useLanguage();
@@ -30,7 +31,6 @@ export function ConnectedConstellationSection() {
 
       const newLines = [];
 
-      // Center container bounds relative to section
       const cText = {
         x: centerRect.left + centerRect.width / 2 - secRect.left,
         y: centerRect.top + centerRect.height / 2 - secRect.top,
@@ -125,6 +125,7 @@ export function ConnectedConstellationSection() {
     };
   }, []);
 
+  // Soft Premium Pastel Colored Backgrounds & Dark Readable Typography
   const nodes = [
     {
       id: 'node-bilingual',
@@ -134,8 +135,9 @@ export function ConnectedConstellationSection() {
       badgeBg: 'bg-rose-500',
       icon: Globe,
       color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50 dark:bg-indigo-950/60',
-      borderColor: 'border-indigo-300 dark:border-indigo-700',
+      bgColor: 'bg-indigo-50/90 dark:bg-indigo-950/60',
+      borderColor: 'border-indigo-200 dark:border-indigo-800',
+      glowColor: 'rgba(67, 56, 242, 0.45)',
     },
     {
       id: 'node-certificates',
@@ -145,8 +147,9 @@ export function ConnectedConstellationSection() {
       badgeBg: 'bg-amber-500',
       icon: Award,
       color: 'text-amber-600',
-      bgColor: 'bg-amber-50 dark:bg-amber-950/60',
-      borderColor: 'border-amber-300 dark:border-amber-700',
+      bgColor: 'bg-amber-50/90 dark:bg-amber-950/60',
+      borderColor: 'border-amber-200 dark:border-amber-800',
+      glowColor: 'rgba(245, 158, 11, 0.45)',
     },
     {
       id: 'node-instructors',
@@ -156,8 +159,9 @@ export function ConnectedConstellationSection() {
       badgeBg: 'bg-blue-600',
       icon: GraduationCap,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-950/60',
-      borderColor: 'border-blue-300 dark:border-blue-700',
+      bgColor: 'bg-blue-50/90 dark:bg-blue-950/60',
+      borderColor: 'border-blue-200 dark:border-blue-800',
+      glowColor: 'rgba(37, 99, 235, 0.45)',
     },
     {
       id: 'node-skills',
@@ -167,8 +171,9 @@ export function ConnectedConstellationSection() {
       badgeBg: 'bg-emerald-600',
       icon: Code2,
       color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-950/60',
-      borderColor: 'border-emerald-300 dark:border-emerald-700',
+      bgColor: 'bg-emerald-50/90 dark:bg-emerald-950/60',
+      borderColor: 'border-emerald-200 dark:border-emerald-800',
+      glowColor: 'rgba(5, 150, 105, 0.45)',
     },
     {
       id: 'node-learners',
@@ -178,8 +183,9 @@ export function ConnectedConstellationSection() {
       badgeBg: 'bg-purple-600',
       icon: Users,
       color: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-950/60',
-      borderColor: 'border-purple-300 dark:border-purple-700',
+      bgColor: 'bg-purple-50/90 dark:bg-purple-950/60',
+      borderColor: 'border-purple-200 dark:border-purple-800',
+      glowColor: 'rgba(147, 51, 234, 0.45)',
     },
     {
       id: 'node-rating',
@@ -189,8 +195,9 @@ export function ConnectedConstellationSection() {
       badgeBg: 'bg-orange-500',
       icon: Star,
       color: 'text-orange-500',
-      bgColor: 'bg-orange-50 dark:bg-orange-950/60',
-      borderColor: 'border-orange-300 dark:border-orange-700',
+      bgColor: 'bg-orange-50/90 dark:bg-orange-950/60',
+      borderColor: 'border-orange-200 dark:border-orange-800',
+      glowColor: 'rgba(255, 107, 53, 0.45)',
     },
   ];
 
@@ -199,7 +206,7 @@ export function ConnectedConstellationSection() {
       ref={sectionRef} 
       className="relative py-24 px-4 sm:px-8 bg-[var(--canvas)] overflow-hidden min-h-[720px] flex flex-col justify-between"
     >
-      {/* Real-time Calculated SVG Connecting Lines (Connecting all 6 boxes) */}
+      {/* Real-time Calculated SVG Connecting Lines */}
       <svg 
         className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible"
         fill="none"
@@ -237,7 +244,7 @@ export function ConnectedConstellationSection() {
         ))}
       </svg>
 
-      {/* Top Row Nodes: Bilingual (Left), Certificates (Center), Mentors (Right) */}
+      {/* Top Row Nodes */}
       <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mb-10">
         <div ref={(el) => (nodeRefs.current['node-bilingual'] = el)}>
           <NodeCard node={nodes[0]} isInView={isInView} delay={0.1} />
@@ -250,7 +257,7 @@ export function ConnectedConstellationSection() {
         </div>
       </div>
 
-      {/* Center Headline with Refined Typography & Sleeker Font Size */}
+      {/* Center Headline */}
       <div ref={centerTextRef} className="relative z-20 max-w-2xl mx-auto text-center px-4 py-6">
         <motion.h2
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -302,7 +309,7 @@ export function ConnectedConstellationSection() {
         </motion.div>
       </div>
 
-      {/* Bottom Row Nodes: Job Skills (Left), Learners (Center), Rating (Right) */}
+      {/* Bottom Row Nodes */}
       <div className="relative z-10 max-w-6xl w-full mx-auto flex items-center justify-between gap-4 mt-10">
         <div ref={(el) => (nodeRefs.current['node-skills'] = el)}>
           <NodeCard node={nodes[3]} isInView={isInView} delay={0.4} />
@@ -332,23 +339,33 @@ function NodeCard({ node, isInView, delay }) {
         damping: 20,
       }}
       whileHover={{ scale: 1.06, y: -4 }}
-      className="relative pointer-events-auto"
+      className="relative pointer-events-auto group"
     >
-      <div className={`relative p-3.5 sm:p-4 rounded-2xl ${node.bgColor} border-2 ${node.borderColor} shadow-[0_14px_32px_rgba(0,0,0,0.12)] backdrop-blur-md flex items-center gap-3 transition-transform min-w-[140px] sm:min-w-[180px]`}>
-        {/* Red/Color Notification Pill Badge */}
-        <div className={`absolute -top-3 -right-2 px-2.5 py-0.5 rounded-full text-[11px] font-black text-white ${node.badgeBg} shadow-md border-2 border-white dark:border-slate-900`}>
-          {node.badge}
-        </div>
+      <GlowingEffect
+        glowColor={node.glowColor}
+        accentGlow="rgba(255, 107, 53, 0.4)"
+        containerClassName="h-full rounded-2xl"
+      >
+        <div className={`relative p-3.5 sm:p-4 rounded-2xl ${node.bgColor} border ${node.borderColor} shadow-[0_8px_24px_rgba(0,0,0,0.06)] backdrop-blur-md flex items-center gap-3 transition-all min-w-[140px] sm:min-w-[180px]`}>
+          {/* Red/Color Notification Pill Badge */}
+          <div className={`absolute -top-3 -right-2 px-2.5 py-0.5 rounded-full text-[11px] font-black text-white ${node.badgeBg} shadow-md border-2 border-white dark:border-slate-900 z-20`}>
+            {node.badge}
+          </div>
 
-        <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center ${node.color} shrink-0`}>
-          <IconComp className="w-5 h-5 sm:w-6 sm:h-6" />
-        </div>
+          <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-center ${node.color} shrink-0`}>
+            <IconComp className="w-5 h-5 sm:w-6 sm:h-6" />
+          </div>
 
-        <div className="text-left pr-1">
-          <div className="text-xs sm:text-sm font-extrabold text-[var(--ink)] leading-tight">{node.title}</div>
-          <div className="text-[10px] sm:text-[11px] font-semibold text-[var(--ink-muted)]">{node.sub}</div>
+          <div className="text-left pr-1">
+            <div className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-tight">
+              {node.title}
+            </div>
+            <div className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+              {node.sub}
+            </div>
+          </div>
         </div>
-      </div>
+      </GlowingEffect>
     </motion.div>
   );
 }
