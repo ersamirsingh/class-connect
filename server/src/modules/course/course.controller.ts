@@ -26,6 +26,27 @@ export class CourseController {
     }
   }
 
+  static async getSuggestedCourses(req: Request, res: Response): Promise<void> {
+    try {
+      const limit = parseInt(req.query.limit as string) || 6;
+      const courses = await CourseService.getSuggestedCourses(limit);
+      res.status(200).json({ success: true, data: courses });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  static async toggleSuggested(req: Request, res: Response): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const course = await CourseService.getCourseByIdOrSlug(id);
+      const updated = await CourseService.updateCourse(id, { isSuggested: !(course as any).isSuggested });
+      res.status(200).json({ success: true, message: `Course ${updated.isSuggested ? 'added to' : 'removed from'} suggestions.`, data: updated });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
   static async getAllCoursesAdmin(req: Request, res: Response): Promise<void> {
     try {
       const courses = await CourseService.getAllCoursesAdmin();
@@ -59,6 +80,19 @@ export class CourseController {
       const id = req.params.id as string;
       await CourseService.deleteCourse(id);
       res.status(200).json({ success: true, message: 'Course deleted.' });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  static async trackPreviewPlay(req: Request, res: Response): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const user = (req as any).user;
+      const guestCount = Number(req.body.guestCount || 0);
+
+      const data = await CourseService.trackPreviewPlay(id, user, guestCount);
+      res.status(200).json({ success: true, data });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }

@@ -11,7 +11,8 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.signup({ name, email, password, phone, photo });
+      const clientIp = (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1';
+      const result = await AuthService.signup({ name, email, password, phone, photo }, clientIp);
       res.status(201).json({
         success: true,
         message: 'Account created successfully.',
@@ -30,7 +31,8 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.login({ email, password });
+      const clientIp = (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1';
+      const result = await AuthService.login({ email, password }, clientIp);
       res.status(200).json({
         success: true,
         message: 'Logged in successfully.',

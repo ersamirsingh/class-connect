@@ -16,11 +16,22 @@ export const authenticateUser = async (req: AuthRequest, res: Response, next: Ne
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, config.jwtSecret) as { id: string };
+    const decoded = jwt.verify(token, config.jwtSecret) as { id: string; sessionId?: string };
 
     const user = await UserModel.findById(decoded.id);
     if (!user || !user.isActive) {
       res.status(401).json({ success: false, message: 'Unauthorized. User not found or account is deactivated.' });
+      return;
+    }
+
+    // Single Active Session Enforcement:
+    // If user logged in from another IP or device, decoded.sessionId will not match user.activeSessionId
+    if (decoded.sessionId && user.activeSessionId && decoded.sessionId !== user.activeSessionId) {
+      res.status(401).json({
+        success: false,
+        sessionTerminated: true,
+        message: 'Session expired. Your account was logged into from another device or IP address.',
+      });
       return;
     }
 

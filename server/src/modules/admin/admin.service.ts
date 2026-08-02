@@ -136,4 +136,11 @@ export class AdminService {
 
     return order;
   }
+
+  static async getCourseEnrollments(courseId: string) {
+    const enrollments = await EnrollmentModel.find({ course: courseId, status: 'active' })
+      .populate('student', 'name email photo phone createdAt')
+      .sort({ enrolledAt: -1 });
+    return enrollments;
+  }
 }

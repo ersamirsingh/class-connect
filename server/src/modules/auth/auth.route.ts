@@ -6,7 +6,7 @@ import { authRateLimiter } from '../../middlewares/rateLimiter.middleware';
 const router = Router();
 
 // Apply Rate Limiter to all auth endpoints
-router.use(authRateLimiter);
+// router.use(authRateLimiter);
 
 router.post('/signup', AuthController.signup);
 router.post('/login', AuthController.login);

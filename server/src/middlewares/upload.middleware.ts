@@ -25,3 +25,8 @@ export const uploadMultipleImages = multer({
     }
   },
 }).array('images', 3);
+
+export const uploadGenericFile = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for video/files
+}).single('file');

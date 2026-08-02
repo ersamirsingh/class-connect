@@ -47,6 +47,9 @@ export class PaymentService {
 
     await order.save();
 
+    const upiString = `upi://pay?pa=classconnect@upi&pn=ClassConnect&am=${priceToCharge}&tr=${receiptId}&tn=${encodeURIComponent(course.title)}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiString)}`;
+
     return {
       orderId: order._id,
       receiptId,
@@ -57,6 +60,8 @@ export class PaymentService {
       amount: priceToCharge,
       currency: order.currency,
       courseTitle: course.title,
+      upiString,
+      qrCodeUrl,
     };
   }
 

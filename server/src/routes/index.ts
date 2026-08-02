@@ -10,6 +10,7 @@ import { reportRouter } from '../modules/report/report.route';
 import { adminRouter } from '../modules/admin/admin.route';
 import { notificationRouter } from '../modules/notification/notification.route';
 import { reviewRouter } from '../modules/review/review.route';
+import { uploadRouter } from '../modules/upload/upload.route';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/report', reportRouter);
 router.use('/admin', adminRouter);
 router.use('/notifications', notificationRouter);
 router.use('/reviews', reviewRouter);
+router.use('/upload', uploadRouter);
 
 export const appRouter = router;

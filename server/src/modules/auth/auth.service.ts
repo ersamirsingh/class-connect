@@ -3,18 +3,20 @@ import jwt from 'jsonwebtoken';
 import { UserModel, IUser } from '../user/user.model';
 import { config } from '../../config';
 
-const generateToken = (userId: string): string => {
-  return jwt.sign({ id: userId }, config.jwtSecret, {
+const generateToken = (userId: string, sessionId: string): string => {
+  return jwt.sign({ id: userId, sessionId }, config.jwtSecret, {
     expiresIn: config.jwtExpiresIn as any,
   });
 };
 
 export class AuthService {
-  static async signup(payload: { name: string; email: string; password: string; phone?: string; photo?: string }) {
+  static async signup(payload: { name: string; email: string; password: string; phone?: string; photo?: string }, clientIp?: string) {
     const existing = await UserModel.findOne({ email: payload.email.toLowerCase() });
     if (existing) {
       throw new Error('Email is already registered.');
     }
+
+    const sessionId = crypto.randomUUID();
 
     const user = new UserModel({
       name: payload.name,
@@ -23,18 +25,20 @@ export class AuthService {
       phone: payload.phone || '',
       photo: payload.photo || undefined,
       role: 'student',
+      activeSessionId: sessionId,
+      lastLoginIp: clientIp || '127.0.0.1',
     });
 
     await user.save();
 
-    const token = generateToken(user._id.toString());
+    const token = generateToken(user._id.toString(), sessionId);
     const userObj = user.toObject();
     delete userObj.password;
 
     return { user: userObj, token };
   }
 
-  static async login(payload: { email: string; password: string }) {
+  static async login(payload: { email: string; password: string }, clientIp?: string) {
     const user = await UserModel.findOne({ email: payload.email.toLowerCase() }).select('+password');
     if (!user) {
       throw new Error('Invalid email or password.');
@@ -49,7 +53,13 @@ export class AuthService {
       throw new Error('Invalid email or password.');
     }
 
-    const token = generateToken(user._id.toString());
+    // Generate NEW unique session ID for this login (invalidates older logins from other IPs/devices)
+    const newSessionId = crypto.randomUUID();
+    user.activeSessionId = newSessionId;
+    user.lastLoginIp = clientIp || '127.0.0.1';
+    await user.save();
+
+    const token = generateToken(user._id.toString(), newSessionId);
     const userObj = user.toObject();
     delete userObj.password;
 
@@ -59,7 +69,6 @@ export class AuthService {
   static async forgotPassword(email: string) {
     const user = await UserModel.findOne({ email: email.toLowerCase() });
     if (!user || !user.isActive) {
-      // Return ambiguous message for security, but return resetToken in dev mode for easy testing
       return { message: 'If an active account exists with that email, a password reset link has been issued.', token: null };
     }
 
@@ -72,7 +81,7 @@ export class AuthService {
 
     return {
       message: 'Password reset link sent to your email.',
-      resetToken, // Returned so frontend/tests can easily reset password without actual email server
+      resetToken,
     };
   }
 

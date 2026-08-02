@@ -40,6 +40,24 @@ export class CourseService {
     return course;
   }
 
+  static async getSuggestedCourses(limit: number = 6): Promise<ICourse[]> {
+    // First try courses explicitly marked as suggested
+    let courses = await CourseModel.find({ isPublished: true, isSuggested: true })
+      .populate('category')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    // Fallback: if no suggested courses, return latest published courses
+    if (courses.length === 0) {
+      courses = await CourseModel.find({ isPublished: true })
+        .populate('category')
+        .sort({ createdAt: -1 })
+        .limit(limit);
+    }
+
+    return courses;
+  }
+
   static async getAllCoursesAdmin(): Promise<ICourse[]> {
     return CourseModel.find().populate('category').sort({ createdAt: -1 });
   }
@@ -47,7 +65,17 @@ export class CourseService {
   static async createCourse(payload: Partial<ICourse>): Promise<ICourse> {
     const slug = payload.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `course-${Date.now()}`;
     const course = new CourseModel({ ...payload, slug });
-    return course.save();
+    const saved = await course.save();
+
+    // Trigger notification to all active students
+    try {
+      const { NotificationService } = await import('../notification/notification.service');
+      await NotificationService.notifyAllStudentsOnCourseLaunch(saved);
+    } catch (err) {
+      console.warn('Could not dispatch course launch notification:', err);
+    }
+
+    return saved;
   }
 
   static async updateCourse(id: string, payload: Partial<ICourse>): Promise<ICourse> {
@@ -149,5 +177,52 @@ export class CourseService {
     ];
 
     await CourseModel.insertMany(sampleCourses);
+  }
+
+  static async trackPreviewPlay(courseId: string, user?: any, guestCount: number = 0) {
+    const course = await CourseService.getCourseByIdOrSlug(courseId);
+    const maxViews = course.maxPreviewViews || 3;
+
+    if (user && user._id) {
+      const { UserModel } = await import('../user/user.model');
+      const dbUser = await UserModel.findById(user._id);
+      if (dbUser) {
+        if (!dbUser.previewViews) dbUser.previewViews = [];
+        let viewEntry = dbUser.previewViews.find((v: any) => (v.course?._id || v.course)?.toString() === course._id.toString());
+        if (!viewEntry) {
+          viewEntry = { course: course._id as any, count: 0 };
+          dbUser.previewViews.push(viewEntry);
+        }
+
+        if ((viewEntry.count || 0) >= maxViews) {
+          throw new Error('Preview limit reached — Purchase to continue.');
+        }
+
+        viewEntry.count = (viewEntry.count || 0) + 1;
+        await dbUser.save();
+
+        const remainingViews = Math.max(0, maxViews - viewEntry.count);
+        return {
+          allowed: true,
+          remainingViews,
+          previewVideoUrl: course.previewVideo,
+          maxViews,
+        };
+      }
+    }
+
+    // Guest fallback view counter logic
+    const currentGuestCount = guestCount + 1;
+    if (currentGuestCount > maxViews) {
+      throw new Error('Preview limit reached — Purchase to continue.');
+    }
+
+    return {
+      allowed: true,
+      remainingViews: maxViews - currentGuestCount,
+      previewVideoUrl: course.previewVideo,
+      maxViews,
+      guestCount: currentGuestCount,
+    };
   }
 }

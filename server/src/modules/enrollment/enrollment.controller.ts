@@ -39,4 +39,15 @@ export class EnrollmentController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
+
+  static async checkStatus(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const studentId = req.user!._id.toString();
+      const courseId = req.params.courseId as string;
+      const result = await EnrollmentService.checkEnrollmentStatus(studentId, courseId);
+      res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
 }
