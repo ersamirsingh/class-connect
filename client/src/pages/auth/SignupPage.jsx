@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, UserPlus, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 export function SignupPage() {
   const { t } = useLanguage();
@@ -13,7 +13,8 @@ export function SignupPage() {
     name: '',
     email: '',
     phone: '',
-    password: ''
+    password: '',
+    gender: 'male' // default male cartoon avatar
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -44,8 +45,17 @@ export function SignupPage() {
     setLoading(true);
     setError('');
     
+    // Automatically generate random cartoon avatar based on male/female selection
+    const seedName = encodeURIComponent(formData.name.trim() || 'student');
+    let autoCartoonPhoto = '';
+    if (formData.gender === 'female') {
+      autoCartoonPhoto = `https://api.dicebear.com/7.x/adventurer/svg?seed=female-${seedName}-${Date.now()}`;
+    } else {
+      autoCartoonPhoto = `https://api.dicebear.com/7.x/adventurer/svg?seed=male-${seedName}-${Date.now()}`;
+    }
+
     try {
-      const user = await signup(formData.name, formData.email, formData.password, formData.phone, null);
+      const user = await signup(formData.name, formData.email, formData.password, formData.phone, autoCartoonPhoto);
       if (user?.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
@@ -91,6 +101,38 @@ export function SignupPage() {
             placeholder="Enter your full name"
             disabled={loading}
           />
+        </div>
+
+        {/* Gender / Cartoon Avatar Style Selection */}
+        <div className="space-y-1">
+          <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider flex items-center gap-1.5">
+            <span>Avatar Preference</span>
+            <Sparkles className="w-3 h-3 text-amber-500" />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
+              className={`py-2 px-3 rounded-xl border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                formData.gender === 'male'
+                  ? 'bg-[var(--primary-soft)] border-[var(--primary)] text-[var(--primary)] shadow-xs'
+                  : 'bg-[var(--canvas)] border-[var(--border)] text-[var(--ink-muted)] hover:text-[var(--ink)]'
+              }`}
+            >
+              <span>👨 Male Cartoon</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
+              className={`py-2 px-3 rounded-xl border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                formData.gender === 'female'
+                  ? 'bg-pink-50 border-pink-400 text-pink-600 shadow-xs'
+                  : 'bg-[var(--canvas)] border-[var(--border)] text-[var(--ink-muted)] hover:text-[var(--ink)]'
+              }`}
+            >
+              <span>👩 Female Cartoon</span>
+            </button>
+          </div>
         </div>
 
         <div className="space-y-1">
@@ -188,11 +230,13 @@ export function SignupPage() {
         </span>{' '}
         <Link 
           to="/login" 
-          className="text-[var(--primary)] font-extrabold hover:underline ml-1"
+          className="font-extrabold text-[var(--primary)] hover:underline"
         >
-          {t('auth.loginLink') || 'Sign In'}
+          {t('auth.loginLink') || 'Log in'}
         </Link>
       </div>
     </div>
   );
 }
+
+export default SignupPage;

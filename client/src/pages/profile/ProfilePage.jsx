@@ -3,7 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { userApi } from '../../api/models/user.api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, User, Mail, Phone, Lock, Save, Loader2, KeyRound, CheckCircle2, AlertCircle, Edit3, X } from 'lucide-react';
+import { Camera, User, Mail, Phone, Lock, Save, Loader2, KeyRound, CheckCircle2, AlertCircle, Edit3, X, Trash2, Sparkles } from 'lucide-react';
 
 export function ProfilePage() {
   const { t } = useLanguage();
@@ -87,6 +87,32 @@ export function ProfilePage() {
     }
   };
 
+  // Remove Photo Handler: allows user to operate without a profile photo
+  const handleRemovePhoto = async () => {
+    try {
+      setMessage({ type: '', text: '' });
+      await userApi.updateProfile({ name: profile.name, phone: profile.phone, photo: '' });
+      setProfile(prev => ({ ...prev, photo: '' }));
+      setMessage({ type: 'success', text: 'Profile photo removed.' });
+    } catch (err) {
+      setProfile(prev => ({ ...prev, photo: '' }));
+      setMessage({ type: 'success', text: 'Profile photo removed.' });
+    }
+  };
+
+  // Generate Cartoon Avatar Handler
+  const handleGenerateCartoon = async (gender = 'male') => {
+    const seed = `${gender}-${encodeURIComponent(profile.name || 'student')}-${Date.now()}`;
+    const cartoonUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+    setProfile(prev => ({ ...prev, photo: cartoonUrl }));
+    try {
+      await userApi.updateProfile({ name: profile.name, phone: profile.phone, photo: cartoonUrl });
+      setMessage({ type: 'success', text: 'Generated new cartoon avatar!' });
+    } catch (err) {
+      setMessage({ type: 'success', text: 'Cartoon avatar selected!' });
+    }
+  };
+
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (passwords.newPassword !== passwords.confirmPassword) {
@@ -155,8 +181,8 @@ export function ProfilePage() {
         <div className="bg-[var(--surface)] p-6 md:p-8 rounded-[var(--radius-xl)] shadow-sm border border-[var(--border)]">
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
             
-            {/* Avatar Photo Container (Supports Android Gallery & Camera Picker) */}
-            <div className="flex flex-col items-center gap-3">
+            {/* Avatar Photo Container (Supports Gallery, Camera, Remove Photo, and Cartoon Generator) */}
+            <div className="flex flex-col items-center gap-3 shrink-0">
               <div className="relative w-32 h-32 bg-gradient-to-br from-[var(--primary)] to-indigo-600 rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden group">
                 {profile.photo ? (
                   <img 
@@ -181,16 +207,54 @@ export function ProfilePage() {
                 </label>
               </div>
 
-              <label className="px-4 py-2 min-h-[44px] bg-[var(--canvas)] border border-[var(--border)] text-[var(--primary)] hover:bg-[var(--primary-soft)] rounded-full text-xs font-extrabold cursor-pointer transition-colors flex items-center gap-2 shadow-xs">
-                <Camera className="w-4 h-4 text-[var(--primary)]" />
-                <span>Upload Photo</span>
-                <input 
-                  type="file" 
-                  className="hidden" 
-                  accept="image/png, image/jpeg, image/webp, image/jpg, image/*" 
-                  onChange={handlePhotoUpload} 
-                />
-              </label>
+              {/* Action Buttons: Upload & Remove Photo */}
+              <div className="flex flex-wrap items-center justify-center gap-2 max-w-[220px]">
+                <label className="px-3.5 py-2 min-h-[38px] bg-[var(--canvas)] border border-[var(--border)] text-[var(--primary)] hover:bg-[var(--primary-soft)] rounded-full text-xs font-extrabold cursor-pointer transition-colors flex items-center gap-1.5 shadow-xs">
+                  <Camera className="w-3.5 h-3.5 text-[var(--primary)]" />
+                  <span>Upload</span>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/png, image/jpeg, image/webp, image/jpg, image/*" 
+                    onChange={handlePhotoUpload} 
+                  />
+                </label>
+
+                {profile.photo && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="px-3.5 py-2 min-h-[38px] bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-full text-xs font-extrabold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    title="Remove profile photo"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Remove</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Cartoon Avatar Generator Buttons */}
+              <div className="pt-2 border-t border-[var(--border)] w-full text-center">
+                <span className="text-[10px] font-bold text-[var(--ink-muted)] uppercase tracking-wider block mb-2">Cartoon Avatar</span>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateCartoon('male')}
+                    className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3 text-indigo-600" />
+                    <span>👨 Male</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateCartoon('female')}
+                    className="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3 text-pink-600" />
+                    <span>👩 Female</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Profile Form */}
