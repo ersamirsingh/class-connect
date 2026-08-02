@@ -23,8 +23,9 @@ export function CategoryCraftDeck({ categories = [] }) {
   const { language } = useLanguage();
   const isHindi = language === 'hi';
   const sliderRef = useRef(null);
-  const touchStartX = useRef(0);
-  const touchScrollLeft = useRef(0);
+  const interactionTimer = useRef(null);
+
+  const [isInteracting, setIsInteracting] = useState(false);
 
   // 6 Major Course Categories matching the reference image styling & colors
   const majorCategories = [
@@ -99,14 +100,12 @@ export function CategoryCraftDeck({ categories = [] }) {
   // Infinite items array for seamless drag & scroll loop
   const displayItems = [...majorCategories, ...majorCategories, ...majorCategories];
 
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Auto-scroll track loop when not dragging or hovering
+  // Auto-scroll loop: automatically pauses when user touches, clicks, or scrolls
   useEffect(() => {
     let animId;
     const autoSlide = () => {
-      if (sliderRef.current && !isHovered) {
-        sliderRef.current.scrollLeft += 0.8;
+      if (sliderRef.current && !isInteracting) {
+        sliderRef.current.scrollLeft += 0.7;
         if (sliderRef.current.scrollLeft >= sliderRef.current.scrollWidth / 3) {
           sliderRef.current.scrollLeft = 0;
         }
@@ -116,44 +115,29 @@ export function CategoryCraftDeck({ categories = [] }) {
 
     animId = requestAnimationFrame(autoSlide);
     return () => cancelAnimationFrame(animId);
-  }, [isHovered]);
+  }, [isInteracting]);
+
+  // Pause auto-scroll when user touches, drags, or scrolls trackpad
+  const markUserInteraction = () => {
+    setIsInteracting(true);
+    if (interactionTimer.current) clearTimeout(interactionTimer.current);
+    interactionTimer.current = setTimeout(() => {
+      setIsInteracting(false);
+    }, 4000); // Resumes smooth marquee auto-scroll after 4s idle
+  };
 
   const slideLeft = () => {
+    markUserInteraction();
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: -340, behavior: 'smooth' });
     }
   };
 
   const slideRight = () => {
+    markUserInteraction();
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: 340, behavior: 'smooth' });
     }
-  };
-
-  const handleWheel = (e) => {
-    if (sliderRef.current) {
-      sliderRef.current.scrollLeft += e.deltaY * 0.9;
-    }
-  };
-
-  // Android & Touchscreen Finger Swipe Handlers
-  const handleTouchStart = (e) => {
-    setIsHovered(true);
-    touchStartX.current = e.touches[0].clientX;
-    if (sliderRef.current) {
-      touchScrollLeft.current = sliderRef.current.scrollLeft;
-    }
-  };
-
-  const handleTouchMove = (e) => {
-    if (!sliderRef.current) return;
-    const touchCurrentX = e.touches[0].clientX;
-    const diff = touchStartX.current - touchCurrentX;
-    sliderRef.current.scrollLeft = touchScrollLeft.current + diff;
-  };
-
-  const handleTouchEnd = () => {
-    setIsHovered(false);
   };
 
   return (
@@ -199,23 +183,25 @@ export function CategoryCraftDeck({ categories = [] }) {
         </div>
       </div>
 
-      {/* Interactive Drag & Touchscreen Swipe Infinite Slider Container */}
+      {/* Hardware-Accelerated 120Hz Smooth Mobile Track */}
       <div className="relative w-full">
         {/* Left & Right Fading Overlays */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-8 sm:w-16 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-8 sm:w-16 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Touch & Scroll Track */}
+        {/* 100% Native Hardware Accelerated Touch Track (No JS Stutter or Friction) */}
         <div
           ref={sliderRef}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onWheel={handleWheel}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="flex overflow-x-auto scrollbar-hide py-4 px-4 sm:px-10 gap-4 sm:gap-8 cursor-grab active:cursor-grabbing touch-pan-x"
-          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+          onMouseEnter={markUserInteraction}
+          onTouchStart={markUserInteraction}
+          onTouchMove={markUserInteraction}
+          onScroll={markUserInteraction}
+          className="flex overflow-x-auto scrollbar-hide py-4 px-4 sm:px-10 gap-4 sm:gap-8 cursor-grab active:cursor-grabbing touch-pan-x overscroll-x-contain"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-x pan-y',
+            scrollbarWidth: 'none'
+          }}
         >
           {displayItems.map((cat, idx) => (
             <ReferenceStyleCard key={`${cat.id}-${idx}`} category={cat} />
@@ -226,7 +212,7 @@ export function CategoryCraftDeck({ categories = [] }) {
   );
 }
 
-// 3D Pedestal Stage Reference Card Component (Responsive for Mobile & Desktop)
+// 3D Pedestal Stage Reference Card Component (Optimized for Smooth Touch & Desktop Hover)
 function ReferenceStyleCard({ category }) {
   const MainIcon = category.icon;
   const StageIcon = category.stageIcon;
@@ -234,10 +220,8 @@ function ReferenceStyleCard({ category }) {
   return (
     <div className="w-[280px] xs:w-[320px] sm:w-[370px] md:w-[400px] shrink-0">
       <Link to={`/courses?category=${category.slug}`}>
-        <motion.div
-          whileHover={{ y: -6, scale: 1.02 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className={`relative h-[240px] sm:h-[280px] rounded-[24px] sm:rounded-[28px] bg-gradient-to-br ${category.gradient} p-5 sm:p-7 flex flex-col justify-between overflow-hidden text-white ${category.shadowColor} border border-white/20`}
+        <div
+          className={`relative h-[240px] sm:h-[280px] rounded-[24px] sm:rounded-[28px] bg-gradient-to-br ${category.gradient} p-5 sm:p-7 flex flex-col justify-between overflow-hidden text-white ${category.shadowColor} border border-white/20 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] active:scale-[0.99]`}
         >
           {/* Top Row: Category Name + Subtitle */}
           <div className="relative z-10 max-w-[62%] sm:max-w-[65%] text-left">
@@ -277,7 +261,7 @@ function ReferenceStyleCard({ category }) {
             {/* Base 3D Step Pedestal Stage 2 */}
             <div className="w-32 sm:w-44 h-10 sm:h-14 bg-white/20 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-md border border-white/30 -mt-4 sm:-mt-5 relative z-0" />
           </div>
-        </motion.div>
+        </div>
       </Link>
     </div>
   );
