@@ -38,8 +38,12 @@ export function CourseListPage() {
           courseApi.getCourses()
         ]);
         
-        const apiCats = categoriesRes.data?.categories || [];
-        const apiCourses = coursesRes.data?.courses || [];
+        const apiCats = Array.isArray(categoriesRes.data)
+          ? categoriesRes.data
+          : (categoriesRes.data?.categories || (Array.isArray(categoriesRes) ? categoriesRes : []));
+        const apiCourses = Array.isArray(coursesRes.data)
+          ? coursesRes.data
+          : (coursesRes.data?.courses || (Array.isArray(coursesRes) ? coursesRes : []));
 
         if (apiCats.length > 0) setCategories(apiCats);
         if (apiCourses.length > 0) setAllCourses(apiCourses);
@@ -241,18 +245,9 @@ export function CourseListPage() {
                               {course.title}
                             </h3>
                             
-                            <p className="text-xs font-medium text-[var(--ink-muted)] mb-3">
+                            <p className="text-xs font-medium text-[var(--ink-muted)] mb-4">
                               By {typeof course.instructor === 'object' ? course.instructor?.name : course.instructor || "Samir Singh"}
                             </p>
-
-                            {/* Tech Stack Badges */}
-                            <div className="flex flex-wrap gap-1.5 mb-4">
-                              {(course.tags || ['React 19', 'Node.js', 'Next.js']).slice(0, 3).map((tag, idx) => (
-                                <span key={idx} className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--primary-soft)] text-[var(--primary)] border border-[var(--primary)]/15">
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
                             
                             <div className="mt-auto">
                               <div className="flex items-center justify-between mb-4">

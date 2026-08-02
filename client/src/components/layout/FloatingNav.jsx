@@ -7,6 +7,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { ThemeToggle } from '../shared/ThemeToggle';
 import { GooeyInput } from '../motion/GooeyInput';
+import { UserProfileDropdown } from '../shared/UserProfileDropdown';
 
 const publicLinks = [
   { key: 'nav.courses', path: '/courses' },
@@ -122,22 +123,7 @@ export function FloatingNav() {
 
               {isAuthenticated ? (
                 <div className="flex items-center gap-2 ml-1">
-                  <Link
-                    to={dashboardPath}
-                    className="btn-primary flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl"
-                    style={{ minHeight: '40px' }}
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    {t('nav.dashboard')}
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="p-2.5 rounded-xl text-[var(--ink-muted)] hover:text-[var(--danger)]
-                      hover:bg-[var(--danger-soft)] transition-all duration-200"
-                    aria-label={t('nav.logout')}
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
+                  <UserProfileDropdown position="down" />
                 </div>
               ) : (
                 <div className="flex items-center gap-2 ml-1">
