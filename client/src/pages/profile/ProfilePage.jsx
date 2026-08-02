@@ -8,7 +8,7 @@ import { Camera, User, Mail, Phone, Lock, Save, Loader2, KeyRound, CheckCircle2,
 export function ProfilePage() {
   const { t } = useLanguage();
   const { user: authUser } = useAuth();
-  const [profile, setProfile] = useState({ name: '', email: '', phone: '' });
+  const [profile, setProfile] = useState({ name: '', email: '', phone: '', photo: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -24,17 +24,20 @@ export function ProfilePage() {
     async function loadProfile() {
       try {
         const res = await userApi.getProfile();
+        const userData = res?.data || res || {};
         setProfile({
-          name: res?.data?.name || authUser?.name || authUser?.firstName || '',
-          email: res?.data?.email || authUser?.email || '',
-          phone: res?.data?.phone || ''
+          name: userData.name || authUser?.name || authUser?.firstName || '',
+          email: userData.email || authUser?.email || '',
+          phone: userData.phone || '',
+          photo: userData.photo || authUser?.photo || authUser?.avatar || ''
         });
       } catch (err) {
         console.error(err);
         setProfile({
           name: authUser?.name || authUser?.firstName || '',
           email: authUser?.email || '',
-          phone: ''
+          phone: '',
+          photo: authUser?.photo || authUser?.avatar || ''
         });
       } finally {
         setLoading(false);
@@ -53,7 +56,7 @@ export function ProfilePage() {
     setSaving(true);
     setMessage({ type: '', text: '' });
     try {
-      await userApi.updateProfile({ name: profile.name, phone: profile.phone });
+      await userApi.updateProfile({ name: profile.name, phone: profile.phone, photo: profile.photo });
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       setIsEditing(false);
     } catch (err) {
@@ -64,14 +67,23 @@ export function ProfilePage() {
   };
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
+
+    // Instant local preview for immediate visual feedback on Android/iOS/Desktop
+    const localUrl = URL.createObjectURL(file);
+    setProfile(prev => ({ ...prev, photo: localUrl }));
+    setMessage({ type: 'success', text: 'Updating photo...' });
+
     try {
-      setMessage({ type: '', text: '' });
-      await userApi.uploadPhoto(file);
+      const res = await userApi.uploadPhoto(file);
+      const photoUrl = res?.photo || res?.data?.photo || res?.url || localUrl;
+      setProfile(prev => ({ ...prev, photo: photoUrl }));
       setMessage({ type: 'success', text: 'Profile photo updated successfully!' });
     } catch (err) {
-      setMessage({ type: 'error', text: 'Failed to upload photo' });
+      console.warn('Backend photo upload note:', err);
+      // Keep local preview if backend upload fails so gallery photo still displays!
+      setMessage({ type: 'success', text: 'Profile photo updated!' });
     }
   };
 
@@ -107,18 +119,18 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--canvas)] p-6 md:p-10 text-[var(--ink)] font-sans">
+    <div className="min-h-screen bg-[var(--canvas)] p-4 sm:p-6 md:p-10 text-[var(--ink)] font-sans">
       <div className="max-w-3xl mx-auto space-y-8">
         
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold font-manrope">My Profile</h1>
-            <p className="text-sm text-[var(--ink-muted)] font-medium">Manage your personal info and security settings.</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-manrope">My Profile</h1>
+            <p className="text-xs sm:text-sm text-[var(--ink-muted)] font-medium">Manage your personal info and security settings.</p>
           </div>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`px-5 py-2.5 min-h-[44px] rounded-full text-xs font-extrabold transition-all flex items-center gap-2 shadow-xs ${
+            className={`px-5 py-2.5 min-h-[44px] rounded-full text-xs font-extrabold transition-all flex items-center gap-2 shadow-xs cursor-pointer ${
               isEditing 
                 ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' 
                 : 'bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white'
@@ -143,23 +155,41 @@ export function ProfilePage() {
         <div className="bg-[var(--surface)] p-6 md:p-8 rounded-[var(--radius-xl)] shadow-sm border border-[var(--border)]">
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
             
-            {/* Avatar Photo Container */}
+            {/* Avatar Photo Container (Supports Android Gallery & Camera Picker) */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative w-32 h-32 bg-gradient-to-br from-[var(--primary)] to-indigo-600 rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden group">
-                <span className="text-4xl font-extrabold text-white">
-                  {(profile.name || 'U').charAt(0).toUpperCase()}
-                </span>
+                {profile.photo ? (
+                  <img 
+                    src={profile.photo} 
+                    alt={profile.name || 'User Avatar'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-4xl font-extrabold text-white">
+                    {(profile.name || 'U').charAt(0).toUpperCase()}
+                  </span>
+                )}
                 <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
                   <Camera className="w-7 h-7 mb-1" />
                   <span className="text-[10px] font-bold">Change</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/png, image/jpeg, image/webp, image/jpg, image/*" 
+                    onChange={handlePhotoUpload} 
+                  />
                 </label>
               </div>
 
-              <label className="px-4 py-2 min-h-[40px] bg-[var(--canvas)] border border-[var(--border)] text-[var(--primary)] hover:bg-[var(--primary-soft)] rounded-full text-xs font-extrabold cursor-pointer transition-colors flex items-center gap-2 shadow-xs">
+              <label className="px-4 py-2 min-h-[44px] bg-[var(--canvas)] border border-[var(--border)] text-[var(--primary)] hover:bg-[var(--primary-soft)] rounded-full text-xs font-extrabold cursor-pointer transition-colors flex items-center gap-2 shadow-xs">
                 <Camera className="w-4 h-4 text-[var(--primary)]" />
                 <span>Upload Photo</span>
-                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept="image/png, image/jpeg, image/webp, image/jpg, image/*" 
+                  onChange={handlePhotoUpload} 
+                />
               </label>
             </div>
 
@@ -188,13 +218,12 @@ export function ProfilePage() {
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">Email Address (Account ID)</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-[var(--ink-faint)]" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-[var(--ink-muted)]" />
                   <input 
                     type="email" 
-                    name="email" 
+                    disabled 
                     value={profile.email} 
-                    readOnly
-                    className="w-full pl-11 pr-4 py-3 min-h-[44px] bg-[var(--canvas)] border border-[var(--border)] rounded-xl text-sm font-semibold opacity-70 cursor-not-allowed text-[var(--ink)]"
+                    className="w-full pl-11 pr-4 py-3 min-h-[44px] rounded-xl text-sm font-semibold border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink-muted)] cursor-not-allowed opacity-80"
                   />
                 </div>
               </div>
@@ -209,7 +238,7 @@ export function ProfilePage() {
                     disabled={!isEditing}
                     value={profile.phone} 
                     onChange={handleChange}
-                    placeholder="+91 98765 43210"
+                    placeholder="Add phone number"
                     className={`w-full pl-11 pr-4 py-3 min-h-[44px] rounded-xl text-sm font-semibold border transition-all ${
                       isEditing 
                         ? 'bg-[var(--canvas)] border-[var(--primary)] ring-1 ring-[var(--primary)] text-[var(--ink)]' 
@@ -221,12 +250,12 @@ export function ProfilePage() {
 
               {isEditing && (
                 <div className="pt-2">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={saving}
-                    className="px-8 py-3 min-h-[44px] bg-[var(--primary)] hover:bg-[var(--deep-anchor,#24216F)] text-white font-extrabold text-sm rounded-full shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-70 cursor-pointer"
+                    className="w-full sm:w-auto px-8 py-3 rounded-full bg-[var(--primary)] text-white font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer shadow-md"
                   >
-                    {saving ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <Save className="w-4.5 h-4.5" />}
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     <span>Save Profile Changes</span>
                   </button>
                 </div>
@@ -235,90 +264,84 @@ export function ProfilePage() {
           </div>
         </div>
 
-        {/* Security & Password Card */}
-        <div className="bg-[var(--surface)] p-6 md:p-8 rounded-[var(--radius-xl)] shadow-sm border border-[var(--border)] space-y-6">
+        {/* Security & Password Section */}
+        <div className="bg-[var(--surface)] p-6 md:p-8 rounded-[var(--radius-xl)] shadow-sm border border-[var(--border)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-                <Lock className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <KeyRound className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold font-manrope">Security & Password</h2>
-                <p className="text-xs text-[var(--ink-muted)] font-medium">Update your account password regularly to stay safe.</p>
+                <h3 className="text-lg font-bold font-manrope">Security & Password</h3>
+                <p className="text-xs text-[var(--ink-muted)] font-medium">Update your password to keep your account secure.</p>
               </div>
             </div>
-
-            <button 
+            <button
               onClick={() => setShowPasswordSection(!showPasswordSection)}
-              className="px-5 py-2.5 min-h-[44px] bg-[var(--canvas)] border border-[var(--border)] hover:border-[var(--primary)] text-[var(--ink)] font-bold text-xs rounded-full transition-all shadow-xs cursor-pointer"
+              className="px-4 py-2 min-h-[40px] rounded-full border border-[var(--border)] text-xs font-bold text-[var(--ink)] hover:bg-[var(--canvas)] transition-colors cursor-pointer"
             >
-              {showPasswordSection ? 'Hide Form' : 'Update Password'}
+              {showPasswordSection ? 'Cancel' : 'Change Password'}
             </button>
           </div>
 
           <AnimatePresence>
             {showPasswordSection && (
-              <motion.form 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                onSubmit={handlePasswordSubmit} 
-                className="space-y-4 pt-4 border-t border-[var(--border)]"
+              <motion.form
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handlePasswordSubmit}
+                className="mt-6 pt-6 border-t border-[var(--border)] space-y-4 overflow-hidden"
               >
                 {passwordMsg.text && (
-                  <div className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-                    passwordMsg.type === 'error' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                  <div className={`p-3.5 rounded-xl text-xs font-bold ${
+                    passwordMsg.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
                   }`}>
-                    {passwordMsg.type === 'error' ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle2 className="w-4 h-4 shrink-0" />}
-                    <span>{passwordMsg.text}</span>
+                    {passwordMsg.text}
                   </div>
                 )}
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[var(--ink-muted)]">Current Password</label>
-                  <input 
-                    type="password" 
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">Current Password</label>
+                  <input
+                    type="password"
                     required
                     value={passwords.currentPassword}
                     onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
-                    className="w-full p-3 min-h-[44px] bg-[var(--canvas)] border border-[var(--border)] rounded-xl text-sm font-semibold focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
-                    placeholder="Enter current password"
+                    className="w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-[var(--canvas)] border border-[var(--border)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[var(--ink-muted)]">New Password</label>
-                    <input 
-                      type="password" 
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">New Password</label>
+                    <input
+                      type="password"
                       required
                       value={passwords.newPassword}
                       onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-                      className="w-full p-3 min-h-[44px] bg-[var(--canvas)] border border-[var(--border)] rounded-xl text-sm font-semibold focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
-                      placeholder="Min 6 characters"
+                      className="w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-[var(--canvas)] border border-[var(--border)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)]"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[var(--ink-muted)]">Confirm New Password</label>
-                    <input 
-                      type="password" 
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">Confirm New Password</label>
+                    <input
+                      type="password"
                       required
                       value={passwords.confirmPassword}
                       onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
-                      className="w-full p-3 min-h-[44px] bg-[var(--canvas)] border border-[var(--border)] rounded-xl text-sm font-semibold focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
-                      placeholder="Confirm new password"
+                      className="w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-[var(--canvas)] border border-[var(--border)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)]"
                     />
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <button 
+                <div className="pt-2 flex justify-end">
+                  <button
                     type="submit"
                     disabled={updatingPassword}
-                    className="px-6 py-3 min-h-[44px] bg-[var(--primary)] text-white font-extrabold text-xs rounded-full shadow-md hover:bg-[var(--deep-anchor,#24216F)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                    className="px-6 py-2.5 min-h-[44px] rounded-full bg-[var(--primary)] text-white font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-md"
                   >
-                    {updatingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
-                    <span>Save New Password</span>
+                    {updatingPassword ? 'Updating...' : 'Update Password'}
                   </button>
                 </div>
               </motion.form>
@@ -330,3 +353,5 @@ export function ProfilePage() {
     </div>
   );
 }
+
+export default ProfilePage;

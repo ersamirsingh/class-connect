@@ -23,6 +23,8 @@ export function CategoryCraftDeck({ categories = [] }) {
   const { language } = useLanguage();
   const isHindi = language === 'hi';
   const sliderRef = useRef(null);
+  const touchStartX = useRef(0);
+  const touchScrollLeft = useRef(0);
 
   // 6 Major Course Categories matching the reference image styling & colors
   const majorCategories = [
@@ -134,6 +136,26 @@ export function CategoryCraftDeck({ categories = [] }) {
     }
   };
 
+  // Android & Touchscreen Finger Swipe Handlers
+  const handleTouchStart = (e) => {
+    setIsHovered(true);
+    touchStartX.current = e.touches[0].clientX;
+    if (sliderRef.current) {
+      touchScrollLeft.current = sliderRef.current.scrollLeft;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (!sliderRef.current) return;
+    const touchCurrentX = e.touches[0].clientX;
+    const diff = touchStartX.current - touchCurrentX;
+    sliderRef.current.scrollLeft = touchScrollLeft.current + diff;
+  };
+
+  const handleTouchEnd = () => {
+    setIsHovered(false);
+  };
+
   return (
     <section className="relative py-16 sm:py-24 overflow-hidden bg-[var(--canvas)]">
       {/* Background Soft Glow Blobs */}
@@ -177,20 +199,23 @@ export function CategoryCraftDeck({ categories = [] }) {
         </div>
       </div>
 
-      {/* Interactive Drag & Click Infinite Slider Container */}
+      {/* Interactive Drag & Touchscreen Swipe Infinite Slider Container */}
       <div className="relative w-full">
         {/* Left & Right Fading Overlays */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-8 sm:w-16 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-8 sm:w-16 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Drag / Scroll Track */}
+        {/* Touch & Scroll Track */}
         <div
           ref={sliderRef}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           onWheel={handleWheel}
-          className="flex overflow-x-auto scrollbar-hide py-4 px-4 sm:px-10 gap-4 sm:gap-8 cursor-grab active:cursor-grabbing select-none"
-          style={{ scrollBehavior: 'smooth' }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="flex overflow-x-auto scrollbar-hide py-4 px-4 sm:px-10 gap-4 sm:gap-8 cursor-grab active:cursor-grabbing touch-pan-x"
+          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
         >
           {displayItems.map((cat, idx) => (
             <ReferenceStyleCard key={`${cat.id}-${idx}`} category={cat} />
