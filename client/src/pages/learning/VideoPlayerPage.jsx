@@ -6,10 +6,14 @@ import { courseApi } from '../../api/models/course.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
 import { CheckCircle2, Circle, ChevronLeft, Menu, X, PlayCircle, BookOpen } from 'lucide-react';
 import { CustomVideoPlayer } from '../../components/video/CustomVideoPlayer';
+import { LiveChatPanel } from '../../components/live/LiveChatPanel';
+import { AdminLiveParticipantPanel } from '../../components/live/AdminLiveParticipantPanel';
+import { useAuth } from '../../hooks/useAuth';
 
 export function VideoPlayerPage() {
   const { courseId } = useParams();
   const { t } = useLanguage();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [currentLecture, setCurrentLecture] = useState(null);
@@ -91,6 +95,8 @@ export function VideoPlayerPage() {
     ? course.sections.flatMap(s => s.lectures || [])
     : (course.lectures || []);
 
+  const liveSessionId = course._id || courseId;
+
   return (
     <div className="flex flex-col lg:flex-row h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-hidden font-sans">
       
@@ -121,10 +127,10 @@ export function VideoPlayerPage() {
         </header>
 
         {/* Video Player & Info Area */}
-        <div className="flex-1 p-4 md:p-6 flex flex-col max-w-3xl mx-auto w-full space-y-6">
+        <div className="flex-1 p-4 md:p-6 flex flex-col max-w-4xl mx-auto w-full space-y-6">
           
-          {/* CUSTOM VIDEO PLAYER (Compact initial size, expands to 100% display in Fullscreen mode) */}
-          <div className="w-full max-w-3xl mx-auto shadow-xl rounded-2xl overflow-hidden border border-[var(--border)]">
+          {/* CUSTOM VIDEO PLAYER */}
+          <div className="w-full max-w-4xl mx-auto shadow-xl rounded-2xl overflow-hidden border border-[var(--border)]">
             <CustomVideoPlayer 
               src={currentLecture?.videoUrl} 
               title={currentLecture?.title || course.title}
@@ -155,6 +161,18 @@ export function VideoPlayerPage() {
               <CheckCircle2 className="w-4.5 h-4.5" />
               <span>{currentLecture?.completed ? 'Completed ✓' : (t('mark_complete') || 'Mark Complete')}</span>
             </button>
+          </div>
+
+          {/* REAL-TIME LIVE CLASS CHAT & ADMIN MODERATION PANEL */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="md:col-span-7">
+              <LiveChatPanel liveSessionId={liveSessionId} />
+            </div>
+            {isAdmin && (
+              <div className="md:col-span-5">
+                <AdminLiveParticipantPanel liveSessionId={liveSessionId} />
+              </div>
+            )}
           </div>
 
           {/* Description & Resources */}
