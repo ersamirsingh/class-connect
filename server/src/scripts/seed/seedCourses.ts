@@ -1,295 +1,342 @@
-import { CourseModel, ICourse } from '../../modules/course/course.model';
-import { SeededCategories } from './seedCategories';
-
-export interface SeededCourses {
-  appliedMathCourse: ICourse;
-  mernCourse: ICourse;
-  dataScienceCourse: ICourse;
-  uiUxCourse: ICourse;
-  digitalMarketingCourse: ICourse;
-}
+import { CourseModel } from '../../modules/course/course.model';
+import { CategoryModel } from '../../modules/category/category.model';
 
 const SAMPLE_VIDEOS = [
-  'https://www.w3schools.com/html/mov_bbb.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-  'https://www.w3schools.com/html/mov_bbb.mp4',
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
 ];
 
-export async function seedCourses(categories: SeededCategories): Promise<SeededCourses> {
-  console.log('📚 Seeding Courses (Category → Course → Topic → Lecture)...');
+const THUMBNAILS = [
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1542744094-3a3172720189?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=600',
+];
 
-  const now = new Date();
-  const pastDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
-  const futureDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // 3 days in future
+export async function seedCourses() {
+  console.log('📚 Seeding Courses...');
 
-  // 1. SHOWCASE COURSE: "Applied Mathematics"
-  const appliedMathCourseData = {
-    title: 'Applied Mathematics Masterclass',
-    slug: 'applied-mathematics-masterclass',
-    subtitle: 'From Algebra to Calculus & Probability',
-    description: 'Comprehensive mathematics course designed for university students and competitive exams. Covers linear equations, quadratic formulas, differential calculus, and probability distributions.',
-    category: categories.appliedMath._id,
-    type: 'hybrid' as const,
-    thumbnail: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=600',
-    coverImage: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=1200',
-    previewVideo: SAMPLE_VIDEOS[0],
-    maxPreviewViews: 3,
-    price: 999,
-    discountPrice: 799,
-    rating: 4.9,
-    ratingCount: 148,
-    instructor: {
-      name: 'Prof. Samir Singh',
-      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-      title: 'Senior Math Faculty',
-    },
-    sections: [
-      {
-        title: 'Algebra Basics',
-        order: 1,
-        lectures: [
-          { title: 'Linear Equations & Systems', duration: '12:30', videoUrl: SAMPLE_VIDEOS[0], isPreview: true },
-          { title: 'Quadratic Equations & Roots', duration: '15:45', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
-          { title: 'Polynomial Functions', duration: '18:20', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
-        ],
-      },
-      {
-        title: 'Calculus Fundamentals',
-        order: 2,
-        lectures: [
-          { title: 'Limits & Continuity', duration: '14:10', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
-          { title: 'Derivatives & Chain Rule', duration: '20:15', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
-          { title: 'Integrals & Area Under Curve', duration: '22:50', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
-        ],
-      },
-      {
-        title: 'Statistics & Probability',
-        order: 3,
-        lectures: [
-          { title: 'Mean, Median & Variance', duration: '11:00', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
-          { title: 'Probability Rules & Bayes Theorem', duration: '16:30', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
-          { title: 'Normal & Binomial Distributions', duration: '19:45', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
-        ],
-      },
-    ],
-    liveSchedule: {
-      startTime: pastDate,
-      endTime: new Date(pastDate.getTime() + 90 * 60 * 1000),
-      meetingUrl: 'https://meet.google.com/abc-defg-hij',
-      status: 'ended' as const,
-    },
-    isPublished: true,
-    isFeatured: true,
-    isSuggested: true,
-  };
+  // Fetch categories
+  const catDigital = await CategoryModel.findOne({ slug: 'digital-marketing-ads' });
+  const catAI = await CategoryModel.findOne({ slug: 'ai-prompt-tools' });
+  const catFreelancing = await CategoryModel.findOne({ slug: 'freelancing-earning-online' });
+  const catDesign = await CategoryModel.findOne({ slug: 'design-video-editing' });
+  const catSales = await CategoryModel.findOne({ slug: 'sales-career-skills' });
 
-  // 2. COURSE: "MERN Stack Development"
-  const mernCourseData = {
-    title: 'MERN Fundamentals & Full-Stack Mastery',
-    slug: 'mern-fundamentals-full-stack',
-    subtitle: 'Build production-ready web apps with React & Node',
-    description: 'Learn MongoDB, Express.js, React 19, and Node.js from scratch. Create RESTful APIs, handle authentication, state management, and Cloudinary image uploads.',
-    category: categories.mern._id,
-    type: 'hybrid' as const,
-    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=600',
-    previewVideo: SAMPLE_VIDEOS[1],
-    price: 1299,
-    discountPrice: 999,
-    rating: 4.8,
-    ratingCount: 92,
-    instructor: {
-      name: 'Priti Singh',
-      photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250',
-      title: 'Lead Full-Stack Developer',
-    },
-    sections: [
-      {
-        title: 'Frontend Basics',
-        order: 1,
-        lectures: [
-          { title: 'React 19 Components & JSX', duration: '14:20', videoUrl: SAMPLE_VIDEOS[1], isPreview: true },
-          { title: 'State Management & Hooks', duration: '18:50', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
-        ],
-      },
-      {
-        title: 'Backend Basics',
-        order: 2,
-        lectures: [
-          { title: 'Express Routing & Middleware', duration: '16:40', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
-          { title: 'MongoDB Schemas & Mongoose Models', duration: '21:10', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
-        ],
-      },
-    ],
-    liveSchedule: {
-      startTime: new Date(now.getTime() - 10 * 60 * 1000), //Started 10 mins ago -> Currently LIVE!
-      endTime: new Date(now.getTime() + 50 * 60 * 1000),
-      meetingUrl: 'https://meet.google.com/live-mern-stream',
-      status: 'live' as const,
-    },
-    isPublished: true,
-    isFeatured: true,
-    isSuggested: true,
-  };
-
-  // 3. COURSE: "Intro to Data Science"
-  const dataScienceCourseData = {
-    title: 'Intro to Data Science & Python',
-    slug: 'intro-to-data-science-python',
-    subtitle: 'Data Analysis, Pandas, Matplotlib & Machine Learning',
-    description: 'Master data analysis in Python using NumPy, Pandas, Matplotlib, and Scikit-Learn. Clean real datasets, visualize trends, and train machine learning models.',
-    category: categories.dataScience._id,
-    type: 'recorded' as const,
-    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600',
-    previewVideo: SAMPLE_VIDEOS[2],
-    price: 1499,
-    discountPrice: 1199,
-    rating: 4.7,
-    ratingCount: 64,
-    instructor: {
-      name: 'Rohan Mehta',
-      photo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',
-      title: 'Data Scientist & ML Researcher',
-    },
-    sections: [
-      {
-        title: 'Python for Data Science',
-        order: 1,
-        lectures: [
-          { title: 'NumPy Vectorized Operations', duration: '15:10', videoUrl: SAMPLE_VIDEOS[2], isPreview: true },
-          { title: 'Pandas DataFrames & Manipulation', duration: '22:30', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
-        ],
-      },
-      {
-        title: 'Data Visualization',
-        order: 2,
-        lectures: [
-          { title: 'Matplotlib Line & Scatter Plots', duration: '13:45', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
-          { title: 'Seaborn Heatmaps & Statistical Charts', duration: '17:20', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
-        ],
-      },
-    ],
-    isPublished: true,
-    isFeatured: true,
-    isSuggested: true,
-  };
-
-  // 4. COURSE: "UI/UX Foundations"
-  const uiUxCourseData = {
-    title: 'UI/UX Design Foundations',
-    slug: 'ui-ux-design-foundations',
-    subtitle: 'Figma Prototyping, Design Systems & User Research',
-    description: 'Learn wireframing, high-fidelity UI design in Figma, typography, color palettes, responsive layouts, and conducting user interviews for UX design.',
-    category: categories.uiUx._id,
-    type: 'live' as const,
-    thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600',
-    previewVideo: SAMPLE_VIDEOS[3],
-    price: 899,
-    discountPrice: 699,
-    rating: 4.8,
-    ratingCount: 78,
-    instructor: {
-      name: 'Sneha Iyer',
-      photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=250',
-      title: 'Product Design Lead',
-    },
-    sections: [
-      {
-        title: 'Design Principles',
-        order: 1,
-        lectures: [
-          { title: 'Color Theory & Accessibility', duration: '12:00', videoUrl: SAMPLE_VIDEOS[3], isPreview: true },
-          { title: 'Typography Hierarchy & Spacing', duration: '16:15', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
-        ],
-      },
-      {
-        title: 'Prototyping',
-        order: 2,
-        lectures: [
-          { title: 'Figma Frames & Auto-Layout', duration: '19:40', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
-          { title: 'Interactive Prototypes & Micro-Animations', duration: '24:10', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
-        ],
-      },
-    ],
-    liveSchedule: {
-      startTime: futureDate,
-      endTime: new Date(futureDate.getTime() + 60 * 60 * 1000),
-      meetingUrl: 'https://meet.google.com/upcoming-uiux-class',
-      status: 'scheduled' as const,
-    },
-    isPublished: true,
-    isFeatured: true,
-    isSuggested: true,
-  };
-
-  // 5. COURSE: "Digital Marketing Basics"
-  const digitalMarketingCourseData = {
-    title: 'Digital Marketing & Growth Essentials',
-    slug: 'digital-marketing-growth-essentials',
-    subtitle: 'SEO, Content Strategy & Social Media Analytics',
-    description: 'Learn Search Engine Optimization, Google Ads campaigns, keyword strategy, social media branding, email marketing, and conversion rate optimization.',
-    category: categories.digitalMarketing._id,
-    type: 'recorded' as const,
-    thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600',
-    previewVideo: SAMPLE_VIDEOS[4],
-    price: 499,
-    discountPrice: 399,
-    rating: 4.6,
-    ratingCount: 52,
-    instructor: {
-      name: 'Karan Singh',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
-      title: 'Digital Growth Specialist',
-    },
-    sections: [
-      {
-        title: 'SEO Essentials',
-        order: 1,
-        lectures: [
-          { title: 'Keyword Research & Intent', duration: '11:30', videoUrl: SAMPLE_VIDEOS[4], isPreview: true },
-          { title: 'On-Page SEO & Meta Tags', duration: '15:20', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
-        ],
-      },
-      {
-        title: 'Social Media Marketing',
-        order: 2,
-        lectures: [
-          { title: 'Content Calendar & Strategy', duration: '14:50', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
-          { title: 'Analytics & Campaign Optimization', duration: '18:10', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
-        ],
-      },
-    ],
-    isPublished: true,
-    isFeatured: true,
-    isSuggested: true,
-  };
-
-  const coursesList = [
-    appliedMathCourseData,
-    mernCourseData,
-    dataScienceCourseData,
-    uiUxCourseData,
-    digitalMarketingCourseData,
-  ];
-
-  const resultMap: Record<string, ICourse> = {};
-
-  for (const item of coursesList) {
-    let course = await CourseModel.findOneAndUpdate(
-      { slug: item.slug },
-      { $set: item },
-      { new: true, upsert: true }
-    );
-    console.log(`  ✓ Seeded/Updated course: "${item.title}" with valid video streams`);
-    resultMap[item.slug] = course;
+  if (!catDigital || !catAI || !catFreelancing || !catDesign || !catSales) {
+    throw new Error('Categories must be seeded before seeding courses.');
   }
 
-  return {
-    appliedMathCourse: resultMap['applied-mathematics-masterclass'],
-    mernCourse: resultMap['mern-fundamentals-full-stack'],
-    dataScienceCourse: resultMap['intro-to-data-science-python'],
-    uiUxCourse: resultMap['ui-ux-design-foundations'],
-    digitalMarketingCourse: resultMap['digital-marketing-growth-essentials'],
-  };
+  // 1. Showcase Course: Google Ads (Digital Marketing & Ads)
+  const googleAdsSections = [
+    {
+      title: 'Topic 1: Google Ads Fundamentals',
+      order: 1,
+      lectures: [
+        { title: 'Introduction to Google Ads', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: true },
+        { title: 'Account Setup & Campaign Types', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
+        { title: 'Understanding the Auction System', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+      ],
+    },
+    {
+      title: 'Topic 2: Keyword Research & Targeting',
+      order: 2,
+      lectures: [
+        { title: 'Keyword Research Tools', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
+        { title: 'Match Types Explained', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
+        { title: 'Audience Targeting', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
+      ],
+    },
+    {
+      title: 'Topic 3: Optimization & Reporting',
+      order: 3,
+      lectures: [
+        { title: 'Bid Strategies', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
+        { title: 'A/B Testing Ads', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+        { title: 'Reading Performance Reports', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
+      ],
+    },
+  ];
+
+  const existingGoogleAds = await CourseModel.findOne({ slug: 'google-ads' });
+  if (!existingGoogleAds) {
+    await CourseModel.create({
+      title: 'Google Ads',
+      slug: 'google-ads',
+      subtitle: 'Master Search, Display, Shopping, and YouTube Video Campaigns',
+      description: 'Comprehensive step-by-step masterclass on Google Ads. Learn keyword research, bidding strategies, ad copy creation, quality score optimization, and ROI tracking for scalable campaign growth.',
+      category: catDigital._id,
+      type: 'hybrid',
+      thumbnail: THUMBNAILS[0],
+      coverImage: THUMBNAILS[0],
+      previewVideo: SAMPLE_VIDEOS[0],
+      maxPreviewViews: 3,
+      price: 1499,
+      discountPrice: 999,
+      rating: 4.9,
+      ratingCount: 340,
+      instructor: {
+        name: 'Samir Singh',
+        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+        title: 'Google Ads Certified Specialist',
+      },
+      sections: googleAdsSections,
+      liveSchedule: {
+        startTime: new Date(Date.now() - 3600000), // 1 hr ago
+        endTime: new Date(Date.now() + 3600000), // 1 hr in future
+        meetingUrl: 'https://meet.google.com/abc-defg-hij',
+        status: 'live',
+      },
+      isPublished: true,
+      isFeatured: true,
+      isSuggested: true,
+    });
+    console.log('  └─ Created Showcase Course: Google Ads');
+  } else {
+    // Update lecture durations to 15 sec
+    await CourseModel.updateOne({ slug: 'google-ads' }, { $set: { sections: googleAdsSections } });
+    console.log('  └─ Updated Showcase Course: Google Ads (Durations set to 15 sec)');
+  }
+
+  // 2. Fully-Built Course 2: ChatGPT & AI Tools (Recorded-only)
+  const chatGPTSections = [
+    {
+      title: 'Topic 1: Getting Started with ChatGPT',
+      order: 1,
+      lectures: [
+        { title: 'Intro to Generative AI', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: true },
+        { title: 'Crafting Effective Prompts', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+      ],
+    },
+    {
+      title: 'Topic 2: AI Tools for Productivity',
+      order: 2,
+      lectures: [
+        { title: 'Automating Workflow with Midjourney & Claude', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
+        { title: 'Building Custom GPTs', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
+      ],
+    },
+  ];
+
+  const existingChatGPT = await CourseModel.findOne({ slug: 'chatgpt-ai-tools' });
+  if (!existingChatGPT) {
+    await CourseModel.create({
+      title: 'ChatGPT & AI Tools',
+      slug: 'chatgpt-ai-tools',
+      subtitle: 'Automate Content Creation, Code, and Daily Workflows with AI',
+      description: 'Learn how to leverage ChatGPT, Midjourney, Claude, and custom GPTs to 10x your productivity and automate repetitive tasks.',
+      category: catAI._id,
+      type: 'recorded',
+      thumbnail: THUMBNAILS[1],
+      previewVideo: SAMPLE_VIDEOS[1],
+      maxPreviewViews: 3,
+      price: 799,
+      discountPrice: 499,
+      rating: 4.8,
+      ratingCount: 215,
+      sections: chatGPTSections,
+      isPublished: true,
+      isFeatured: true,
+    });
+    console.log('  └─ Created Course: ChatGPT & AI Tools');
+  } else {
+    await CourseModel.updateOne({ slug: 'chatgpt-ai-tools' }, { $set: { sections: chatGPTSections } });
+    console.log('  └─ Updated Course: ChatGPT & AI Tools (Durations set to 15 sec)');
+  }
+
+  // 3. Fully-Built Course 3: Freelancing Guide (Live-only)
+  const existingFreelancing = await CourseModel.findOne({ slug: 'freelancing-guide' });
+  if (!existingFreelancing) {
+    await CourseModel.create({
+      title: 'Freelancing Guide',
+      slug: 'freelancing-guide',
+      subtitle: 'Complete Roadmap to Land High-Paying International Clients',
+      description: 'Live coaching program covering Upwork profile setup, proposal writing, portfolio building, and client retention.',
+      category: catFreelancing._id,
+      type: 'live',
+      thumbnail: THUMBNAILS[2],
+      previewVideo: SAMPLE_VIDEOS[2],
+      maxPreviewViews: 3,
+      price: 999,
+      discountPrice: 699,
+      rating: 4.9,
+      ratingCount: 180,
+      sections: [],
+      liveSchedule: {
+        startTime: new Date(Date.now() + 86400000), // Tomorrow
+        endTime: new Date(Date.now() + 90000000),
+        meetingUrl: 'https://meet.google.com/freelance-live-room',
+        status: 'scheduled',
+      },
+      isPublished: true,
+      isFeatured: true,
+    });
+    console.log('  └─ Created Course: Freelancing Guide');
+  }
+
+  // 4. Fully-Built Course 4: Canva Mastery (Hybrid)
+  const canvaSections = [
+    {
+      title: 'Topic 1: Canva Basics',
+      order: 1,
+      lectures: [
+        { title: 'Navigating the Workspace', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[3], isPreview: true },
+        { title: 'Typography & Color Palette Rules', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
+      ],
+    },
+    {
+      title: 'Topic 2: Creating Social Media Designs',
+      order: 2,
+      lectures: [
+        { title: 'Designing Viral Instagram Reels & Carousels', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
+        { title: 'Exporting Assets for Print & Web', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
+      ],
+    },
+  ];
+
+  const existingCanva = await CourseModel.findOne({ slug: 'canva-mastery' });
+  if (!existingCanva) {
+    await CourseModel.create({
+      title: 'Canva Mastery',
+      slug: 'canva-mastery',
+      subtitle: 'Design Professional Social Media Assets & Brand Kits',
+      description: 'Step-by-step masterclass to design stunning banners, Reels graphics, YouTube thumbnails, and brand pitch decks using Canva.',
+      category: catDesign._id,
+      type: 'hybrid',
+      thumbnail: THUMBNAILS[3],
+      previewVideo: SAMPLE_VIDEOS[3],
+      maxPreviewViews: 3,
+      price: 599,
+      discountPrice: 399,
+      rating: 4.7,
+      ratingCount: 190,
+      sections: canvaSections,
+      liveSchedule: {
+        startTime: new Date(Date.now() - 172800000), // 2 days ago
+        endTime: new Date(Date.now() - 169200000),
+        meetingUrl: 'https://meet.google.com/canva-past-recording',
+        status: 'ended',
+      },
+      isPublished: true,
+      isFeatured: true,
+    });
+    console.log('  └─ Created Course: Canva Mastery');
+  } else {
+    await CourseModel.updateOne({ slug: 'canva-mastery' }, { $set: { sections: canvaSections } });
+    console.log('  └─ Updated Course: Canva Mastery (Durations set to 15 sec)');
+  }
+
+  // 5. Fully-Built Course 5: Sales and Lead Generation Skills (Hybrid)
+  const salesSections = [
+    {
+      title: 'Topic 1: Lead Generation Fundamentals',
+      order: 1,
+      lectures: [
+        { title: 'Cold Outreach via LinkedIn & Email', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[4], isPreview: true },
+        { title: 'Building High-Converting Prospect Lists', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
+      ],
+    },
+    {
+      title: 'Topic 2: Closing Techniques',
+      order: 2,
+      lectures: [
+        { title: 'Overcoming Price Objections', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
+        { title: 'Structuring High-Ticket Deals', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+      ],
+    },
+  ];
+
+  const existingSales = await CourseModel.findOne({ slug: 'sales-lead-generation-skills' });
+  if (!existingSales) {
+    await CourseModel.create({
+      title: 'Sales and Lead Generation Skills',
+      slug: 'sales-lead-generation-skills',
+      subtitle: 'B2B Sales Prospecting, Cold Calling & Closing Mastery',
+      description: 'Master B2B outreach strategies, high-converting cold email sequences, discovery calls, and objection closing.',
+      category: catSales._id,
+      type: 'hybrid',
+      thumbnail: THUMBNAILS[4],
+      previewVideo: SAMPLE_VIDEOS[4],
+      maxPreviewViews: 3,
+      price: 1299,
+      discountPrice: 899,
+      rating: 4.8,
+      ratingCount: 165,
+      sections: salesSections,
+      liveSchedule: {
+        startTime: new Date(Date.now() + 172800000), // 2 days in future
+        endTime: new Date(Date.now() + 176400000),
+        meetingUrl: 'https://meet.google.com/sales-live-room',
+        status: 'scheduled',
+      },
+      isPublished: true,
+      isFeatured: true,
+    });
+    console.log('  └─ Created Course: Sales and Lead Generation Skills');
+  } else {
+    await CourseModel.updateOne({ slug: 'sales-lead-generation-skills' }, { $set: { sections: salesSections } });
+    console.log('  └─ Updated Course: Sales and Lead Generation Skills (Durations set to 15 sec)');
+  }
+
+  // Remaining 25 Courses — Basic Records Only
+  const remainingCourses = [
+    { title: 'Blogging', slug: 'blogging', category: catDigital._id, price: 499 },
+    { title: 'Pinterest Marketing', slug: 'pinterest-marketing', category: catDigital._id, price: 599 },
+    { title: 'Google Ads Advanced', slug: 'google-ads-advanced', category: catDigital._id, price: 1499 },
+    { title: 'SEO', slug: 'seo', category: catDigital._id, price: 899 },
+    { title: 'Email Marketing', slug: 'email-marketing', category: catDigital._id, price: 699 },
+    { title: 'Dominate Content', slug: 'dominate-content', category: catDigital._id, price: 799 },
+    { title: 'Organic Marketing Mastery', slug: 'organic-marketing-mastery', category: catDigital._id, price: 899 },
+    { title: 'WhatsApp Marketing', slug: 'whatsapp-marketing', category: catDigital._id, price: 599 },
+    { title: 'Gen AI Digital Marketing', slug: 'gen-ai-digital-marketing', category: catDigital._id, price: 999 },
+    { title: 'Meta Ads', slug: 'meta-ads', category: catDigital._id, price: 1199 },
+    { title: 'Gen AI - Website Design', slug: 'gen-ai-website-design', category: catAI._id, price: 899 },
+    { title: 'Mastering AI Resume Writing', slug: 'mastering-ai-resume-writing', category: catAI._id, price: 499 },
+    { title: 'Prompt Engineering', slug: 'prompt-engineering', category: catAI._id, price: 799 },
+    { title: 'AI Faceless YouTube', slug: 'ai-faceless-youtube', category: catAI._id, price: 999 },
+    { title: 'AI Faceless Instagram', slug: 'ai-faceless-instagram', category: catAI._id, price: 899 },
+    { title: 'Affiliate Marketing', slug: 'affiliate-marketing', category: catFreelancing._id, price: 799 },
+    { title: 'Amazon Associate Program', slug: 'amazon-associate-program', category: catFreelancing._id, price: 599 },
+    { title: 'Meesho Reselling', slug: 'meesho-reselling', category: catFreelancing._id, price: 499 },
+    { title: 'Real Estate Lead Generation', slug: 'real-estate-lead-generation', category: catFreelancing._id, price: 1299 },
+    { title: 'Inshot Video Editing', slug: 'inshot-video-editing', category: catDesign._id, price: 499 },
+    { title: 'Capcut Video Editing', slug: 'capcut-video-editing', category: catDesign._id, price: 599 },
+    { title: 'Objection Handling', slug: 'objection-handling', category: catSales._id, price: 699 },
+    { title: 'HR Training', slug: 'hr-training', category: catSales._id, price: 899 },
+    { title: 'Communication Training', slug: 'communication-training', category: catSales._id, price: 599 },
+    { title: 'Mindset Improvement', slug: 'mindset-improvement', category: catSales._id, price: 499 },
+    { title: 'MS Excel Advanced', slug: 'ms-excel-advanced', category: catSales._id, price: 799 },
+  ];
+
+  for (let i = 0; i < remainingCourses.length; i++) {
+    const c = remainingCourses[i];
+    const existing = await CourseModel.findOne({ slug: c.slug });
+    if (!existing) {
+      await CourseModel.create({
+        title: c.title,
+        slug: c.slug,
+        subtitle: `Master ${c.title} with practical, real-world examples.`,
+        description: `Complete guide on ${c.title}. Designed for beginner to advanced learners looking to build practical skillsets.`,
+        category: c.category,
+        type: 'recorded',
+        thumbnail: THUMBNAILS[i % THUMBNAILS.length],
+        previewVideo: SAMPLE_VIDEOS[i % SAMPLE_VIDEOS.length],
+        maxPreviewViews: 3,
+        price: c.price,
+        discountPrice: Math.round(c.price * 0.7),
+        rating: 4.7 + (i % 3) * 0.1,
+        ratingCount: 50 + i * 5,
+        sections: [],
+        isPublished: true,
+        isFeatured: false,
+      });
+      console.log(`  └─ Created Basic Course: ${c.title}`);
+    }
+  }
+
+  console.log('✅ Courses Seeding Complete.\n');
 }

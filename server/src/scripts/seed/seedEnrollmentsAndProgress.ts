@@ -1,116 +1,115 @@
 import { EnrollmentModel } from '../../modules/enrollment/enrollment.model';
 import { ProgressModel } from '../../modules/enrollment/progress.model';
-import { SeededUsers } from './seedUsers';
-import { SeededCourses } from './seedCourses';
-import { SeededOrders } from './seedOrders';
+import { OrderModel } from '../../modules/payment/payment.model';
+import { UserModel } from '../../modules/user/user.model';
+import { CourseModel } from '../../modules/course/course.model';
 
-export async function seedEnrollmentsAndProgress(
-  users: SeededUsers,
-  courses: SeededCourses,
-  orders: SeededOrders
-) {
+export async function seedEnrollmentsAndProgress() {
   console.log('🎓 Seeding Enrollments & Progress...');
 
-  const enrollmentData = [
-    {
-      student: users.student1._id,
-      course: courses.appliedMathCourse._id,
-      order: orders.student1AppliedMathOrder._id,
-      status: 'active' as const,
-    },
-    {
-      student: users.student1._id,
-      course: courses.mernCourse._id,
-      order: orders.student1MernOrder._id,
-      status: 'active' as const,
-    },
-    {
-      student: users.student2._id,
-      course: courses.appliedMathCourse._id,
-      order: orders.student2AppliedMathOrder._id,
-      status: 'active' as const,
-    },
-  ];
+  const student1 = await UserModel.findOne({ email: 'student1@test.com' });
+  const student2 = await UserModel.findOne({ email: 'student2@test.com' });
+  const courseGoogleAds = await CourseModel.findOne({ slug: 'google-ads' });
+  const courseChatGPT = await CourseModel.findOne({ slug: 'chatgpt-ai-tools' });
 
-  for (const item of enrollmentData) {
-    let enrollment = await EnrollmentModel.findOne({
-      student: item.student,
-      course: item.course,
-    });
-    if (!enrollment) {
-      await EnrollmentModel.create(item);
-      console.log(`  ✓ Created enrollment: student ${item.student} in course ${item.course}`);
-    } else {
-      console.log(`  ℹ Enrollment already exists for student ${item.student} in course ${item.course}`);
-    }
+  const order1 = await OrderModel.findOne({ receiptId: 'REC-GOOGLE-ADS-01' });
+  const order2 = await OrderModel.findOne({ receiptId: 'REC-CHATGPT-01' });
+  const order3 = await OrderModel.findOne({ receiptId: 'REC-GOOGLE-ADS-02' });
+
+  if (!student1 || !student2 || !courseGoogleAds || !courseChatGPT || !order1 || !order2 || !order3) {
+    throw new Error('Users, Courses, and Orders must be seeded before seeding enrollments.');
   }
 
-  // --- SEED PROGRESS ---
+  // 1. Enrollment student1 + Google Ads (Partial Progress: 4/9 lectures)
+  let enroll1 = await EnrollmentModel.findOne({ student: student1._id, course: courseGoogleAds._id });
+  if (!enroll1) {
+    enroll1 = await EnrollmentModel.create({
+      student: student1._id,
+      course: courseGoogleAds._id,
+      order: order1._id,
+      status: 'active',
+      enrolledAt: order1.createdAt,
+    });
+    console.log('  └─ Created Enrollment: student1 + Google Ads');
+  }
 
-  // 1. student1 + Applied Math -> 4 of 9 lectures complete, partial position
-  const mathLectures = (courses.appliedMathCourse.sections || []).flatMap(s => s.lectures || []);
-  const student1CompletedLectureIds = mathLectures.slice(0, 4).map(l => (l._id ? l._id.toString() : l.title));
-  const fifthLectureId = mathLectures[4]?._id ? mathLectures[4]._id.toString() : mathLectures[4]?.title || 'lecture-5';
-
-  let p1 = await ProgressModel.findOne({
-    student: users.student1._id,
-    course: courses.appliedMathCourse._id,
+  // Extract lecture titles/IDs from Google Ads
+  const googleAdsLectures: string[] = [];
+  courseGoogleAds.sections.forEach((sec) => {
+    sec.lectures.forEach((lec) => {
+      googleAdsLectures.push(lec.title);
+    });
   });
 
-  if (!p1) {
+  const partialCompleted = googleAdsLectures.slice(0, 4); // First 4 lectures
+  let prog1 = await ProgressModel.findOne({ student: student1._id, course: courseGoogleAds._id });
+  if (!prog1) {
     await ProgressModel.create({
-      student: users.student1._id,
-      course: courses.appliedMathCourse._id,
-      completedLectures: student1CompletedLectureIds,
+      student: student1._id,
+      course: courseGoogleAds._id,
+      completedLectures: partialCompleted,
       lastWatched: {
-        lectureId: fifthLectureId,
-        positionSeconds: 320,
+        lectureId: googleAdsLectures[4] || 'Match Types Explained',
+        positionSeconds: 180,
       },
       isCompleted: false,
     });
-    console.log(`  ✓ Created progress: student1 + Applied Math (4/9 lectures, 44% complete)`);
+    console.log('  └─ Created Progress: student1 + Google Ads (Partial 4/9)');
   }
 
-  // 2. student2 + Applied Math -> 9 of 9 lectures complete (100% complete)
-  const student2CompletedLectureIds = mathLectures.map(l => (l._id ? l._id.toString() : l.title));
-  let p2 = await ProgressModel.findOne({
-    student: users.student2._id,
-    course: courses.appliedMathCourse._id,
-  });
+  // 2. Enrollment student2 + Google Ads (100% Complete Progress: 9/9 lectures)
+  let enroll2 = await EnrollmentModel.findOne({ student: student2._id, course: courseGoogleAds._id });
+  if (!enroll2) {
+    enroll2 = await EnrollmentModel.create({
+      student: student2._id,
+      course: courseGoogleAds._id,
+      order: order3._id,
+      status: 'active',
+      enrolledAt: order3.createdAt,
+    });
+    console.log('  └─ Created Enrollment: student2 + Google Ads');
+  }
 
-  if (!p2) {
+  let prog2 = await ProgressModel.findOne({ student: student2._id, course: courseGoogleAds._id });
+  if (!prog2) {
     await ProgressModel.create({
-      student: users.student2._id,
-      course: courses.appliedMathCourse._id,
-      completedLectures: student2CompletedLectureIds,
+      student: student2._id,
+      course: courseGoogleAds._id,
+      completedLectures: googleAdsLectures, // All 9 lectures
       lastWatched: {
-        lectureId: student2CompletedLectureIds[student2CompletedLectureIds.length - 1] || 'lecture-9',
-        positionSeconds: 1180,
+        lectureId: googleAdsLectures[googleAdsLectures.length - 1] || 'Reading Performance Reports',
+        positionSeconds: 1320,
       },
       isCompleted: true,
-      certificateId: 'CERT-MATH-2026-001',
+      certificateId: 'CERT-GA-1002',
       certificateIssuedAt: new Date(),
     });
-    console.log(`  ✓ Created progress: student2 + Applied Math (9/9 lectures, 100% complete + Certificate)`);
+    console.log('  └─ Created Progress: student2 + Google Ads (100% Complete)');
   }
 
-  // 3. student1 + MERN -> 0 of 4 lectures complete (0% "just started" state)
-  let p3 = await ProgressModel.findOne({
-    student: users.student1._id,
-    course: courses.mernCourse._id,
-  });
+  // 3. Enrollment student1 + ChatGPT & AI Tools (0% Progress)
+  let enroll3 = await EnrollmentModel.findOne({ student: student1._id, course: courseChatGPT._id });
+  if (!enroll3) {
+    enroll3 = await EnrollmentModel.create({
+      student: student1._id,
+      course: courseChatGPT._id,
+      order: order2._id,
+      status: 'active',
+      enrolledAt: order2.createdAt,
+    });
+    console.log('  └─ Created Enrollment: student1 + ChatGPT & AI Tools');
+  }
 
-  if (!p3) {
+  let prog3 = await ProgressModel.findOne({ student: student1._id, course: courseChatGPT._id });
+  if (!prog3) {
     await ProgressModel.create({
-      student: users.student1._id,
-      course: courses.mernCourse._id,
+      student: student1._id,
+      course: courseChatGPT._id,
       completedLectures: [],
-      lastWatched: {
-        lectureId: '',
-        positionSeconds: 0,
-      },
       isCompleted: false,
     });
-    console.log(`  ✓ Created progress: student1 + MERN (0/4 lectures, 0% complete)`);
+    console.log('  └─ Created Progress: student1 + ChatGPT & AI Tools (0% Just Started)');
   }
+
+  console.log('✅ Enrollments & Progress Seeding Complete.\n');
 }

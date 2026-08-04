@@ -187,21 +187,27 @@ export class CourseService {
       const { UserModel } = await import('../user/user.model');
       const dbUser = await UserModel.findById(user._id);
       if (dbUser) {
-        if (!dbUser.previewViews) dbUser.previewViews = [];
-        let viewEntry = dbUser.previewViews.find((v: any) => (v.course?._id || v.course)?.toString() === course._id.toString());
-        if (!viewEntry) {
-          viewEntry = { course: course._id as any, count: 0 };
-          dbUser.previewViews.push(viewEntry);
-        }
+        const previewViews = dbUser.previewViews || [];
+        const existingView = previewViews.find((v: any) => (v.course?._id || v.course)?.toString() === course._id.toString());
+        const currentCount = existingView ? existingView.count : 0;
 
-        if ((viewEntry.count || 0) >= maxViews) {
+        if (currentCount >= maxViews) {
           throw new Error('Preview limit reached — Purchase to continue.');
         }
 
-        viewEntry.count = (viewEntry.count || 0) + 1;
-        await dbUser.save();
+        if (existingView) {
+          await UserModel.updateOne(
+            { _id: user._id, 'previewViews.course': course._id },
+            { $inc: { 'previewViews.$.count': 1 } }
+          );
+        } else {
+          await UserModel.updateOne(
+            { _id: user._id },
+            { $push: { previewViews: { course: course._id, count: 1 } } }
+          );
+        }
 
-        const remainingViews = Math.max(0, maxViews - viewEntry.count);
+        const remainingViews = Math.max(0, maxViews - (currentCount + 1));
         return {
           allowed: true,
           remainingViews,

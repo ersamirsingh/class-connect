@@ -15,7 +15,12 @@ router.put('/toggle-suggested/:id', authenticateUser, authorizeRoles('admin'), C
 router.put('/:id', authenticateUser, authorizeRoles('admin'), CourseController.updateCourse);
 router.delete('/:id', authenticateUser, authorizeRoles('admin'), CourseController.deleteCourse);
 
-router.post('/:id/preview/play', CourseController.trackPreviewPlay);
+router.post('/:id/preview/play', (req, res, next) => {
+  if (req.headers.authorization) {
+    return authenticateUser(req, res, next);
+  }
+  next();
+}, CourseController.trackPreviewPlay);
 
 // Dynamic param route (must be last)
 router.get('/:idOrSlug', CourseController.getCourseByIdOrSlug);

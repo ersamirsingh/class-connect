@@ -1,21 +1,18 @@
 import { ContentBlockModel } from '../../modules/content/content.model';
 
 export async function seedContentBlocks() {
-  console.log('🎨 Seeding CMS Content Blocks...');
+  console.log('🎨 Seeding Content Blocks (CMS)...');
 
-  const contentBlocksData = [
+  const blocks = [
     {
       page: 'home',
       section: 'hero',
-      title: 'Master New Skills with Live & Interactive Courses',
-      subtitle: 'Join thousands of students learning Applied Math, MERN Stack, Data Science, and UI/UX Design from industry experts.',
+      title: 'Master In-Demand Digital & AI Skills',
+      subtitle: 'Learn directly from industry practitioners with practical, job-ready certification courses.',
       data: {
-        imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1200',
-        ctaText: 'Explore Courses',
+        ctaText: 'Explore All Courses',
         ctaLink: '/courses',
-        secondaryCtaText: 'How It Works',
-        secondaryCtaLink: '/about',
-        trustBadge: 'Over 10,000+ Active Students & Certified Graduates',
+        bannerUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=1200',
       },
       order: 1,
       isActive: true,
@@ -23,15 +20,14 @@ export async function seedContentBlocks() {
     {
       page: 'home',
       section: 'testimonial',
-      title: 'Priti Singh — Applied Mathematics Graduate',
-      subtitle: 'Scored 98% in final exams thanks to step-by-step calculus lectures.',
+      title: 'Student Review - Md Yusuf',
+      subtitle: 'Verified Graduate',
       data: {
-        author: 'Priti Singh',
-        authorRole: 'Engineering Student',
-        authorPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250',
-        quote: 'ClassConnect transformed my math performance. The interactive calculus and algebra modules made tough topics feel intuitive.',
+        name: 'Md Yusuf',
+        role: 'Digital Marketer',
+        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+        quote: 'The Google Ads course transformed my freelancing career completely. The campaign setup module is unmatched.',
         rating: 5,
-        courseBadge: 'Applied Mathematics',
       },
       order: 1,
       isActive: true,
@@ -39,15 +35,14 @@ export async function seedContentBlocks() {
     {
       page: 'home',
       section: 'testimonial',
-      title: 'Priya Verma — MERN Stack Developer',
-      subtitle: 'Landed a full-stack developer role within 3 months of completion.',
+      title: 'Student Review - Mahi Raj',
+      subtitle: 'Verified Graduate',
       data: {
-        author: 'Priya Verma',
-        authorRole: 'Frontend Developer',
-        authorPhoto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=250',
-        quote: 'The MERN stack course has incredible depth. Building real MongoDB and Express projects gave me total confidence in interviews.',
+        name: 'Mahi Raj',
+        role: 'Growth Specialist',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
+        quote: 'Hands-down the best structured LMS platform. Real video lectures with zero fluff and instant response support.',
         rating: 5,
-        courseBadge: 'MERN Stack Development',
       },
       order: 2,
       isActive: true,
@@ -55,15 +50,14 @@ export async function seedContentBlocks() {
     {
       page: 'home',
       section: 'testimonial',
-      title: 'Rohan Mehta — Data Science Enthusiast',
-      subtitle: 'Mastered Python, Pandas, and Scikit-Learn data modeling.',
+      title: 'Student Review - Sneha Iyer',
+      subtitle: 'Verified Graduate',
       data: {
-        author: 'Rohan Mehta',
-        authorRole: 'Data Analyst Intern',
-        authorPhoto: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',
-        quote: 'Clear video lessons and downloadable resources. The live interactive Q&A sessions are super valuable!',
+        name: 'Sneha Iyer',
+        role: 'UI Designer',
+        photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250',
+        quote: 'Canva Mastery helped me create high-converting social media carousels and client pitch decks in minutes.',
         rating: 5,
-        courseBadge: 'Data Science',
       },
       order: 3,
       isActive: true,
@@ -71,56 +65,41 @@ export async function seedContentBlocks() {
     {
       page: 'home',
       section: 'footer',
-      title: 'ClassConnect Learning Platform',
-      subtitle: 'Empowering students with accessible, top-tier online education.',
+      title: 'ClassConnect Footer',
       data: {
         copyright: '© 2026 ClassConnect Inc. All rights reserved.',
         links: [
-          { label: 'Explore Courses', url: '/courses' },
-          { label: 'Categories', url: '/categories' },
-          { label: 'About Us', url: '/about' },
-          { label: 'Report a Problem', url: '/report' },
+          { text: 'Privacy Policy', url: '/privacy' },
+          { text: 'Terms of Service', url: '/terms' },
+          { text: 'Contact Support', url: '/support' },
         ],
-        socials: {
-          twitter: 'https://twitter.com/classconnect',
-          github: 'https://github.com/classconnect',
-          linkedin: 'https://linkedin.com/company/classconnect',
-        },
       },
       order: 1,
       isActive: true,
     },
     {
       page: 'about',
-      section: 'main',
+      section: 'about',
       title: 'About ClassConnect',
-      subtitle: 'Connecting passionate learners with top-tier education.',
+      subtitle: 'Empowering over 10,000+ learners across India with practical skills.',
       data: {
-        description: 'ClassConnect is a modern e-learning platform featuring live interactive sessions, adaptive video streaming, downloadable resources, and verifiable course certificates.',
-        imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=1200',
-        stats: [
-          { value: '10,000+', label: 'Students Enrolled' },
-          { value: '500+', label: 'Hours of Video Lessons' },
-          { value: '99.4%', label: 'Satisfaction Rate' },
-        ],
+        imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1200',
+        mission: 'To bridge the digital skill gap by providing high-quality, practical, bilingual education.',
       },
       order: 1,
       isActive: true,
     },
   ];
 
-  for (const item of contentBlocksData) {
-    let block = await ContentBlockModel.findOne({
-      page: item.page,
-      section: item.section,
-      title: item.title,
-    });
-
-    if (!block) {
-      await ContentBlockModel.create(item);
-      console.log(`  ✓ Created CMS block: ${item.page} / ${item.section} ("${item.title}")`);
+  for (const b of blocks) {
+    const existing = await ContentBlockModel.findOne({ page: b.page, section: b.section, title: b.title });
+    if (!existing) {
+      await ContentBlockModel.create(b);
+      console.log(`  └─ Created Content Block: ${b.page}/${b.section} - ${b.title}`);
     } else {
-      console.log(`  ℹ CMS block already exists: ${item.page} / ${item.section}`);
+      console.log(`  └─ Content Block already exists: ${b.page}/${b.section} - ${b.title}`);
     }
   }
+
+  console.log('✅ Content Blocks Seeding Complete.\n');
 }

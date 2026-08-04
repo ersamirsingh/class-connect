@@ -168,11 +168,16 @@ export function CustomVideoPlayer({
     }
   };
 
-  // Format Seconds to MM:SS
+  // Format Seconds to MM:SS or HH:MM:SS
   const formatTime = (timeInSec) => {
-    if (isNaN(timeInSec)) return '00:00';
-    const minutes = Math.floor(timeInSec / 60);
+    if (isNaN(timeInSec) || timeInSec <= 0) return '00:00';
+    const hours = Math.floor(timeInSec / 3600);
+    const minutes = Math.floor((timeInSec % 3600) / 60);
     const seconds = Math.floor(timeInSec % 60);
+
+    if (hours > 0) {
+      return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
     return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 

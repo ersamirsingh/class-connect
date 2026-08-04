@@ -1,60 +1,65 @@
 import { ReportModel } from '../../modules/report/report.model';
-import { SeededUsers } from './seedUsers';
-import { SeededCourses } from './seedCourses';
+import { UserModel } from '../../modules/user/user.model';
+import { CourseModel } from '../../modules/course/course.model';
 
-export async function seedReports(users: SeededUsers, courses: SeededCourses) {
-  console.log('🚩 Seeding Problem Reports...');
+export async function seedReports() {
+  console.log('🚨 Seeding Problem Reports...');
 
-  const reportsData = [
+  const student1 = await UserModel.findOne({ email: 'student1@test.com' });
+  const student2 = await UserModel.findOne({ email: 'student2@test.com' });
+  const student3 = await UserModel.findOne({ email: 'student3@test.com' });
+  const student4 = await UserModel.findOne({ email: 'student4@test.com' });
+
+  const courseGoogleAds = await CourseModel.findOne({ slug: 'google-ads' });
+  const courseCanva = await CourseModel.findOne({ slug: 'canva-mastery' });
+  const courseSales = await CourseModel.findOne({ slug: 'sales-lead-generation-skills' });
+
+  if (!student1 || !student2 || !student3 || !student4) {
+    throw new Error('Users must be seeded before seeding reports.');
+  }
+
+  const reports = [
     {
-      student: users.student3._id,
+      student: student3._id,
       category: 'payment' as const,
-      description: 'My payment for Intro to Data Science is stuck in pending status after UPI transaction.',
-      images: [],
       status: 'open' as const,
-      relatedCourse: courses.dataScienceCourse._id,
-      adminNote: '',
+      description: 'Payment was deducted from my bank via UPI but my order status still shows pending.',
+      relatedCourse: courseCanva?._id,
+      images: ['https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=600'],
     },
     {
-      student: users.student4._id,
+      student: student4._id,
       category: 'payment' as const,
-      description: 'Card was charged for UI/UX Foundations but order status displays failed.',
-      images: ['https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=600'],
       status: 'in-progress' as const,
-      relatedCourse: courses.uiUxCourse._id,
-      adminNote: 'Checking Razorpay webhook logs for transaction confirmation.',
+      description: 'Razorpay failed during checkout transaction for Sales and Lead Generation Skills course.',
+      relatedCourse: courseSales?._id,
+      adminNote: 'Investigating payment gateway transaction logs with Razorpay support desk.',
     },
     {
-      student: users.student1._id,
+      student: student1._id,
       category: 'video' as const,
-      description: 'Video stream would not load on Topic 2 Calculus Derivatives lecture on mobile Safari.',
-      images: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600'],
       status: 'resolved' as const,
-      relatedCourse: courses.appliedMathCourse._id,
-      adminNote: 'Verified Cloudinary HLS delivery stream; resolved buffering issue.',
+      description: 'Video lecture 2 on Keyword Research had a buffering pause at 03:45. Resolved after cache clear.',
+      relatedCourse: courseGoogleAds?._id,
+      adminNote: 'Verified video asset delivery on Cloudinary server. User confirmed resolved.',
     },
     {
-      student: users.student2._id,
+      student: student2._id,
       category: 'other' as const,
-      description: 'General feedback: Requesting additional practice problem sets for Statistics module.',
-      images: [],
       status: 'open' as const,
-      relatedCourse: courses.appliedMathCourse._id,
-      adminNote: '',
+      description: 'Feature request: Can we get dark mode support for PDF lecture downloads?',
     },
   ];
 
-  for (const item of reportsData) {
-    let report = await ReportModel.findOne({
-      student: item.student,
-      description: item.description,
-    });
-
-    if (!report) {
-      await ReportModel.create(item);
-      console.log(`  ✓ Created report for student: ${item.student} (${item.category} / ${item.status})`);
+  for (const r of reports) {
+    const existing = await ReportModel.findOne({ student: r.student, description: r.description });
+    if (!existing) {
+      await ReportModel.create(r);
+      console.log(`  └─ Created Report: ${r.category} (${r.status})`);
     } else {
-      console.log(`  ℹ Report already exists for student: ${item.student}`);
+      console.log(`  └─ Report already exists: ${r.category}`);
     }
   }
+
+  console.log('✅ Reports Seeding Complete.\n');
 }
