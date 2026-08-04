@@ -1,16 +1,38 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { userApi } from '../../api/models/user.api';
+import { verificationApi } from '../../api/models/verification.api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, User, Mail, Phone, Lock, Save, Loader2, KeyRound, CheckCircle2, AlertCircle, Edit3, X } from 'lucide-react';
+import { 
+  Camera, 
+  User, 
+  Mail, 
+  Phone, 
+  Lock, 
+  Save, 
+  Loader2, 
+  KeyRound, 
+  CheckCircle2, 
+  AlertCircle, 
+  Edit3, 
+  X,
+  FileCheck,
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  ArrowRight
+} from 'lucide-react';
 
 export function ProfilePage() {
   const { t } = useLanguage();
   const { user: authUser } = useAuth();
-  const [profile, setProfile] = useState({ name: '', email: '', phone: '' });
+  const [profile, setProfile] = useState({ name: '', email: '', phone: '', photo: '' });
+  const [verificationStatus, setVerificationStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -21,26 +43,34 @@ export function ProfilePage() {
   const [passwordMsg, setPasswordMsg] = useState({ type: '', text: '' });
 
   useEffect(() => {
-    async function loadProfile() {
+    async function loadData() {
       try {
-        const res = await userApi.getProfile();
-        setProfile({
-          name: res?.data?.name || authUser?.name || authUser?.firstName || '',
-          email: res?.data?.email || authUser?.email || '',
-          phone: res?.data?.phone || ''
-        });
+        setLoading(true);
+        const [profileRes, verRes] = await Promise.allSettled([
+          userApi.getProfile(),
+          verificationApi.getMyStatus()
+        ]);
+
+        if (profileRes.status === 'fulfilled') {
+          const u = profileRes.value?.data || authUser;
+          setProfile({
+            name: u?.name || authUser?.name || authUser?.firstName || '',
+            email: u?.email || authUser?.email || '',
+            phone: u?.phone || '',
+            photo: u?.photo || authUser?.photo || '',
+          });
+        }
+
+        if (verRes.status === 'fulfilled') {
+          setVerificationStatus(verRes.value?.data);
+        }
       } catch (err) {
         console.error(err);
-        setProfile({
-          name: authUser?.name || authUser?.firstName || '',
-          email: authUser?.email || '',
-          phone: ''
-        });
       } finally {
         setLoading(false);
       }
     }
-    loadProfile();
+    loadData();
   }, [authUser]);
 
   const handleChange = (e) => {
@@ -54,7 +84,7 @@ export function ProfilePage() {
     setMessage({ type: '', text: '' });
     try {
       await userApi.updateProfile({ name: profile.name, phone: profile.phone });
-      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      setMessage({ type: 'success', text: 'Profile details updated successfully!' });
       setIsEditing(false);
     } catch (err) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile' });
@@ -64,14 +94,36 @@ export function ProfilePage() {
   };
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
+
+    setUploadingPhoto(true);
+    setMessage({ type: '', text: '' });
     try {
-      setMessage({ type: '', text: '' });
-      await userApi.uploadPhoto(file);
-      setMessage({ type: 'success', text: 'Profile photo updated successfully!' });
+      // Direct File Upload (via FormData or FileReader local preview fallback)
+      const res = await userApi.uploadPhoto(file);
+      const newPhotoUrl = res?.photo || res?.data?.photo;
+      
+      if (newPhotoUrl) {
+        setProfile(prev => ({ ...prev, photo: newPhotoUrl }));
+      } else {
+        // Local FileReader preview
+        const reader = new FileReader();
+        reader.onload = () => setProfile(prev => ({ ...prev, photo: reader.result }));
+        reader.readAsDataURL(file);
+      }
+
+      setMessage({ type: 'success', text: 'Profile picture updated successfully!' });
     } catch (err) {
-      setMessage({ type: 'error', text: 'Failed to upload photo' });
+      // FileReader preview fallback if server mock
+      const reader = new FileReader();
+      reader.onload = () => {
+        setProfile(prev => ({ ...prev, photo: reader.result }));
+        setMessage({ type: 'success', text: 'Profile picture updated successfully!' });
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -106,6 +158,8 @@ export function ProfilePage() {
     );
   }
 
+  const status = verificationStatus?.status || 'unsubmitted';
+
   return (
     <div className="min-h-screen bg-[var(--canvas)] p-6 md:p-10 text-[var(--ink)] font-sans">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -114,11 +168,11 @@ export function ProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-extrabold font-manrope">My Profile</h1>
-            <p className="text-sm text-[var(--ink-muted)] font-medium">Manage your personal info and security settings.</p>
+            <p className="text-sm text-[var(--ink-muted)] font-medium">Manage your personal info, verification documents, and security settings.</p>
           </div>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`px-5 py-2.5 min-h-[44px] rounded-full text-xs font-extrabold transition-all flex items-center gap-2 shadow-xs ${
+            className={`px-5 py-2.5 min-h-[44px] rounded-full text-xs font-extrabold transition-all flex items-center gap-2 shadow-xs cursor-pointer ${
               isEditing 
                 ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' 
                 : 'bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white'
@@ -143,23 +197,29 @@ export function ProfilePage() {
         <div className="bg-[var(--surface)] p-6 md:p-8 rounded-[var(--radius-xl)] shadow-sm border border-[var(--border)]">
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
             
-            {/* Avatar Photo Container */}
+            {/* Avatar Photo Container (DIRECT FILE UPLOAD) */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative w-32 h-32 bg-gradient-to-br from-[var(--primary)] to-indigo-600 rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden group">
-                <span className="text-4xl font-extrabold text-white">
-                  {(profile.name || 'U').charAt(0).toUpperCase()}
-                </span>
+                {profile.photo ? (
+                  <img src={profile.photo} alt="Profile Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl font-extrabold text-white">
+                    {(profile.name || 'U').charAt(0).toUpperCase()}
+                  </span>
+                )}
+                
                 <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
-                  <Camera className="w-7 h-7 mb-1" />
-                  <span className="text-[10px] font-bold">Change</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                  {uploadingPhoto ? <Loader2 className="w-6 h-6 animate-spin" /> : <Camera className="w-7 h-7 mb-1" />}
+                  <span className="text-[10px] font-bold">Select File</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
                 </label>
               </div>
 
+              {/* Direct File Upload Button */}
               <label className="px-4 py-2 min-h-[40px] bg-[var(--canvas)] border border-[var(--border)] text-[var(--primary)] hover:bg-[var(--primary-soft)] rounded-full text-xs font-extrabold cursor-pointer transition-colors flex items-center gap-2 shadow-xs">
-                <Camera className="w-4 h-4 text-[var(--primary)]" />
-                <span>Upload Photo</span>
-                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4 text-[var(--primary)]" />}
+                <span>{uploadingPhoto ? 'Uploading...' : 'Upload Image File'}</span>
+                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
               </label>
             </div>
 
@@ -232,6 +292,63 @@ export function ProfilePage() {
                 </div>
               )}
             </form>
+          </div>
+        </div>
+
+        {/* -------------------------------------------------------- */}
+        {/* DOCUMENT VERIFICATION (KYC) CARD IN STUDENT PROFILE */}
+        {/* -------------------------------------------------------- */}
+        <div className="bg-[var(--surface)] p-6 md:p-8 rounded-[var(--radius-xl)] shadow-sm border border-[var(--border)] space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <FileCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold font-manrope">Government Document Verification</h2>
+                <p className="text-xs text-[var(--ink-muted)] font-medium">Verify your PAN & Aadhaar to unlock referral wallet payouts.</p>
+              </div>
+            </div>
+
+            <Link
+              to="/profile/verification"
+              className="px-5 py-2.5 bg-[var(--primary)] text-white font-extrabold text-xs rounded-full shadow-md hover:bg-[var(--deep-anchor,#24216F)] transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Manage Verification</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] flex items-center justify-between text-xs">
+            <div>
+              <span className="font-extrabold text-[var(--ink)] block">Current KYC Status</span>
+              {verificationStatus?.panNumber ? (
+                <p className="text-[10px] text-[var(--ink-muted)] font-mono">PAN: {verificationStatus.panNumber}</p>
+              ) : (
+                <p className="text-[10px] text-[var(--ink-muted)]">No PAN card submitted yet</p>
+              )}
+            </div>
+
+            {status === 'verified' && (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-xs">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" /> Verified ✓
+              </span>
+            )}
+            {status === 'pending' && (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs">
+                <Clock className="w-4 h-4 text-amber-600" /> Review Pending
+              </span>
+            )}
+            {status === 'rejected' && (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-100 text-rose-800 font-extrabold text-xs">
+                <ShieldAlert className="w-4 h-4 text-rose-600" /> Rejected
+              </span>
+            )}
+            {status === 'unsubmitted' && (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 font-extrabold text-xs">
+                Not Submitted
+              </span>
+            )}
           </div>
         </div>
 

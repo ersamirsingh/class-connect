@@ -8,7 +8,10 @@ import {
   UploadCloud, 
   AlertCircle, 
   Image as ImageIcon,
-  CheckCircle2
+  CheckCircle2,
+  Upload,
+  X,
+  FileImage
 } from 'lucide-react';
 import { verificationApi } from '../../api/models/verification.api';
 
@@ -46,9 +49,36 @@ export function DocumentVerificationPage() {
     loadStatus();
   }, []);
 
+  const handlePanFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({ ...prev, panImageUrl: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAadhaarFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({ ...prev, aadhaarImageUrl: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg({ type: '', text: '' });
+    if (!form.panImageUrl) {
+      setMsg({ type: 'error', text: 'Please select and upload your PAN Card image file.' });
+      return;
+    }
+
     try {
       setSubmitting(true);
       await verificationApi.submitVerification(form);
@@ -129,8 +159,8 @@ export function DocumentVerificationPage() {
           className="bg-[var(--surface)] p-6 sm:p-8 rounded-3xl border border-[var(--border)] shadow-xl space-y-6"
         >
           <div className="border-b border-[var(--border)] pb-4">
-            <h3 className="font-extrabold text-lg text-[var(--ink)] font-manrope">PAN & Aadhaar Upload</h3>
-            <p className="text-xs text-[var(--ink-muted)] font-medium">Required for Admin verification before requesting referral wallet payouts.</p>
+            <h3 className="font-extrabold text-lg text-[var(--ink)] font-manrope">PAN & Aadhaar Image File Upload</h3>
+            <p className="text-xs text-[var(--ink-muted)] font-medium">Select and upload your document image files directly from your device.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -149,36 +179,53 @@ export function DocumentVerificationPage() {
               />
             </div>
 
-            {/* PAN Image URL */}
-            <div>
-              <label className="text-xs font-bold text-[var(--ink-muted)] block mb-1">PAN Card Document Image URL (Required)</label>
-              <input
-                type="url"
-                placeholder="https://res.cloudinary.com/.../pan_card.png"
-                value={form.panImageUrl}
-                onChange={(e) => setForm({ ...form, panImageUrl: e.target.value })}
-                required
-                disabled={status === 'verified'}
-                className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-xs focus:outline-none focus:border-[var(--primary)]"
-              />
-              {form.panImageUrl && (
-                <div className="mt-2 p-2 bg-[var(--canvas)] rounded-xl border border-[var(--border)] max-w-xs">
-                  <img src={form.panImageUrl} alt="PAN Preview" className="w-full h-32 object-cover rounded-lg" />
+            {/* PAN Image File Upload Box */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-[var(--ink-muted)] block">PAN Card Document Image File (Required)</label>
+              
+              {form.panImageUrl ? (
+                <div className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] max-w-sm space-y-3">
+                  <img src={form.panImageUrl} alt="PAN Card Preview" className="w-full h-44 object-contain rounded-xl bg-slate-900 border border-slate-700" />
+                  {status !== 'verified' && (
+                    <label className="w-full py-2 bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer">
+                      <Upload className="w-4 h-4" />
+                      <span>Change PAN Image File</span>
+                      <input type="file" className="hidden" accept="image/*" onChange={handlePanFileChange} />
+                    </label>
+                  )}
                 </div>
+              ) : (
+                <label className="border-2 border-dashed border-[var(--primary)]/40 hover:border-[var(--primary)] bg-[var(--canvas)] p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors max-w-md">
+                  <UploadCloud className="w-8 h-8 text-[var(--primary)]" />
+                  <span className="text-xs font-bold text-[var(--ink)]">Click to Select PAN Card Image File</span>
+                  <span className="text-[10px] text-[var(--ink-muted)] font-medium">Supports JPG, PNG, WEBP images</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handlePanFileChange} disabled={status === 'verified'} />
+                </label>
               )}
             </div>
 
-            {/* Optional Aadhaar Image URL */}
-            <div>
-              <label className="text-xs font-bold text-[var(--ink-muted)] block mb-1">Aadhaar Card Document Image URL (Optional)</label>
-              <input
-                type="url"
-                placeholder="https://res.cloudinary.com/.../aadhaar_card.png"
-                value={form.aadhaarImageUrl}
-                onChange={(e) => setForm({ ...form, aadhaarImageUrl: e.target.value })}
-                disabled={status === 'verified'}
-                className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-xs focus:outline-none focus:border-[var(--primary)]"
-              />
+            {/* Optional Aadhaar Image File Upload Box */}
+            <div className="space-y-2 pt-2 border-t border-[var(--border)]">
+              <label className="text-xs font-bold text-[var(--ink-muted)] block">Aadhaar Card Document Image File (Optional)</label>
+              
+              {form.aadhaarImageUrl ? (
+                <div className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] max-w-sm space-y-3">
+                  <img src={form.aadhaarImageUrl} alt="Aadhaar Card Preview" className="w-full h-44 object-contain rounded-xl bg-slate-900 border border-slate-700" />
+                  {status !== 'verified' && (
+                    <label className="w-full py-2 bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer">
+                      <Upload className="w-4 h-4" />
+                      <span>Change Aadhaar Image File</span>
+                      <input type="file" className="hidden" accept="image/*" onChange={handleAadhaarFileChange} />
+                    </label>
+                  )}
+                </div>
+              ) : (
+                <label className="border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] bg-[var(--canvas)] p-5 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors max-w-md">
+                  <FileImage className="w-7 h-7 text-[var(--ink-muted)]" />
+                  <span className="text-xs font-bold text-[var(--ink)]">Click to Select Aadhaar Card Image File</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleAadhaarFileChange} disabled={status === 'verified'} />
+                </label>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -186,10 +233,11 @@ export function DocumentVerificationPage() {
               <div className="flex justify-end pt-4 border-t border-[var(--border)]">
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="px-8 py-3 bg-[var(--primary)] text-white text-xs font-extrabold rounded-xl shadow-md hover:bg-[var(--deep-anchor,#24216F)] transition-colors cursor-pointer disabled:opacity-50"
+                  disabled={submitting || !form.panImageUrl}
+                  className="px-8 py-3 bg-[var(--primary)] text-white text-xs font-extrabold rounded-xl shadow-md hover:bg-[var(--deep-anchor,#24216F)] transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
-                  {submitting ? 'Submitting...' : 'Submit Documents for Verification'}
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{submitting ? 'Submitting...' : 'Submit Documents for Verification'}</span>
                 </button>
               </div>
             )}
