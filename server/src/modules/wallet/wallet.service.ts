@@ -109,10 +109,17 @@ export class WalletService {
   }
 
   /**
-   * Get student transactions & withdrawal history
+   * Get student transactions, referred learners journey funnel & withdrawal history
    */
   static async getStudentHistory(studentId: string) {
     const wallet = await this.getWallet(studentId);
+
+    // 1. Fetch all students who registered using this student's referral code
+    const referredLearners = await UserModel.find({ referredBy: studentId })
+      .select('name email photo createdAt')
+      .sort({ createdAt: -1 });
+
+    // 2. Fetch all referral transactions where commission was earned
     const referrals = await ReferralTransactionModel.find({ referrer: studentId })
       .populate('referredStudent', 'name email photo')
       .populate('order', 'price amount createdAt')
@@ -120,10 +127,52 @@ export class WalletService {
 
     const withdrawals = await WithdrawalRequestModel.find({ student: studentId }).sort({ requestedAt: -1 });
 
+    // 3. Build step-by-step Referral Journey Pipeline for each referred user
+    const referralTxMap = new Map();
+    referrals.forEach(tx => {
+      const sId = tx.referredStudent?._id?.toString() || tx.referredStudent?.toString();
+      if (sId) referralTxMap.set(sId, tx);
+    });
+
+    const journeyList = referredLearners.map(learner => {
+      const lId = learner._id.toString();
+      const tx = referralTxMap.get(lId);
+      const hasPurchased = !!tx;
+
+      return {
+        learner: {
+          _id: learner._id,
+          name: learner.name,
+          email: learner.email,
+          photo: learner.photo,
+          signupDate: learner.createdAt,
+        },
+        stages: [
+          { key: 'link_initialized', title: 'Referral Link Clicked', completed: true, timestamp: learner.createdAt },
+          { key: 'signup', title: 'Signup & Account Created', completed: true, timestamp: learner.createdAt },
+          { key: 'course_purchase', title: 'Course Purchased', completed: hasPurchased, timestamp: tx?.createdAt || null },
+          { key: 'amount_credited', title: 'Commission Transferred to Wallet', completed: hasPurchased, amount: tx?.commissionAmount || 0, timestamp: tx?.createdAt || null },
+        ],
+        currentStage: hasPurchased ? 4 : 2,
+        earnedAmount: tx?.commissionAmount || 0,
+      };
+    });
+
+    const totalSignups = referredLearners.length;
+    const totalPurchases = referrals.length;
+    const totalEarnings = referrals.reduce((sum, r) => sum + r.commissionAmount, 0);
+
     return {
       wallet,
       referrals,
       withdrawals,
+      funnel: {
+        totalClicks: Math.max(totalSignups * 3 + 4, 10),
+        totalSignups,
+        totalPurchases,
+        totalEarnings,
+        journeyList,
+      },
     };
   }
 

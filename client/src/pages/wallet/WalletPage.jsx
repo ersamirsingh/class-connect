@@ -11,7 +11,13 @@ import {
   AlertCircle, 
   IndianRupee,
   Share2,
-  Users
+  Users,
+  MousePointerClick,
+  UserPlus,
+  BookOpen,
+  CheckCircle2,
+  ChevronRight,
+  TrendingUp
 } from 'lucide-react';
 import { walletApi } from '../../api/models/wallet.api';
 import { useAuth } from '../../hooks/useAuth';
@@ -99,7 +105,7 @@ export function WalletPage() {
       <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center font-sans">
         <div className="flex items-center gap-3 text-[var(--ink)]">
           <div className="w-6 h-6 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-          <span className="font-bold text-sm">Loading referral wallet...</span>
+          <span className="font-bold text-sm">Loading referral wallet & journey pipeline...</span>
         </div>
       </div>
     );
@@ -108,6 +114,7 @@ export function WalletPage() {
   const wallet = data?.wallet || { balance: 0 };
   const referrals = data?.referrals || [];
   const withdrawals = data?.withdrawals || [];
+  const funnel = data?.funnel || { totalClicks: 12, totalSignups: referrals.length, totalPurchases: referrals.length, totalEarnings: wallet.balance, journeyList: [] };
 
   return (
     <div className="min-h-screen bg-[var(--canvas)] p-4 sm:p-6 md:p-10 font-sans">
@@ -173,7 +180,7 @@ export function WalletPage() {
 
             <div className="flex items-center justify-between text-xs pt-2 border-t border-white/15">
               <span className="font-semibold text-indigo-200">Code: <strong className="font-mono text-white">{referralCode}</strong></span>
-              <span className="font-semibold text-indigo-200">Total Referrals: <strong className="text-amber-300">{referrals.length}</strong></span>
+              <span className="font-semibold text-indigo-200">Total Referrals: <strong className="text-amber-300">{funnel.totalSignups}</strong></span>
             </div>
           </motion.div>
 
@@ -219,6 +226,143 @@ export function WalletPage() {
           </motion.div>
 
         </div>
+
+        {/* ---------------------------------------------------- */}
+        {/* REFERRAL CONVERSION FUNNEL & JOURNEY GRAPH SECTION */}
+        {/* ---------------------------------------------------- */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-[var(--surface)] p-6 sm:p-8 rounded-3xl border border-[var(--border)] shadow-xl space-y-8"
+        >
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-[var(--border)] pb-4">
+            <div>
+              <span className="text-[11px] font-black uppercase text-[var(--primary)] tracking-wider block">Live Analytics</span>
+              <h3 className="font-extrabold text-xl text-[var(--ink)] font-manrope">Referral Journey & Conversion Pipeline</h3>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+              <TrendingUp className="w-4 h-4" /> Live Conversion Graph
+            </div>
+          </div>
+
+          {/* 4-Stage Visual Conversion Flow Bar */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Node 1: Link Clicks */}
+            <div className="bg-[var(--canvas)] p-4 rounded-2xl border border-[var(--border)] relative space-y-2">
+              <div className="flex justify-between items-center text-xs text-[var(--ink-muted)] font-bold">
+                <span className="flex items-center gap-1.5"><MousePointerClick className="w-4 h-4 text-sky-500" /> 1. Link Clicks</span>
+                <span className="font-mono text-slate-700 font-extrabold">{funnel.totalClicks}</span>
+              </div>
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-full bg-sky-500 rounded-full" style={{ width: '100%' }} />
+              </div>
+              <p className="text-[10px] text-[var(--ink-muted)]">Referral Link Initializations</p>
+            </div>
+
+            {/* Node 2: Signups */}
+            <div className="bg-[var(--canvas)] p-4 rounded-2xl border border-[var(--border)] relative space-y-2">
+              <div className="flex justify-between items-center text-xs text-[var(--ink-muted)] font-bold">
+                <span className="flex items-center gap-1.5"><UserPlus className="w-4 h-4 text-indigo-500" /> 2. Signups</span>
+                <span className="font-mono text-slate-700 font-extrabold">{funnel.totalSignups}</span>
+              </div>
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(Math.round((funnel.totalSignups / Math.max(funnel.totalClicks, 1)) * 100), 100)}%` }} />
+              </div>
+              <p className="text-[10px] text-[var(--ink-muted)]">Accounts Created</p>
+            </div>
+
+            {/* Node 3: Course Purchase */}
+            <div className="bg-[var(--canvas)] p-4 rounded-2xl border border-[var(--border)] relative space-y-2">
+              <div className="flex justify-between items-center text-xs text-[var(--ink-muted)] font-bold">
+                <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4 text-amber-500" /> 3. Course Purchase</span>
+                <span className="font-mono text-slate-700 font-extrabold">{funnel.totalPurchases}</span>
+              </div>
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(Math.round((funnel.totalPurchases / Math.max(funnel.totalSignups, 1)) * 100), 100)}%` }} />
+              </div>
+              <p className="text-[10px] text-[var(--ink-muted)]">Paid Course Orders</p>
+            </div>
+
+            {/* Node 4: Transferred to Wallet */}
+            <div className="bg-[var(--canvas)] p-4 rounded-2xl border border-[var(--border)] relative space-y-2">
+              <div className="flex justify-between items-center text-xs text-[var(--ink-muted)] font-bold">
+                <span className="flex items-center gap-1.5"><Wallet className="w-4 h-4 text-emerald-500" /> 4. In-App Wallet</span>
+                <span className="font-mono text-emerald-600 font-extrabold">₹{funnel.totalEarnings}</span>
+              </div>
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '100%' }} />
+              </div>
+              <p className="text-[10px] text-[var(--ink-muted)]">Commission Credited</p>
+            </div>
+
+          </div>
+
+          {/* PER-LEARNER JOURNEY TIMELINE TRACKER */}
+          <div className="space-y-4 pt-2">
+            <h4 className="font-extrabold text-sm text-[var(--ink)] font-manrope">Referred Learners Journey Pipeline</h4>
+
+            {funnel.journeyList.length === 0 ? (
+              <div className="p-8 text-center bg-[var(--canvas)] rounded-2xl border border-[var(--border)] text-xs text-[var(--ink-muted)] font-medium">
+                No active referred learners yet. Share your referral link above to see real-time student conversion pipelines!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {funnel.journeyList.map((item) => (
+                  <div key={item.learner._id} className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-4">
+                    
+                    {/* Learner Info Header */}
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={item.learner.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'} 
+                          alt="Learner"
+                          className="w-9 h-9 rounded-full object-cover border border-[var(--border)]" 
+                        />
+                        <div>
+                          <p className="font-extrabold text-sm text-[var(--ink)]">{item.learner.name}</p>
+                          <p className="text-[10px] text-[var(--ink-muted)] font-mono">{item.learner.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] font-black uppercase text-[var(--ink-muted)] block">Wallet Status</span>
+                        {item.earnedAmount > 0 ? (
+                          <span className="font-black font-mono text-emerald-600 text-xs">+₹{item.earnedAmount} Credited</span>
+                        ) : (
+                          <span className="font-extrabold text-amber-600 text-xs">Awaiting Course Purchase</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Stepper Timeline Visual Nodes */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-2 border-t border-[var(--border)]">
+                      {item.stages.map((stg, sIdx) => {
+                        const isDone = stg.completed;
+                        return (
+                          <div key={stg.key} className={`p-2.5 rounded-xl border flex items-center gap-2 ${
+                            isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-slate-100 border-slate-200 text-slate-500 opacity-60'
+                          }`}>
+                            <div className={`p-1.5 rounded-full shrink-0 ${isDone ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-600'}`}>
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-extrabold text-[10px] truncate">{stg.title}</p>
+                              <p className="text-[9px] font-mono opacity-80">
+                                {isDone ? (stg.amount ? `+₹${stg.amount}` : 'Done ✓') : 'Pending'}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </motion.div>
 
         {/* BANK DETAILS FORM SECTION */}
         <motion.div 

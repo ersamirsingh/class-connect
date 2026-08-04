@@ -12,7 +12,8 @@ import {
   LogIn, 
   Layers, 
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Wallet
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
@@ -170,6 +171,15 @@ export function FloatingNav() {
                         >
                           <User className="w-4 h-4 text-indigo-500" />
                           <span>My Profile</span>
+                        </Link>
+
+                        {/* 3. Wallet & Referrals Menu Option */}
+                        <Link
+                          to="/wallet"
+                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-all duration-200"
+                        >
+                          <Wallet className="w-4 h-4 text-emerald-500" />
+                          <span>My Wallet & Referrals</span>
                         </Link>
 
                         <div className="h-px bg-[var(--border)] my-1" />
