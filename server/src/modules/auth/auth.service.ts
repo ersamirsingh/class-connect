@@ -10,10 +10,15 @@ const generateToken = (userId: string, sessionId: string): string => {
 };
 
 export class AuthService {
-  static async signup(payload: { name: string; email: string; password: string; phone?: string; photo?: string }, clientIp?: string) {
+  static async signup(payload: { name: string; email: string; password: string; phone?: string; photo?: string; refCode?: string }, clientIp?: string) {
     const existing = await UserModel.findOne({ email: payload.email.toLowerCase() });
     if (existing) {
       throw new Error('Email is already registered.');
+    }
+
+    let referrerUser = null;
+    if (payload.refCode) {
+      referrerUser = await UserModel.findOne({ referralCode: payload.refCode.trim().toUpperCase() });
     }
 
     const sessionId = crypto.randomUUID();
@@ -24,6 +29,7 @@ export class AuthService {
       password: payload.password,
       phone: payload.phone || '',
       photo: payload.photo || undefined,
+      referredBy: referrerUser ? referrerUser._id : undefined,
       role: 'student',
       activeSessionId: sessionId,
       lastLoginIp: clientIp || '127.0.0.1',

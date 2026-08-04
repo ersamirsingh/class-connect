@@ -114,19 +114,39 @@ export class PaymentService {
 
   static async grantCourseEnrollment(studentId: string, courseId: string, orderId: string) {
     const existing = await EnrollmentModel.findOne({ student: studentId, course: courseId });
+    let enrollment;
     if (existing) {
       existing.status = 'active';
       existing.order = orderId as any;
-      return existing.save();
+      enrollment = await existing.save();
+    } else {
+      enrollment = await new EnrollmentModel({
+        student: studentId,
+        course: courseId,
+        order: orderId,
+        status: 'active',
+      }).save();
     }
 
-    const enrollment = new EnrollmentModel({
-      student: studentId,
-      course: courseId,
-      order: orderId,
-      status: 'active',
-    });
-    return enrollment.save();
+    // Trigger Referral Commission if student was referred
+    try {
+      const { UserModel } = await import('../user/user.model');
+      const { WalletService } = await import('../wallet/wallet.service');
+      const student = await UserModel.findById(studentId);
+      const order = await OrderModel.findById(orderId);
+      if (student && student.referredBy && order && order.amount > 0) {
+        await WalletService.creditReferralCommission(
+          student.referredBy.toString(),
+          studentId,
+          orderId,
+          order.amount
+        );
+      }
+    } catch (err) {
+      console.warn('Could not process referral commission:', err);
+    }
+
+    return enrollment;
   }
 
   static async getStudentOrderHistory(studentId: string) {

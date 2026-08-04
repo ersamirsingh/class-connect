@@ -5,14 +5,15 @@ import { AuthRequest } from '../../middlewares/auth.middleware';
 export class AuthController {
   static async signup(req: Request, res: Response): Promise<void> {
     try {
-      const { name, email, password, phone, photo } = req.body;
+      const { name, email, password, phone, photo, refCode } = req.body;
+      const referralCode = refCode || (req.query.ref as string);
       if (!name || !email || !password) {
         res.status(400).json({ success: false, message: 'Name, email, and password are required.' });
         return;
       }
 
       const clientIp = (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1';
-      const result = await AuthService.signup({ name, email, password, phone, photo }, clientIp);
+      const result = await AuthService.signup({ name, email, password, phone, photo, refCode: referralCode }, clientIp);
       res.status(201).json({
         success: true,
         message: 'Account created successfully.',

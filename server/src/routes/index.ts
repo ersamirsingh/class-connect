@@ -11,6 +11,7 @@ import { adminRouter } from '../modules/admin/admin.route';
 import { notificationRouter } from '../modules/notification/notification.route';
 import { reviewRouter } from '../modules/review/review.route';
 import { uploadRouter } from '../modules/upload/upload.route';
+import { walletRouter } from '../modules/wallet/wallet.routes';
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use('/admin', adminRouter);
 router.use('/notifications', notificationRouter);
 router.use('/reviews', reviewRouter);
 router.use('/upload', uploadRouter);
+router.use('/wallet', walletRouter);
 
 export const appRouter = router;

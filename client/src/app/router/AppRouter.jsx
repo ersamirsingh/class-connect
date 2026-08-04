@@ -41,6 +41,9 @@ import { ManageCategoriesPage } from '../../pages/admin/manageCategories/ManageC
 import { ManageCoursesPage } from '../../pages/admin/manageCourses/ManageCoursesPage';
 import { ManageReviewsPage } from '../../pages/admin/manageReviews/ManageReviewsPage';
 
+import { WalletPage } from '../../pages/wallet/WalletPage';
+import { AdminWithdrawalsPage } from '../../pages/admin/withdrawals/AdminWithdrawalsPage';
+
 import { ROLES } from '../../constants/roles';
 
 export const AppRouter = () => {
@@ -79,6 +82,7 @@ export const AppRouter = () => {
         <Route element={<StudentLayout />}>
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/wallet" element={<WalletPage />} />
           <Route path="/payments" element={<PaymentHistoryPage />} />
           <Route path="/certificates" element={<CertificatesListPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
@@ -97,6 +101,7 @@ export const AppRouter = () => {
           <Route path="/admin/users" element={<ManageUsersPage />} />
           <Route path="/admin/admins" element={<ManageAdminsPage />} />
           <Route path="/admin/payments" element={<ManagePaymentsPage />} />
+          <Route path="/admin/withdrawals" element={<AdminWithdrawalsPage />} />
           <Route path="/admin/reports" element={<ManageReportsPage />} />
           <Route path="/admin/reviews" element={<ManageReviewsPage />} />
           <Route path="/admin/profile" element={<ProfilePage />} />
