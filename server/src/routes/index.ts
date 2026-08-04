@@ -12,6 +12,7 @@ import { notificationRouter } from '../modules/notification/notification.route';
 import { reviewRouter } from '../modules/review/review.route';
 import { uploadRouter } from '../modules/upload/upload.route';
 import { walletRouter } from '../modules/wallet/wallet.routes';
+import { verificationRouter } from '../modules/verification/documentVerification.routes';
 
 const router = Router();
 
@@ -29,5 +30,6 @@ router.use('/notifications', notificationRouter);
 router.use('/reviews', reviewRouter);
 router.use('/upload', uploadRouter);
 router.use('/wallet', walletRouter);
+router.use('/verification', verificationRouter);
 
 export const appRouter = router;

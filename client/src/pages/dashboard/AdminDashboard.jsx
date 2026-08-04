@@ -85,6 +85,7 @@ export function AdminDashboard() {
     { title: 'Manage Admins', icon: <Settings />, path: '/admin/admins', color: '#2B2B38' },
     { title: 'Manage Payments', icon: <CreditCard />, path: '/admin/payments', color: '#D97706' },
     { title: 'Manage Withdrawals', icon: <CreditCard />, path: '/admin/withdrawals', color: '#10B981' },
+    { title: 'Doc Verifications', icon: <FileText />, path: '/admin/verifications', color: '#059669' },
     { title: 'Reported Problems', icon: <AlertTriangle />, path: '/admin/reports', color: '#DC2626' },
     { title: 'CMS Content Editor', icon: <FileText />, path: '/admin/cms', color: '#6366F1' },
   ];
