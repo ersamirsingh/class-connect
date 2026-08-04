@@ -2,11 +2,16 @@ import { CourseModel } from '../../modules/course/course.model';
 import { CategoryModel } from '../../modules/category/category.model';
 
 const SAMPLE_VIDEOS = [
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutback2012.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
 ];
 
 const THUMBNAILS = [
@@ -37,17 +42,17 @@ export async function seedCourses() {
       title: 'Topic 1: Google Ads Fundamentals',
       order: 1,
       lectures: [
-        { title: 'Introduction to Google Ads', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: true },
-        { title: 'Account Setup & Campaign Types', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
-        { title: 'Understanding the Auction System', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+        { title: 'Introduction to Google Ads', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[5], isPreview: true },
+        { title: 'Account Setup & Campaign Types', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[6], isPreview: false },
+        { title: 'Understanding the Auction System', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[7], isPreview: false },
       ],
     },
     {
       title: 'Topic 2: Keyword Research & Targeting',
       order: 2,
       lectures: [
-        { title: 'Keyword Research Tools', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
-        { title: 'Match Types Explained', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
+        { title: 'Keyword Research Tools', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[8], isPreview: false },
+        { title: 'Match Types Explained', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[9], isPreview: false },
         { title: 'Audience Targeting', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
       ],
     },
@@ -73,7 +78,7 @@ export async function seedCourses() {
       type: 'hybrid',
       thumbnail: THUMBNAILS[0],
       coverImage: THUMBNAILS[0],
-      previewVideo: SAMPLE_VIDEOS[0],
+      previewVideo: SAMPLE_VIDEOS[5],
       maxPreviewViews: 3,
       price: 1499,
       discountPrice: 999,
@@ -97,9 +102,8 @@ export async function seedCourses() {
     });
     console.log('  └─ Created Showcase Course: Google Ads');
   } else {
-    // Update lecture durations to 15 sec
-    await CourseModel.updateOne({ slug: 'google-ads' }, { $set: { sections: googleAdsSections } });
-    console.log('  └─ Updated Showcase Course: Google Ads (Durations set to 15 sec)');
+    await CourseModel.updateOne({ slug: 'google-ads' }, { $set: { sections: googleAdsSections, previewVideo: SAMPLE_VIDEOS[5] } });
+    console.log('  └─ Updated Showcase Course: Google Ads (Direct Video URLs Attached)');
   }
 
   // 2. Fully-Built Course 2: ChatGPT & AI Tools (Recorded-only)
@@ -108,16 +112,16 @@ export async function seedCourses() {
       title: 'Topic 1: Getting Started with ChatGPT',
       order: 1,
       lectures: [
-        { title: 'Intro to Generative AI', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: true },
-        { title: 'Crafting Effective Prompts', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+        { title: 'Intro to Generative AI', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: true },
+        { title: 'Crafting Effective Prompts', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
       ],
     },
     {
       title: 'Topic 2: AI Tools for Productivity',
       order: 2,
       lectures: [
-        { title: 'Automating Workflow with Midjourney & Claude', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
-        { title: 'Building Custom GPTs', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[4], isPreview: false },
+        { title: 'Automating Workflow with Midjourney & Claude', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+        { title: 'Building Custom GPTs', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[3], isPreview: false },
       ],
     },
   ];
@@ -132,7 +136,7 @@ export async function seedCourses() {
       category: catAI._id,
       type: 'recorded',
       thumbnail: THUMBNAILS[1],
-      previewVideo: SAMPLE_VIDEOS[1],
+      previewVideo: SAMPLE_VIDEOS[0],
       maxPreviewViews: 3,
       price: 799,
       discountPrice: 499,
@@ -144,8 +148,8 @@ export async function seedCourses() {
     });
     console.log('  └─ Created Course: ChatGPT & AI Tools');
   } else {
-    await CourseModel.updateOne({ slug: 'chatgpt-ai-tools' }, { $set: { sections: chatGPTSections } });
-    console.log('  └─ Updated Course: ChatGPT & AI Tools (Durations set to 15 sec)');
+    await CourseModel.updateOne({ slug: 'chatgpt-ai-tools' }, { $set: { sections: chatGPTSections, previewVideo: SAMPLE_VIDEOS[0] } });
+    console.log('  └─ Updated Course: ChatGPT & AI Tools (Direct Video URLs Attached)');
   }
 
   // 3. Fully-Built Course 3: Freelancing Guide (Live-only)
@@ -192,8 +196,8 @@ export async function seedCourses() {
       title: 'Topic 2: Creating Social Media Designs',
       order: 2,
       lectures: [
-        { title: 'Designing Viral Instagram Reels & Carousels', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
-        { title: 'Exporting Assets for Print & Web', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
+        { title: 'Designing Viral Instagram Reels & Carousels', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[5], isPreview: false },
+        { title: 'Exporting Assets for Print & Web', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[6], isPreview: false },
       ],
     },
   ];
@@ -226,8 +230,8 @@ export async function seedCourses() {
     });
     console.log('  └─ Created Course: Canva Mastery');
   } else {
-    await CourseModel.updateOne({ slug: 'canva-mastery' }, { $set: { sections: canvaSections } });
-    console.log('  └─ Updated Course: Canva Mastery (Durations set to 15 sec)');
+    await CourseModel.updateOne({ slug: 'canva-mastery' }, { $set: { sections: canvaSections, previewVideo: SAMPLE_VIDEOS[3] } });
+    console.log('  └─ Updated Course: Canva Mastery (Direct Video URLs Attached)');
   }
 
   // 5. Fully-Built Course 5: Sales and Lead Generation Skills (Hybrid)
@@ -236,16 +240,16 @@ export async function seedCourses() {
       title: 'Topic 1: Lead Generation Fundamentals',
       order: 1,
       lectures: [
-        { title: 'Cold Outreach via LinkedIn & Email', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[4], isPreview: true },
-        { title: 'Building High-Converting Prospect Lists', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
+        { title: 'Cold Outreach via LinkedIn & Email', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[7], isPreview: true },
+        { title: 'Building High-Converting Prospect Lists', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[8], isPreview: false },
       ],
     },
     {
       title: 'Topic 2: Closing Techniques',
       order: 2,
       lectures: [
-        { title: 'Overcoming Price Objections', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[1], isPreview: false },
-        { title: 'Structuring High-Ticket Deals', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[2], isPreview: false },
+        { title: 'Overcoming Price Objections', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[9], isPreview: false },
+        { title: 'Structuring High-Ticket Deals', duration: '15 sec', videoUrl: SAMPLE_VIDEOS[0], isPreview: false },
       ],
     },
   ];
@@ -279,7 +283,7 @@ export async function seedCourses() {
     console.log('  └─ Created Course: Sales and Lead Generation Skills');
   } else {
     await CourseModel.updateOne({ slug: 'sales-lead-generation-skills' }, { $set: { sections: salesSections } });
-    console.log('  └─ Updated Course: Sales and Lead Generation Skills (Durations set to 15 sec)');
+    console.log('  └─ Updated Course: Sales and Lead Generation Skills (Direct Video URLs Attached)');
   }
 
   // Remaining 25 Courses — Basic Records Only

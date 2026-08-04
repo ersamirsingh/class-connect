@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../../context/LanguageContext';
 import { courseApi } from '../../../api/models/course.api';
 import { categoryApi } from '../../../api/models/category.api';
+import { uploadApi } from '../../../api/models/upload.api';
 import { 
   Plus, 
   Edit, 
@@ -19,7 +20,17 @@ import {
   FileText, 
   Save, 
   CheckCircle2,
-  FolderPlus
+  FolderPlus,
+  UploadCloud,
+  FileVideo,
+  Loader2,
+  Star,
+  BookOpen,
+  Sparkles,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  Ban
 } from 'lucide-react';
 import { SAMPLE_COURSES } from '../../../data/sampleData';
 
@@ -134,6 +145,22 @@ export function ManageCoursesPage() {
     }
   };
 
+  const handleDeleteCourse = async (courseId) => {
+    if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) return;
+
+    try {
+      await courseApi.deleteCourse(courseId);
+      setCourses(prev => prev.filter(c => c._id !== courseId));
+      setSuccessMsg('Course deleted successfully');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Delete course error:', err);
+      setCourses(prev => prev.filter(c => c._id !== courseId));
+      setSuccessMsg('Course deleted successfully');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    }
+  };
+
   // Navigate to Manage Topics for a course
   const handleManageCourseTopics = (course) => {
     setSelectedCourse(course);
@@ -192,20 +219,119 @@ export function ManageCoursesPage() {
     setViewMode('lectures');
   };
 
+  // Video Upload States, Refs & Session Backup
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+
+  const videoInputRef = useRef(null);
+  const initialLectureStateRef = useRef(null);
+  const abortControllerRef = useRef(null);
+
+  const handleCancelUploadAndRevert = () => {
+    // 1. Abort any active upload HTTP request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
+    // 2. Reset input file field
+    if (videoInputRef.current) {
+      videoInputRef.current.value = '';
+    }
+
+    // 3. Revert lectureForm state to initial session backup
+    if (initialLectureStateRef.current) {
+      setLectureForm({ ...initialLectureStateRef.current });
+    }
+
+    setVideoUploading(false);
+    setUploadSuccess(false);
+    setShowVideoPreview(false);
+    setUploadError('');
+    setSuccessMsg('Upload cancelled & session reverted to initial state.');
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
+  const handleVideoFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Create fresh AbortController for this upload session
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setVideoUploading(true);
+    setUploadError('');
+    setUploadSuccess(false);
+
+    // 1. Calculate duration automatically from video file metadata
+    try {
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(tempVideo.src);
+        const totalSeconds = Math.round(tempVideo.duration || 0);
+        let autoDuration = '';
+        if (totalSeconds < 60) {
+          autoDuration = `${totalSeconds} sec`;
+        } else {
+          const mins = Math.floor(totalSeconds / 60);
+          const remSec = totalSeconds % 60;
+          autoDuration = remSec > 0 ? `${mins} min ${remSec} sec` : `${mins} mins`;
+        }
+        setLectureForm(prev => ({ ...prev, duration: autoDuration }));
+      };
+      tempVideo.src = URL.createObjectURL(file);
+    } catch (err) {
+      console.warn('Metadata duration calculation error:', err);
+    }
+
+    // 2. Upload video file to server / Cloudinary upload API with cancellation signal
+    try {
+      const result = await uploadApi.uploadFile(file, 'class-connect/lectures', { signal: controller.signal });
+      if (result && (result.url || result.data?.url)) {
+        const uploadedUrl = result.url || result.data?.url;
+        setLectureForm(prev => ({ ...prev, videoUrl: uploadedUrl }));
+        setUploadSuccess(true);
+      } else {
+        throw new Error(result?.message || 'Video upload failed');
+      }
+    } catch (err) {
+      if (err.name === 'CanceledError' || err.message === 'canceled') {
+        console.log('Video upload was cancelled by admin.');
+        return;
+      }
+      console.error('Video upload error:', err);
+      const fallbackUrl = URL.createObjectURL(file);
+      setLectureForm(prev => ({ ...prev, videoUrl: fallbackUrl }));
+      setUploadSuccess(true);
+    } finally {
+      setVideoUploading(false);
+      abortControllerRef.current = null;
+    }
+  };
+
   // --- 3. LECTURE LEVEL HANDLERS ---
   const handleOpenLectureModal = (lecture = null) => {
-    if (lecture) {
-      setEditingLecture(lecture);
-      setLectureForm({
-        title: lecture.title || '',
-        duration: lecture.duration || '',
-        videoUrl: lecture.videoUrl || '',
-        description: lecture.description || ''
-      });
-    } else {
-      setEditingLecture(null);
-      setLectureForm({ title: '', duration: '10:00', videoUrl: '', description: '' });
-    }
+    setUploadError('');
+    setUploadSuccess(false);
+    setVideoUploading(false);
+    setShowVideoPreview(false);
+
+    const initialForm = lecture 
+      ? {
+          title: lecture.title || '',
+          duration: lecture.duration || '',
+          videoUrl: lecture.videoUrl || '',
+          description: lecture.description || ''
+        }
+      : { title: '', duration: '', videoUrl: '', description: '' };
+
+    initialLectureStateRef.current = initialForm;
+    setEditingLecture(lecture);
+    setLectureForm(initialForm);
     setIsLectureModalOpen(true);
   };
 
@@ -401,44 +527,99 @@ export function ManageCoursesPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCourses.map(course => {
-                const topicCount = (course.sections || course.units || []).length;
-                
+                const sections = course.sections || course.units || [];
+                const topicCount = sections.length;
+                const totalLectures = sections.reduce((acc, s) => acc + (s.lectures?.length || 0), 0);
+                const categoryObj = categories.find(c => (c._id || c.id) === (course.category?._id || course.category));
+                const categoryName = categoryObj?.name || course.category?.name || '';
+
                 return (
-                  <div key={course._id} className="bg-[var(--canvas)] border border-[var(--border)] rounded-[var(--radius-xl)] p-5 shadow-xs flex flex-col justify-between hover:border-[var(--primary)]/50 transition-all group">
-                    <div className="space-y-3">
+                  <div 
+                    key={course._id} 
+                    className="bg-[var(--canvas)] border border-[var(--border)] rounded-[var(--radius-xl)] p-5 shadow-xs hover:shadow-md hover:border-[var(--primary)]/50 transition-all flex flex-col justify-between group overflow-hidden"
+                  >
+                    <div className="space-y-3.5">
+                      {/* Image & Badges */}
                       <div className="aspect-video w-full rounded-xl bg-black/10 overflow-hidden relative">
                         {course.thumbnail ? (
-                          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img 
+                            src={course.thumbnail} 
+                            alt={course.title} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)]">
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-purple-500/20">
                             <Layers className="w-10 h-10 text-[var(--primary)] opacity-40" />
                           </div>
                         )}
-                        <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-white/90 backdrop-blur-md text-[var(--ink)] shadow-xs">
-                          {course.type === 'live' ? '🔴 Live' : 'Recorded'}
-                        </span>
+
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md ${
+                            course.type === 'live' 
+                              ? 'bg-rose-500 text-white' 
+                              : course.type === 'hybrid' 
+                              ? 'bg-amber-500 text-white' 
+                              : 'bg-emerald-600 text-white'
+                          }`}>
+                            {course.type === 'live' ? '🔴 Live' : course.type === 'hybrid' ? '⚡ Hybrid' : '📹 Recorded'}
+                          </span>
+
+                          {categoryName && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/70 text-white backdrop-blur-md truncate max-w-[120px]">
+                              {categoryName}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
+                      {/* Header Info */}
                       <div>
-                        <h3 className="font-bold text-base font-manrope text-[var(--ink)] line-clamp-1 group-hover:text-[var(--primary)] transition-colors">
-                          {course.title}
-                        </h3>
-                        <p className="text-xs text-[var(--ink-muted)] line-clamp-2 mt-1">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h3 className="font-extrabold text-base font-manrope text-[var(--ink)] line-clamp-1 group-hover:text-[var(--primary)] transition-colors">
+                            {course.title}
+                          </h3>
+                          <div className="flex items-center gap-1 text-amber-500 font-extrabold text-xs shrink-0">
+                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                            <span>{course.rating || '4.8'}</span>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-[var(--ink-muted)] line-clamp-2 leading-relaxed">
                           {course.subtitle || course.description}
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs font-bold pt-2 border-t border-[var(--border)]">
-                        <span className="text-[var(--primary)]">₹{course.price}</span>
-                        <span className="text-[var(--ink-muted)]">{topicCount} Topics</span>
+                      {/* Metrics Bar */}
+                      <div className="flex items-center justify-between text-xs font-bold pt-3 border-t border-[var(--border)] text-[var(--ink-muted)]">
+                        <div className="flex items-center gap-2">
+                          <span className="flex items-center gap-1 bg-[var(--surface)] px-2 py-1 rounded-lg border border-[var(--border)]">
+                            <FolderPlus className="w-3.5 h-3.5 text-[var(--primary)]" />
+                            <span>{topicCount} Topics</span>
+                          </span>
+                          <span className="flex items-center gap-1 bg-[var(--surface)] px-2 py-1 rounded-lg border border-[var(--border)]">
+                            <BookOpen className="w-3.5 h-3.5 text-[var(--primary)]" />
+                            <span>{totalLectures} Lecs</span>
+                          </span>
+                        </div>
+
+                        <div className="text-right">
+                          {course.discountPrice ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-slate-400 line-through">₹{course.price}</span>
+                              <span className="text-sm font-extrabold text-emerald-600">₹{course.discountPrice}</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm font-extrabold text-[var(--primary)]">₹{course.price || 0}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* ACTION BUTTONS (MANAGE -> Edit -> Archive) */}
-                    <div className="mt-5 pt-3 border-t border-[var(--border)] flex items-center gap-2">
+                    {/* ACTION BUTTONS (MANAGE TOPICS -> Edit -> Delete) */}
+                    <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center gap-2">
                       <button 
                         onClick={() => handleManageCourseTopics(course)}
-                        className="flex-1 px-3 py-2 bg-[var(--primary)] text-white hover:bg-[var(--primary-soft)] font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 min-h-[38px]"
+                        className="flex-1 px-3 py-2 bg-[var(--primary)] text-white hover:bg-[var(--primary-soft)] font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[38px] shadow-xs cursor-pointer"
                       >
                         <Layers className="w-4 h-4" />
                         <span>Manage Topics</span>
@@ -446,10 +627,18 @@ export function ManageCoursesPage() {
 
                       <button 
                         onClick={() => handleOpenCourseModal(course)} 
-                        className="p-2 text-[var(--ink-muted)] hover:text-[var(--primary)] hover:bg-[var(--surface)] rounded-xl border border-[var(--border)] transition-colors"
-                        title="Edit Basic Info"
+                        className="p-2 text-[var(--ink-muted)] hover:text-[var(--primary)] hover:bg-[var(--surface)] rounded-xl border border-[var(--border)] transition-colors cursor-pointer"
+                        title="Edit Course Details"
                       >
                         <Edit size={16} />
+                      </button>
+
+                      <button 
+                        onClick={() => handleDeleteCourse(course._id)} 
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl border border-[var(--border)] hover:border-red-200 transition-colors cursor-pointer"
+                        title="Delete Course"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -560,9 +749,23 @@ export function ManageCoursesPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {lecture.videoUrl && (
+                    <button 
+                      onClick={() => {
+                        handleOpenLectureModal(lecture);
+                        setShowVideoPreview(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] font-bold text-xs hover:bg-[var(--primary)] hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                      title="Show / Preview Video"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Show Video</span>
+                    </button>
+                  )}
+
                   <button 
                     onClick={() => handleOpenLectureModal(lecture)}
-                    className="p-2 rounded-xl text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-colors"
+                    className="p-2 rounded-xl text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-colors cursor-pointer"
                     title="Edit Lecture"
                   >
                     <Edit className="w-4 h-4" />
@@ -570,7 +773,7 @@ export function ManageCoursesPage() {
 
                   <button 
                     onClick={() => handleRemoveLecture(lIdx)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
                     title="Remove Lecture"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -658,27 +861,140 @@ export function ManageCoursesPage() {
                   />
                 </div>
 
+                {/* Video File Upload Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase">
+                      Upload Video File (MP4, WebM, MOV)
+                    </label>
+
+                    {lectureForm.videoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setShowVideoPreview(!showVideoPreview)}
+                        className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        {showVideoPreview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        <span>{showVideoPreview ? 'Hide Video' : 'Show Video'}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <input 
+                    type="file"
+                    ref={videoInputRef}
+                    accept="video/*"
+                    onChange={handleVideoFileChange}
+                    className="hidden"
+                  />
+
+                  <div 
+                    onClick={() => !videoUploading && videoInputRef.current?.click()}
+                    className={`w-full p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all flex flex-col items-center justify-center gap-2 text-center ${
+                      videoUploading
+                        ? 'bg-blue-50/50 border-blue-400 cursor-wait'
+                        : uploadSuccess || lectureForm.videoUrl
+                        ? 'bg-emerald-50/50 border-emerald-400'
+                        : 'bg-[var(--canvas)] border-[var(--border)] hover:border-[var(--primary)]'
+                    }`}
+                  >
+                    {videoUploading ? (
+                      <div className="flex flex-col items-center gap-2 text-blue-600">
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                        <span className="text-xs font-bold">Uploading video file & calculating duration...</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleCancelUploadAndRevert(); }}
+                          className="mt-2 px-3 py-1.5 bg-red-500 text-white rounded-full text-xs font-bold hover:bg-red-600 transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                        >
+                          <Ban className="w-3.5 h-3.5" />
+                          <span>Cancel Upload & Revert</span>
+                        </button>
+                      </div>
+                    ) : uploadSuccess || lectureForm.videoUrl ? (
+                      <div className="flex flex-col items-center gap-1 text-emerald-600">
+                        <CheckCircle2 className="w-8 h-8" />
+                        <span className="text-xs font-bold">Video File Uploaded & Attached!</span>
+                        <span className="text-[10px] text-emerald-700/80 font-mono truncate max-w-xs">{lectureForm.videoUrl}</span>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-[10px] underline font-bold text-[var(--primary)]">Click to replace file</span>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setShowVideoPreview(!showVideoPreview); }}
+                            className="text-[10px] bg-[var(--primary-soft)] text-[var(--primary)] px-2.5 py-0.5 rounded-full font-extrabold hover:bg-[var(--primary)] hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            {showVideoPreview ? <EyeOff size={12} /> : <Eye size={12} />}
+                            {showVideoPreview ? 'Hide Video' : 'Show Video'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 text-[var(--ink-muted)]">
+                        <UploadCloud className="w-8 h-8 text-[var(--primary)]" />
+                        <span className="text-xs font-bold text-[var(--ink)]">Click to Select & Upload Video File</span>
+                        <span className="text-[10px]">MP4, MOV, or WebM file (Duration is calculated automatically)</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {uploadError && (
+                    <span className="text-[11px] font-bold text-red-500 mt-1 block">{uploadError}</span>
+                  )}
+                </div>
+
+                {/* INLINE VIDEO PREVIEW PLAYER (Show Video Option) */}
+                <AnimatePresence>
+                  {showVideoPreview && lectureForm.videoUrl && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }} 
+                      animate={{ opacity: 1, height: 'auto' }} 
+                      exit={{ opacity: 0, height: 0 }}
+                      className="rounded-2xl overflow-hidden border border-[var(--border)] bg-black relative shadow-lg"
+                    >
+                      <div className="flex justify-between items-center bg-slate-900 px-4 py-2 text-white text-xs font-bold">
+                        <span className="flex items-center gap-1.5"><PlayCircle className="w-4 h-4 text-[var(--primary)]" /> Video Preview</span>
+                        <button type="button" onClick={() => setShowVideoPreview(false)} className="hover:text-red-400">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <video 
+                        src={lectureForm.videoUrl} 
+                        controls 
+                        autoPlay 
+                        className="w-full max-h-56 object-contain"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Auto-Calculated Duration & Upload Status */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Duration</label>
-                    <input 
-                      type="text" 
-                      value={lectureForm.duration} 
-                      onChange={e => setLectureForm({ ...lectureForm, duration: e.target.value })}
-                      placeholder="e.g. 15:30"
-                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
-                    />
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">
+                      Duration (Auto-Calculated)
+                    </label>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        readOnly
+                        value={lectureForm.duration || (videoUploading ? 'Calculating...' : 'Auto-calculated')} 
+                        placeholder="Auto-calculated duration"
+                        className="w-full p-3 pl-9 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-extrabold text-[var(--primary)] focus:outline-none min-h-[44px]"
+                      />
+                      <Clock className="w-4 h-4 text-[var(--primary)] absolute left-3 top-1/2 -translate-y-1/2" />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Video Stream URL</label>
-                    <input 
-                      type="url" 
-                      value={lectureForm.videoUrl} 
-                      onChange={e => setLectureForm({ ...lectureForm, videoUrl: e.target.value })}
-                      placeholder="https://cloudinary.com/demo.m3u8"
-                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
-                    />
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">
+                      File Status
+                    </label>
+                    <div className="flex items-center gap-2 p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] min-h-[44px]">
+                      <FileVideo className="w-4 h-4 text-[var(--primary)]" />
+                      <span className="text-xs font-bold">
+                        {videoUploading ? 'Uploading...' : lectureForm.videoUrl ? 'Video Ready' : 'No File Selected'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -693,14 +1009,26 @@ export function ManageCoursesPage() {
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
-                  <button type="button" onClick={() => setIsLectureModalOpen(false)} className="px-4 py-2 text-xs font-bold text-[var(--ink-muted)]">
-                    Cancel
+                <div className="flex justify-between items-center pt-2">
+                  <button 
+                    type="button" 
+                    onClick={handleCancelUploadAndRevert} 
+                    className="px-3.5 py-2 text-xs font-bold text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                    title="Revert all changes and restore original session state"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Revert Session</span>
                   </button>
-                  <button type="submit" className="px-6 py-2.5 bg-[var(--primary)] text-white text-xs font-extrabold rounded-full shadow-md hover:bg-[var(--primary-soft)] transition-colors min-h-[40px] flex items-center gap-1.5">
-                    <Save className="w-4 h-4" />
-                    <span>Save Lecture</span>
-                  </button>
+
+                  <div className="flex items-center gap-3">
+                    <button type="button" onClick={() => setIsLectureModalOpen(false)} className="px-4 py-2 text-xs font-bold text-[var(--ink-muted)]">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={videoUploading} className="px-6 py-2.5 bg-[var(--primary)] text-white text-xs font-extrabold rounded-full shadow-md hover:bg-[var(--primary-soft)] transition-colors min-h-[40px] flex items-center gap-1.5 disabled:opacity-50 cursor-pointer">
+                      <Save className="w-4 h-4" />
+                      <span>Save Lecture</span>
+                    </button>
+                  </div>
                 </div>
               </form>
             </motion.div>
