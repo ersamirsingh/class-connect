@@ -5,18 +5,27 @@ import { useLanguage } from '../../context/LanguageContext';
 export function LanguageSwitcher({ variant = 'pill', className = '' }) {
   const { language, toggleLanguage } = useLanguage();
 
+  const labels = {
+    en: { short: 'EN', full: 'English' },
+    te: { short: 'తె', full: 'తెలుగు' },
+    hi: { short: 'हि', full: 'हिंदी' },
+  };
+
+  const currentLabel = labels[language] || labels.en;
+
   if (variant === 'compact') {
     return (
       <button
         onClick={toggleLanguage}
-        className={`inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium
-          transition-colors duration-150
-          text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold
+          transition-colors duration-150 border border-[var(--border)] bg-[var(--surface)]
+          text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] cursor-pointer
           ${className}`}
-        aria-label={language === 'en' ? 'Switch to Hindi' : 'Switch to English'}
+        aria-label="Toggle Language"
+        title="Switch Language (EN / TE / HI)"
       >
-        <Globe className="w-4 h-4" />
-        <span className="font-semibold">{language === 'en' ? 'हि' : 'En'}</span>
+        <Globe className="w-3.5 h-3.5 text-[var(--primary)]" />
+        <span className="font-mono font-extrabold">{currentLabel.short}</span>
       </button>
     );
   }
@@ -24,16 +33,16 @@ export function LanguageSwitcher({ variant = 'pill', className = '' }) {
   return (
     <button
       onClick={toggleLanguage}
-      className={`group inline-flex items-center gap-2 px-3 py-2 rounded-full
+      className={`group inline-flex items-center gap-2 px-3.5 py-2 rounded-full
         border border-[var(--border)] bg-[var(--surface)]
-        transition-all duration-200
-        hover:border-[var(--primary)] hover:shadow-[var(--shadow-xs)]
+        transition-all duration-200 cursor-pointer
+        hover:border-[var(--primary)] hover:shadow-sm
         ${className}`}
-      aria-label={language === 'en' ? 'Switch to Hindi' : 'Switch to English'}
+      aria-label="Toggle Language"
     >
-      <Globe className="w-4 h-4 text-[var(--ink-muted)] group-hover:text-[var(--primary)] transition-colors" />
-      <span className="text-sm font-semibold text-[var(--ink)]">
-        {language === 'en' ? 'हिंदी' : 'English'}
+      <Globe className="w-4 h-4 text-[var(--primary)] transition-colors" />
+      <span className="text-xs font-extrabold text-[var(--ink)]">
+        {currentLabel.full}
       </span>
     </button>
   );

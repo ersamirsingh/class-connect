@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 
 import en from '../i18n/en.json';
 import hi from '../i18n/hi.json';
+import te from '../i18n/te.json';
 
-const translations = { en, hi };
+const translations = { en, hi, te };
 
 const LanguageContext = createContext(null);
 
@@ -26,7 +27,11 @@ export function LanguageProvider({ children }) {
   }, [language]);
 
   const toggleLanguage = useCallback(() => {
-    setLanguage((prev) => (prev === 'en' ? 'hi' : 'en'));
+    setLanguage((prev) => {
+      if (prev === 'en') return 'te';
+      if (prev === 'te') return 'hi';
+      return 'en';
+    });
   }, []);
 
   const t = useCallback(
@@ -56,8 +61,28 @@ export function LanguageProvider({ children }) {
     [language]
   );
 
+  /**
+   * Helper to extract localized text for multilingual object fields { en, te }
+   * Falls back to English if Telugu string is empty or missing.
+   */
+  const getContentText = useCallback(
+    (field) => {
+      if (!field) return '';
+      if (typeof field === 'string') return field;
+      if (typeof field === 'object') {
+        const langVal = field[language];
+        if (langVal && typeof langVal === 'string' && langVal.trim() !== '') {
+          return langVal;
+        }
+        return field.en || field.default || Object.values(field)[0] || '';
+      }
+      return String(field);
+    },
+    [language]
+  );
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, t, getContentText }}>
       {children}
     </LanguageContext.Provider>
   );
