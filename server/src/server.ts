@@ -10,13 +10,13 @@ import { initLiveSocket } from './socket/liveSocket';
 
 const startServer = async () => {
   try {
+    await Promise.all([connectDB(), connectRedis()]);
+
     const httpServer = http.createServer(app);
     initLiveSocket(httpServer);
 
-    const port = Number(process.env.PORT) || config.port || 5000;
-
-    httpServer.listen(port, '0.0.0.0', () => {
-      logger.info(`Server & Socket.io listening on http://0.0.0.0:${port}`);
+    httpServer.listen(config.port, () => {
+      logger.info(`Server & Socket.io listening on http://localhost:${config.port}`);
     });
 
     // Connect to MongoDB and Redis asynchronously without delaying port binding
