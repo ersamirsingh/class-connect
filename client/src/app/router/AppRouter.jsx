@@ -32,6 +32,9 @@ import { CertificatesListPage } from '../../pages/learning/CertificatesListPage'
 import { ReportProblemPage } from '../../pages/report/ReportProblemPage';
 import { NotificationsPage } from '../../pages/notifications/NotificationsPage';
 
+import { WalletPage } from '../../pages/wallet/WalletPage';
+import { DocumentVerificationPage } from '../../pages/profile/DocumentVerificationPage';
+
 import { ManageReportsPage } from '../../pages/admin/manageReports/ManageReportsPage';
 import { ManageAdminsPage } from '../../pages/admin/manageAdmins/ManageAdminsPage';
 import { ManageUsersPage } from '../../pages/admin/manageUsers/ManageUsersPage';
@@ -40,6 +43,8 @@ import { ManageCmsPage } from '../../pages/admin/manageCms/ManageCmsPage';
 import { ManageCategoriesPage } from '../../pages/admin/manageCategories/ManageCategoriesPage';
 import { ManageCoursesPage } from '../../pages/admin/manageCourses/ManageCoursesPage';
 import { ManageReviewsPage } from '../../pages/admin/manageReviews/ManageReviewsPage';
+import { AdminWithdrawalsPage } from '../../pages/admin/withdrawals/AdminWithdrawalsPage';
+import { AdminVerificationsPage } from '../../pages/admin/verifications/AdminVerificationsPage';
 
 import { ROLES } from '../../constants/roles';
 
@@ -67,7 +72,7 @@ export const AppRouter = () => {
       </Route>
 
       {/* Protected Student Routes */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLES.STUDENT]} />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.ADMIN]} />}>
         <Route path="/checkout/:courseId" element={<CheckoutPage />} />
         <Route path="/checkout/:courseId/confirmation" element={<ReceiptViewPage />} />
         <Route path="/receipt/:orderId" element={<ReceiptViewPage />} />
@@ -79,6 +84,8 @@ export const AppRouter = () => {
         <Route element={<StudentLayout />}>
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/verification" element={<DocumentVerificationPage />} />
+          <Route path="/wallet" element={<WalletPage />} />
           <Route path="/payments" element={<PaymentHistoryPage />} />
           <Route path="/certificates" element={<CertificatesListPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
@@ -96,6 +103,8 @@ export const AppRouter = () => {
           <Route path="/admin/students" element={<ManageUsersPage />} />
           <Route path="/admin/users" element={<ManageUsersPage />} />
           <Route path="/admin/admins" element={<ManageAdminsPage />} />
+          <Route path="/admin/withdrawals" element={<AdminWithdrawalsPage />} />
+          <Route path="/admin/verifications" element={<AdminVerificationsPage />} />
           <Route path="/admin/payments" element={<ManagePaymentsPage />} />
           <Route path="/admin/reports" element={<ManageReportsPage />} />
           <Route path="/admin/reviews" element={<ManageReviewsPage />} />

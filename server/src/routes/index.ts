@@ -11,6 +11,9 @@ import { adminRouter } from '../modules/admin/admin.route';
 import { notificationRouter } from '../modules/notification/notification.route';
 import { reviewRouter } from '../modules/review/review.route';
 import { uploadRouter } from '../modules/upload/upload.route';
+import { walletRouter } from '../modules/wallet/wallet.routes';
+import { verificationRouter } from '../modules/verification/documentVerification.routes';
+import { liveRouter } from '../modules/live/liveModeration.routes';
 
 const router = Router();
 
@@ -27,5 +30,8 @@ router.use('/admin', adminRouter);
 router.use('/notifications', notificationRouter);
 router.use('/reviews', reviewRouter);
 router.use('/upload', uploadRouter);
+router.use('/wallet', walletRouter);
+router.use('/verification', verificationRouter);
+router.use('/live', liveRouter);
 
 export const appRouter = router;

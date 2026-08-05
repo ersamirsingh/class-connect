@@ -11,6 +11,8 @@ export interface IUser extends Document {
   isActive: boolean;
   phone?: string;
   photo?: string;
+  referralCode?: string;
+  referredBy?: any;
   activeSessionId?: string;
   lastLoginIp?: string;
   resetPasswordToken?: string;
@@ -33,6 +35,8 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
     },
+    referralCode: { type: String, unique: true, sparse: true },
+    referredBy: { type: Schema.Types.ObjectId, ref: 'User' },
     previewViews: [
       {
         course: { type: Schema.Types.ObjectId, ref: 'Course' },
@@ -46,6 +50,14 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
+
+// Pre-validate hook to generate referralCode if missing
+userSchema.pre('validate', function (next) {
+  if (!this.referralCode) {
+    this.referralCode = `REF-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  }
+  next();
+});
 
 // Pre-save hook to hash password if modified
 userSchema.pre('save', async function (next) {

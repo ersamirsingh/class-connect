@@ -1,102 +1,96 @@
-import { OrderModel, IOrder } from '../../modules/payment/payment.model';
-import { SeededUsers } from './seedUsers';
-import { SeededCourses } from './seedCourses';
+import { OrderModel } from '../../modules/payment/payment.model';
+import { UserModel } from '../../modules/user/user.model';
+import { CourseModel } from '../../modules/course/course.model';
 
-export interface SeededOrders {
-  student1AppliedMathOrder: IOrder;
-  student1MernOrder: IOrder;
-  student2AppliedMathOrder: IOrder;
-  student3DataScienceOrder: IOrder;
-  student4UiUxOrder: IOrder;
-}
-
-export async function seedOrders(users: SeededUsers, courses: SeededCourses): Promise<SeededOrders> {
+export async function seedOrders() {
   console.log('💳 Seeding Orders...');
 
-  const now = new Date();
-  const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
+  const student1 = await UserModel.findOne({ email: 'student1@test.com' });
+  const student2 = await UserModel.findOne({ email: 'student2@test.com' });
+  const student3 = await UserModel.findOne({ email: 'student3@test.com' });
+  const student4 = await UserModel.findOne({ email: 'student4@test.com' });
+
+  const courseGoogleAds = await CourseModel.findOne({ slug: 'google-ads' });
+  const courseChatGPT = await CourseModel.findOne({ slug: 'chatgpt-ai-tools' });
+  const courseCanva = await CourseModel.findOne({ slug: 'canva-mastery' });
+  const courseSales = await CourseModel.findOne({ slug: 'sales-lead-generation-skills' });
+
+  if (!student1 || !student2 || !student3 || !student4 || !courseGoogleAds || !courseChatGPT || !courseCanva || !courseSales) {
+    throw new Error('Users and Courses must be seeded before seeding orders.');
+  }
 
   const ordersData = [
     {
-      student: users.student1._id,
-      course: courses.appliedMathCourse._id,
+      student: student1._id,
+      course: courseGoogleAds._id,
       gateway: 'razorpay' as const,
-      gatewayOrderId: 'order_rzp_test_1001',
-      gatewayPaymentId: 'pay_rzp_test_5001',
-      amount: courses.appliedMathCourse.price,
+      gatewayOrderId: 'order_rzp_seed_101',
+      gatewayPaymentId: 'pay_rzp_seed_101',
+      amount: 1499,
       currency: 'INR',
       status: 'success' as const,
-      receiptId: 'rcpt_math_student1_01',
-      createdAt: daysAgo(12),
+      receiptId: 'REC-GOOGLE-ADS-01',
+      createdAt: new Date(Date.now() - 20 * 86400000), // 20 days ago
     },
     {
-      student: users.student1._id,
-      course: courses.mernCourse._id,
+      student: student1._id,
+      course: courseChatGPT._id,
       gateway: 'stripe' as const,
-      gatewayOrderId: 'order_strp_test_1002',
-      gatewayPaymentId: 'pay_strp_test_5002',
-      amount: courses.mernCourse.price,
-      currency: 'INR',
+      gatewayOrderId: 'cs_test_seed_102',
+      gatewayPaymentId: 'pi_test_seed_102',
+      amount: 799,
+      currency: 'USD',
       status: 'success' as const,
-      receiptId: 'rcpt_mern_student1_02',
-      createdAt: daysAgo(5),
+      receiptId: 'REC-CHATGPT-01',
+      createdAt: new Date(Date.now() - 15 * 86400000), // 15 days ago
     },
     {
-      student: users.student2._id,
-      course: courses.appliedMathCourse._id,
+      student: student2._id,
+      course: courseGoogleAds._id,
       gateway: 'stripe' as const,
-      gatewayOrderId: 'order_strp_test_1003',
-      gatewayPaymentId: 'pay_strp_test_5003',
-      amount: courses.appliedMathCourse.price,
-      currency: 'INR',
+      gatewayOrderId: 'cs_test_seed_103',
+      gatewayPaymentId: 'pi_test_seed_103',
+      amount: 1499,
+      currency: 'USD',
       status: 'success' as const,
-      receiptId: 'rcpt_math_student2_03',
-      createdAt: daysAgo(8),
+      receiptId: 'REC-GOOGLE-ADS-02',
+      createdAt: new Date(Date.now() - 10 * 86400000), // 10 days ago
     },
     {
-      student: users.student3._id,
-      course: courses.dataScienceCourse._id,
+      student: student3._id,
+      course: courseCanva._id,
       gateway: 'razorpay' as const,
-      gatewayOrderId: 'order_rzp_test_1004',
+      gatewayOrderId: 'order_rzp_seed_104',
       gatewayPaymentId: '',
-      amount: courses.dataScienceCourse.price,
+      amount: 599,
       currency: 'INR',
       status: 'pending' as const,
-      receiptId: 'rcpt_ds_student3_04',
-      createdAt: daysAgo(2),
+      receiptId: 'REC-CANVA-01',
+      createdAt: new Date(Date.now() - 2 * 86400000), // 2 days ago
     },
     {
-      student: users.student4._id,
-      course: courses.uiUxCourse._id,
+      student: student4._id,
+      course: courseSales._id,
       gateway: 'razorpay' as const,
-      gatewayOrderId: 'order_rzp_test_1005',
-      gatewayPaymentId: 'pay_rzp_failed_5005',
-      amount: courses.uiUxCourse.price,
+      gatewayOrderId: 'order_rzp_seed_105',
+      gatewayPaymentId: 'pay_failed_seed_105',
+      amount: 1299,
       currency: 'INR',
       status: 'failed' as const,
-      receiptId: 'rcpt_uiux_student4_05',
-      createdAt: daysAgo(1),
+      receiptId: 'REC-SALES-01',
+      createdAt: new Date(Date.now() - 1 * 86400000), // 1 day ago
     },
   ];
 
-  const resultMap: Record<string, IOrder> = {};
-
-  for (const item of ordersData) {
-    let order = await OrderModel.findOne({ receiptId: item.receiptId });
-    if (!order) {
-      order = await OrderModel.create(item);
-      console.log(`  ✓ Created order: ${item.receiptId} (${item.status})`);
+  for (const o of ordersData) {
+    const existing = await OrderModel.findOne({ receiptId: o.receiptId });
+    if (!existing) {
+      await OrderModel.create(o);
+      console.log(`  └─ Created Order: ${o.receiptId} (${o.status})`);
     } else {
-      console.log(`  ℹ Order already exists: ${item.receiptId}`);
+      console.log(`  └─ Order already exists: ${o.receiptId}`);
     }
-    resultMap[item.receiptId] = order;
   }
 
-  return {
-    student1AppliedMathOrder: resultMap['rcpt_math_student1_01'],
-    student1MernOrder: resultMap['rcpt_mern_student1_02'],
-    student2AppliedMathOrder: resultMap['rcpt_math_student2_03'],
-    student3DataScienceOrder: resultMap['rcpt_ds_student3_04'],
-    student4UiUxOrder: resultMap['rcpt_uiux_student4_05'],
-  };
+  console.log('✅ Orders Seeding Complete.\n');
 }

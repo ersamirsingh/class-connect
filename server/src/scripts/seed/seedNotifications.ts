@@ -1,55 +1,58 @@
 import { NotificationModel } from '../../modules/notification/notification.model';
-import { SeededUsers } from './seedUsers';
+import { UserModel } from '../../modules/user/user.model';
 
-export async function seedNotifications(users: SeededUsers) {
+export async function seedNotifications() {
   console.log('🔔 Seeding Notifications...');
 
-  const notificationsData = [
+  const student1 = await UserModel.findOne({ email: 'student1@test.com' });
+  const student3 = await UserModel.findOne({ email: 'student3@test.com' });
+  const student4 = await UserModel.findOne({ email: 'student4@test.com' });
+
+  if (!student1 || !student3 || !student4) {
+    throw new Error('Users must be seeded before seeding notifications.');
+  }
+
+  const notifications = [
     {
-      user: users.student1._id,
+      user: student1._id,
       title: 'Payment Successful',
-      message: 'Your payment for Applied Mathematics Masterclass was successful. You now have full lifetime access!',
+      message: 'Your payment for Google Ads has been verified. Happy learning!',
       type: 'payment' as const,
-      link: '/course/applied-mathematics-masterclass/explore',
       isRead: true,
     },
     {
-      user: users.student1._id,
-      title: 'Live Class Reminder',
-      message: 'Live class "Statistics & Probability" is starting soon. Click to join the interactive stream.',
+      user: student1._id,
+      title: 'Live Class Starting Soon',
+      message: 'Live Session "Scaling Your Ad Spend" is currently LIVE. Click to join now.',
       type: 'live' as const,
-      link: '/course/applied-mathematics-masterclass/explore',
+      link: '/courses',
       isRead: false,
     },
     {
-      user: users.student3._id,
-      title: 'Payment Under Processing',
-      message: 'Your payment for Intro to Data Science is being processed via Razorpay. We will update you shortly.',
+      user: student3._id,
+      title: 'Payment Pending',
+      message: 'Your payment for Canva Mastery is currently pending verification.',
       type: 'payment' as const,
-      link: '/payments',
       isRead: false,
     },
     {
-      user: users.student4._id,
-      title: 'Report Status Updated',
-      message: 'Your problem report regarding payment charge status is currently in-progress with our admin team.',
+      user: student4._id,
+      title: 'Support Ticket Update',
+      message: 'Your report regarding checkout failure is being reviewed by Admin.',
       type: 'report' as const,
-      link: '/report',
       isRead: false,
     },
   ];
 
-  for (const item of notificationsData) {
-    let notification = await NotificationModel.findOne({
-      user: item.user,
-      title: item.title,
-    });
-
-    if (!notification) {
-      await NotificationModel.create(item);
-      console.log(`  ✓ Created notification for user: ${item.user} ("${item.title}")`);
+  for (const n of notifications) {
+    const existing = await NotificationModel.findOne({ user: n.user, title: n.title });
+    if (!existing) {
+      await NotificationModel.create(n);
+      console.log(`  └─ Created Notification for user ${n.user}: ${n.title}`);
     } else {
-      console.log(`  ℹ Notification already exists for user: ${item.user}`);
+      console.log(`  └─ Notification already exists: ${n.title}`);
     }
   }
+
+  console.log('✅ Notifications Seeding Complete.\n');
 }

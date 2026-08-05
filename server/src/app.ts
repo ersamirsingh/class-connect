@@ -1,21 +1,19 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import { appRouter } from './routes';
+import { mongoSanitizeMiddleware } from './middlewares/mongoSanitize.middleware';
 
 const app: Application = express();
 
-// Dynamically fetch client URL from environment variable (.env)
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
-// CORS configuration reading target client origin from process.env
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow non-browser requests or requests matching configured clientUrl / dev origin
-      if (!origin || origin === clientUrl || process.env.NODE_ENV !== 'production') {
+      if (!origin || origin === clientUrl) {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(new Error(`CORS Blocked: Origin ${origin} is not allowed by CORS configuration.`));
       }
     },
     credentials: true,
@@ -24,17 +22,16 @@ app.use(
   })
 );
 
-app.options('*', cors());
+// Body Parsers with 50mb limit to support document image uploads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Standard Body Parsing Middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(mongoSanitizeMiddleware);
 
 // API Routes
 app.use('/api', appRouter);
 
-// Health Check Endpoint
-app.get('/', (_req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'OK', message: 'ClassConnect Server is running cleanly' });
 });
 

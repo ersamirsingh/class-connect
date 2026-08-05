@@ -26,9 +26,11 @@ export interface ILiveSchedule {
 
 export interface ICourse extends Document {
   title: string;
+  titleI18n?: { en?: string; te?: string };
   slug: string;
   subtitle: string;
   description: string;
+  descriptionI18n?: { en?: string; te?: string };
   category: Types.ObjectId;
   type: 'live' | 'recorded' | 'hybrid';
   thumbnail: string;
@@ -71,9 +73,17 @@ const sectionSchema = new Schema<ISection>({
 const courseSchema = new Schema<ICourse>(
   {
     title: { type: String, required: true, trim: true },
+    titleI18n: {
+      en: { type: String, default: '' },
+      te: { type: String, default: '' },
+    },
     slug: { type: String, required: true, unique: true, lowercase: true },
     subtitle: { type: String, default: '' },
     description: { type: String, required: true },
+    descriptionI18n: {
+      en: { type: String, default: '' },
+      te: { type: String, default: '' },
+    },
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
     type: { type: String, enum: ['live', 'recorded', 'hybrid'], default: 'recorded' },
     thumbnail: { type: String, required: true },

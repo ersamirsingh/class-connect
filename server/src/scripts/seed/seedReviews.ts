@@ -1,36 +1,42 @@
 import { ReviewModel } from '../../modules/review/review.model';
-import { SeededUsers } from './seedUsers';
-import { SeededCourses } from './seedCourses';
+import { UserModel } from '../../modules/user/user.model';
+import { CourseModel } from '../../modules/course/course.model';
 
-export async function seedReviews(users: SeededUsers, courses: SeededCourses) {
+export async function seedReviews() {
   console.log('⭐ Seeding Reviews...');
 
-  const reviewsData = [
+  const student1 = await UserModel.findOne({ email: 'student1@test.com' });
+  const student2 = await UserModel.findOne({ email: 'student2@test.com' });
+  const courseGoogleAds = await CourseModel.findOne({ slug: 'google-ads' });
+
+  if (!student1 || !student2 || !courseGoogleAds) {
+    throw new Error('Users and Courses must be seeded before seeding reviews.');
+  }
+
+  const reviews = [
     {
-      course: courses.appliedMathCourse._id,
-      student: users.student1._id,
+      course: courseGoogleAds._id,
+      student: student1._id,
       rating: 5,
-      comment: 'Exceptional masterclass! The calculus topics made limits and derivatives crystal clear. Highly recommend!',
+      comment: 'Outstanding course! The campaign setup and keyword match type lessons helped me double ROI in 2 weeks.',
     },
     {
-      course: courses.appliedMathCourse._id,
-      student: users.student2._id,
+      course: courseGoogleAds._id,
+      student: student2._id,
       rating: 4,
-      comment: 'Great course structure and practice exercises. The live statistics session was super interactive.',
+      comment: 'Very comprehensive Google Ads breakdown. The bid strategy section was worth every rupee.',
     },
   ];
 
-  for (const item of reviewsData) {
-    let review = await ReviewModel.findOne({
-      course: item.course,
-      student: item.student,
-    });
-
-    if (!review) {
-      await ReviewModel.create(item);
-      console.log(`  ✓ Created review for course: ${item.course} by student: ${item.student}`);
+  for (const rev of reviews) {
+    const existing = await ReviewModel.findOne({ course: rev.course, student: rev.student });
+    if (!existing) {
+      await ReviewModel.create(rev);
+      console.log(`  └─ Created Review for Google Ads (${rev.rating} stars)`);
     } else {
-      console.log(`  ℹ Review already exists for course: ${item.course} by student: ${item.student}`);
+      console.log('  └─ Review already exists for this student & course');
     }
   }
+
+  console.log('✅ Reviews Seeding Complete.\n');
 }

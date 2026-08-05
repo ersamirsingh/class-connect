@@ -16,6 +16,10 @@ import {
   UserCheck,
   Home,
   ChevronUp,
+  Wallet,
+  ShieldCheck,
+  Building2,
+  FileCheck
 } from 'lucide-react';
 
 export const UserProfileDropdown = ({ position = 'auto' }) => {
@@ -51,6 +55,8 @@ export const UserProfileDropdown = ({ position = 'auto' }) => {
     { label: 'Manage Courses', path: '/admin/courses', icon: BookOpen, color: '#6366F1' },
     { label: 'Student Directory', path: '/admin/users', icon: UserCheck, color: '#10B981' },
     { label: 'Manage Admins', path: '/admin/admins', icon: Users, color: '#06B6D4' },
+    { label: 'Withdrawal Requests', path: '/admin/withdrawals', icon: Building2, color: '#10B981' },
+    { label: 'ID Verifications', path: '/admin/verifications', icon: FileCheck, color: '#3B82F6' },
     { label: 'Sales & Payments', path: '/admin/payments', icon: DollarSign, color: '#F59E0B' },
     { label: 'Problem Reports', path: '/admin/reports', icon: Flag, color: '#EF4444' },
   ];
@@ -176,11 +182,29 @@ export const UserProfileDropdown = ({ position = 'auto' }) => {
                 </Link>
 
                 <Link
+                  to="/wallet"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <Wallet className="w-4 h-4 text-[#10B981]" />
+                  <span>My Wallet & Rewards</span>
+                </Link>
+
+                <Link
+                  to="/profile/verification"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#3B82F6]" />
+                  <span>ID Verification</span>
+                </Link>
+
+                <Link
                   to="/profile"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <User className="w-4 h-4 text-[#10B981]" />
+                  <User className="w-4 h-4 text-[#8B5CF6]" />
                   <span>My Profile</span>
                 </Link>
 
