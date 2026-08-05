@@ -185,18 +185,26 @@ export class WalletService {
       .populate('student', 'name email phone referralCode')
       .sort({ requestedAt: -1 });
 
-    // Attach inline document verification status
+    // Attach inline document verification & bank details
     const studentIds = requests.map(r => r.student?._id || r.student);
-    const verifications = await DocumentVerificationModel.find({ student: { $in: studentIds } });
+    const [verifications, wallets] = await Promise.all([
+      DocumentVerificationModel.find({ student: { $in: studentIds } }),
+      WalletModel.find({ student: { $in: studentIds } }),
+    ]);
 
     const verificationMap = new Map();
     verifications.forEach(v => verificationMap.set(v.student.toString(), v));
 
+    const walletMap = new Map();
+    wallets.forEach(w => walletMap.set(w.student.toString(), w));
+
     return requests.map(req => {
       const sId = req.student?._id?.toString() || req.student?.toString();
       const docVer = verificationMap.get(sId);
+      const w = walletMap.get(sId);
       return {
         ...req.toObject(),
+        bankDetails: w?.bankDetails || null,
         verificationStatus: docVer?.status || 'unsubmitted',
         verificationDetails: docVer || null,
       };

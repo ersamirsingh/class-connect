@@ -9,7 +9,10 @@ import {
   Clock, 
   AlertCircle, 
   Building2,
-  Filter
+  Filter,
+  Eye,
+  CreditCard,
+  UserCheck
 } from 'lucide-react';
 import { walletApi } from '../../../api/models/wallet.api';
 
@@ -18,6 +21,7 @@ export function AdminWithdrawalsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [actionMsg, setActionMsg] = useState({ type: '', text: '' });
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -113,7 +117,8 @@ export function AdminWithdrawalsPage() {
                   <tr>
                     <th className="p-4">Student</th>
                     <th className="p-4">Requested Amount</th>
-                    <th className="p-4">Doc Verification Status</th>
+                    <th className="p-4">Bank Account</th>
+                    <th className="p-4">ID Verification</th>
                     <th className="p-4">Requested Date</th>
                     <th className="p-4">Status</th>
                     <th className="p-4 text-right">Actions</th>
@@ -130,6 +135,16 @@ export function AdminWithdrawalsPage() {
 
                       <td className="p-4 font-mono font-black text-sm text-[var(--primary)]">
                         ₹{req.amount}
+                      </td>
+
+                      <td className="p-4">
+                        <button
+                          onClick={() => setSelectedRequest(req)}
+                          className="px-3 py-1.5 bg-[var(--canvas)] text-[var(--primary)] rounded-lg border border-[var(--border)] font-extrabold text-[11px] hover:bg-indigo-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                          <span>View Details</span>
+                        </button>
                       </td>
 
                       <td className="p-4">
@@ -166,7 +181,7 @@ export function AdminWithdrawalsPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleApprove(req._id)}
-                              className="px-3 py-1.5 bg-emerald-600 text-white font-extrabold text-[11px] rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer"
+                              className="px-3 py-1.5 bg-emerald-600 text-white font-extrabold text-[11px] rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
                               title="Approve Payout"
                             >
                               Approve & Pay
@@ -190,6 +205,81 @@ export function AdminWithdrawalsPage() {
         </div>
 
       </div>
+
+      {/* View Details Modal (Bank Account & ID Documents) */}
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[var(--surface)] p-6 rounded-3xl max-w-xl w-full border border-[var(--border)] shadow-2xl space-y-5">
+            <div className="flex justify-between items-center border-b border-[var(--border)] pb-3">
+              <div>
+                <h3 className="font-extrabold text-base text-[var(--ink)] font-manrope">Payout & Account Details</h3>
+                <p className="text-xs text-[var(--ink-muted)]">{selectedRequest.student?.name} — {selectedRequest.student?.email}</p>
+              </div>
+              <button onClick={() => setSelectedRequest(null)} className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer">Close</button>
+            </div>
+
+            {/* Bank Account Details Card */}
+            <div className="bg-[var(--canvas)] p-4 rounded-2xl border border-[var(--border)] space-y-3">
+              <h4 className="text-xs font-black uppercase text-[var(--primary)] tracking-wider flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4" />
+                <span>Bank Account Details</span>
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-[10px] font-bold text-[var(--ink-muted)] uppercase block">Account Holder Name</span>
+                  <span className="font-extrabold text-[var(--ink)]">{selectedRequest.bankDetails?.accountHolderName || selectedRequest.student?.name || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-[var(--ink-muted)] uppercase block">Account Number</span>
+                  <span className="font-mono font-bold text-[var(--ink)]">{selectedRequest.bankDetails?.accountNumber || 'Not configured'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-[var(--ink-muted)] uppercase block">IFSC Code</span>
+                  <span className="font-mono font-bold text-[var(--ink)] uppercase">{selectedRequest.bankDetails?.ifscCode || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-[var(--ink-muted)] uppercase block">Requested Payout</span>
+                  <span className="font-mono font-black text-sm text-emerald-600">₹{selectedRequest.amount}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ID Document Verification Summary */}
+            <div className="bg-[var(--canvas)] p-4 rounded-2xl border border-[var(--border)] space-y-3">
+              <h4 className="text-xs font-black uppercase text-[var(--primary)] tracking-wider flex items-center gap-1.5">
+                <UserCheck className="w-4 h-4" />
+                <span>ID Document Verification Status</span>
+              </h4>
+
+              <div className="flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[10px] font-bold text-[var(--ink-muted)] uppercase block">PAN Card Number</span>
+                  <span className="font-mono font-bold text-[var(--ink)] uppercase">{selectedRequest.verificationDetails?.panNumber || 'Not submitted'}</span>
+                </div>
+                <div>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                    selectedRequest.verificationStatus === 'verified' ? 'bg-emerald-100 text-emerald-800' :
+                    selectedRequest.verificationStatus === 'rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {selectedRequest.verificationStatus}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setSelectedRequest(null)}
+                className="px-5 py-2 bg-[var(--primary)] text-white font-extrabold text-xs rounded-full shadow-xs cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Reject Modal */}
       {rejectingId && (
@@ -218,3 +308,5 @@ export function AdminWithdrawalsPage() {
     </div>
   );
 }
+
+export default AdminWithdrawalsPage;
