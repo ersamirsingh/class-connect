@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React, { useId, useRef } from 'react';
 import { cn } from '../../utils/cn';
 
 export function Marquee({
@@ -12,14 +12,17 @@ export function Marquee({
   const id = useId().replace(/:/g, '');
   const animationName = `marquee-${id}`;
   const isReverse = direction === 'right' || direction === 'down';
+  const containerRef = useRef(null);
 
   return (
     <div
+      ref={containerRef}
       className={cn(
-        'group flex overflow-hidden',
-        vertical ? 'flex-col h-full' : 'flex-row w-full',
+        'group flex overflow-x-auto scrollbar-hide select-none cursor-grab active:cursor-grabbing',
+        vertical ? 'flex-col h-full overflow-y-auto' : 'flex-row w-full',
         className
       )}
+      style={{ scrollBehavior: 'smooth' }}
     >
       <style>
         {`

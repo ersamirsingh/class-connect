@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -7,155 +7,261 @@ import {
   Palette, 
   Cpu, 
   TrendingUp, 
-  Layers, 
-  ArrowRight,
-  Database,
-  ShieldCheck,
-  Cloud
+  ShieldCheck, 
+  ChevronLeft, 
+  ChevronRight,
+  MonitorPlay,
+  Lightbulb,
+  Megaphone,
+  Compass,
+  Sparkles,
+  Zap
 } from 'lucide-react';
-import { GlowingEffect } from '../motion/GlowingEffect';
-import { Marquee } from '../motion/Marquee';
-import { TextEffect } from '../motion/TextEffect';
 import { useLanguage } from '../../context/LanguageContext';
 
-const categoryIcons = {
-  'web-development': Code2,
-  'app-development': Smartphone,
-  'ui-ux-design': Palette,
-  'ai-data-science': Cpu,
-  'digital-marketing': TrendingUp,
-  'cloud-computing': Cloud,
-  'cyber-security': ShieldCheck,
-  'data-engineering': Database,
-};
-
-const defaultGradientBadges = [
-  'from-indigo-500/15 via-purple-500/10 to-transparent',
-  'from-blue-500/15 via-cyan-500/10 to-transparent',
-  'from-orange-500/15 via-amber-500/10 to-transparent',
-  'from-emerald-500/15 via-teal-500/10 to-transparent',
-  'from-rose-500/15 via-pink-500/10 to-transparent',
-];
-
 export function CategoryCraftDeck({ categories = [] }) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const isHindi = language === 'hi';
+  const sliderRef = useRef(null);
+  const interactionTimer = useRef(null);
 
-  // Ensure we have a rich set of items for scrolling
-  const fullCategories = categories.length > 0 ? categories : [
-    { _id: 'c1', name: 'Web Development', slug: 'web-development', courseCount: 12, description: 'HTML, CSS, React, Node.js & Next.js' },
-    { _id: 'c2', name: 'App Development', slug: 'app-development', courseCount: 8, description: 'React Native & Flutter Apps' },
-    { _id: 'c3', name: 'UI/UX Design', slug: 'ui-ux-design', courseCount: 6, description: 'Figma, Visual & Motion Systems' },
-    { _id: 'c4', name: 'AI & Data Science', slug: 'ai-data-science', courseCount: 10, description: 'Python, Machine Learning & LLMs' },
-    { _id: 'c5', name: 'Digital Marketing', slug: 'digital-marketing', courseCount: 5, description: 'SEO, Ads & Brand Growth' },
-    { _id: 'c6', name: 'Cloud Computing', slug: 'cloud-computing', courseCount: 7, description: 'AWS, Docker & Kubernetes' },
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  // 6 Major Course Categories matching the reference image styling & colors
+  const majorCategories = [
+    {
+      id: 'web-dev',
+      name: isHindi ? 'वेब डेवलपमेंट' : 'Web Development',
+      slug: 'web-development',
+      sentence: isHindi ? 'HTML, React, Node.js और Next.js 15 सीखें।' : 'Master HTML, CSS, React, Node.js & Next.js 15.',
+      courseCount: 12,
+      gradient: 'from-[#FF4365] via-[#FF5E7E] to-[#E62E5C]',
+      shadowColor: 'shadow-[0_14px_36px_rgba(255,67,101,0.3)]',
+      icon: Code2,
+      stageIcon: MonitorPlay,
+    },
+    {
+      id: 'app-dev',
+      name: isHindi ? 'ऐप डेवलपमेंट' : 'App Development',
+      slug: 'app-development',
+      sentence: isHindi ? 'React Native और Flutter से मोबाइल ऐप्स बनाएं।' : 'Build native iOS & Android apps with Flutter & React Native.',
+      courseCount: 8,
+      gradient: 'from-[#10B981] via-[#34D399] to-[#059669]',
+      shadowColor: 'shadow-[0_14px_36px_rgba(16,185,129,0.3)]',
+      icon: Smartphone,
+      stageIcon: Smartphone,
+    },
+    {
+      id: 'ui-ux',
+      name: isHindi ? 'यूआई/यूएक्स डिजाइन' : 'UI/UX Design',
+      slug: 'ui-ux-design',
+      sentence: isHindi ? 'Figma, मोशन डिजाइन और विजुअल सिस्टम सीखें।' : 'Figma, Visual Design Systems & Micro-Interactions.',
+      courseCount: 6,
+      gradient: 'from-[#6366F1] via-[#818CF8] to-[#4F46E5]',
+      shadowColor: 'shadow-[0_14px_36px_rgba(99,102,241,0.3)]',
+      icon: Palette,
+      stageIcon: Lightbulb,
+    },
+    {
+      id: 'ai-data',
+      name: isHindi ? 'एआई और डेटा साइंस' : 'AI & Data Science',
+      slug: 'ai-data-science',
+      sentence: isHindi ? 'पायथन, मशीन लर्निंग और AI एजेंट बनाएं।' : 'Python, Machine Learning, OpenAI APIs & AI Agents.',
+      courseCount: 10,
+      gradient: 'from-[#14B8A6] via-[#2DD4BF] to-[#0D9488]',
+      shadowColor: 'shadow-[0_14px_36px_rgba(20,184,166,0.3)]',
+      icon: Cpu,
+      stageIcon: Zap,
+    },
+    {
+      id: 'marketing',
+      name: isHindi ? 'डिजिटल मार्केटिंग' : 'Digital Marketing',
+      slug: 'digital-marketing',
+      sentence: isHindi ? 'SEO, सोशल मीडिया विज्ञापन और ब्रांड ग्रोथ सीखें।' : 'Performance Marketing, Google Ads, Meta & Brand Growth.',
+      courseCount: 5,
+      gradient: 'from-[#3B82F6] via-[#60A5FA] to-[#2563EB]',
+      shadowColor: 'shadow-[0_14px_36px_rgba(59,130,246,0.3)]',
+      icon: TrendingUp,
+      stageIcon: Megaphone,
+    },
+    {
+      id: 'cloud-sec',
+      name: isHindi ? 'क्लाउड और सिक्योरिटी' : 'Cloud & Security',
+      slug: 'cloud-computing',
+      sentence: isHindi ? 'AWS, डॉकर, कुबेरनेट्स और साइबर सुरक्षा सीखें।' : 'AWS, Docker, Kubernetes & Cybersecurity Defense.',
+      courseCount: 7,
+      gradient: 'from-[#F59E0B] via-[#FBBF24] to-[#D97706]',
+      shadowColor: 'shadow-[0_14px_36px_rgba(245,158,11,0.3)]',
+      icon: ShieldCheck,
+      stageIcon: Compass,
+    },
   ];
 
-  // Split into two rows for dual-direction auto scroll
-  const halfLength = Math.ceil(fullCategories.length / 2);
-  const row1 = fullCategories.slice(0, halfLength);
-  const row2 = fullCategories.slice(halfLength).concat(fullCategories.slice(0, 2));
+  // Infinite items array for seamless drag & scroll loop
+  const displayItems = [...majorCategories, ...majorCategories, ...majorCategories];
+
+  // Auto-scroll loop: automatically pauses when user touches, clicks, or scrolls
+  useEffect(() => {
+    let animId;
+    const autoSlide = () => {
+      if (sliderRef.current && !isInteracting) {
+        sliderRef.current.scrollLeft += 0.7;
+        if (sliderRef.current.scrollLeft >= sliderRef.current.scrollWidth / 3) {
+          sliderRef.current.scrollLeft = 0;
+        }
+      }
+      animId = requestAnimationFrame(autoSlide);
+    };
+
+    animId = requestAnimationFrame(autoSlide);
+    return () => cancelAnimationFrame(animId);
+  }, [isInteracting]);
+
+  // Pause auto-scroll when user touches, drags, or scrolls trackpad
+  const markUserInteraction = () => {
+    setIsInteracting(true);
+    if (interactionTimer.current) clearTimeout(interactionTimer.current);
+    interactionTimer.current = setTimeout(() => {
+      setIsInteracting(false);
+    }, 4000); // Resumes smooth marquee auto-scroll after 4s idle
+  };
+
+  const slideLeft = () => {
+    markUserInteraction();
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: -340, behavior: 'smooth' });
+    }
+  };
+
+  const slideRight = () => {
+    markUserInteraction();
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+    }
+  };
 
   return (
-    <section className="relative py-20 overflow-hidden bg-[var(--canvas)]">
-      {/* Background Subtle Gradient Blobs */}
+    <section className="relative py-16 sm:py-24 overflow-hidden bg-[var(--canvas)]">
+      {/* Background Soft Glow Blobs */}
       <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-7xl h-full overflow-hidden opacity-30">
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-[var(--aura-violet)] filter blur-3xl" />
         <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-3xl" />
       </div>
 
       {/* Header */}
-      <div className="page-container text-center mb-14 relative z-10">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-bold uppercase tracking-wider mb-4">
-          <Layers className="w-3.5 h-3.5" />
-          {isHindi ? 'विषय चुनें' : 'Curated Disciplines'}
+      <div className="page-container flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 relative z-10 gap-6">
+        <div className="text-left">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold font-manrope text-[var(--ink)] tracking-tight mb-2 sm:mb-3">
+            {isHindi ? 'अपना रास्ता चुनें (Find Your Path)' : 'Find Your Path'}
+          </h2>
+
+          <p className="text-sm sm:text-lg text-[var(--ink-muted)] max-w-xl font-normal">
+            {isHindi 
+              ? 'शुरुआती से लेकर प्रोफेशनल बनने तक के लिए तैयार किए गए हमारे विशेष कोर्स श्रेणियों को देखें।'
+              : 'Explore our curated selection of disciplines designed to take you from beginner to professional.'}
+          </p>
         </div>
 
-        <TextEffect preset="fade-in-blur" className="section-heading mb-4">
-          {isHindi ? 'अपना रास्ता चुनें (Find Your Path)' : 'Find Your Path'}
-        </TextEffect>
-
-        <p className="section-subheading mx-auto max-w-xl text-center">
-          {isHindi 
-            ? 'शुरुआती से लेकर प्रोफेशनल बनने तक के लिए तैयार किए गए हमारे विशेष कोर्स श्रेणियों को देखें।'
-            : 'Explore our curated selection of disciplines designed to take you from beginner to professional.'}
-        </p>
+        {/* Working Arrow Navigation Controls */}
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={slideLeft}
+            type="button"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+          <button
+            onClick={slideRight}
+            type="button"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] text-[var(--ink)] flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+        </div>
       </div>
 
-      {/* Interface Craft Infinite Scroll Container */}
-      <div className="relative w-full space-y-6">
-        {/* Left & Right Fading Gradient Edge Overlay for seamless marquee */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-24 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
+      {/* Hardware-Accelerated 120Hz Smooth Mobile Track */}
+      <div className="relative w-full">
+        {/* Left & Right Fading Overlays */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-8 sm:w-16 bg-gradient-to-r from-[var(--canvas)] to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-8 sm:w-16 bg-gradient-to-l from-[var(--canvas)] to-transparent" />
 
-        {/* Row 1: Left Auto-Scroll */}
-        <Marquee speed={35} direction="left" pauseOnHover className="py-2">
-          {row1.map((cat, idx) => (
-            <CategoryCraftCard key={`${cat._id}-r1-${idx}`} category={cat} index={idx} />
+        {/* 100% Native Hardware Accelerated Touch Track (No JS Stutter or Friction) */}
+        <div
+          ref={sliderRef}
+          onMouseEnter={markUserInteraction}
+          onTouchStart={markUserInteraction}
+          onTouchMove={markUserInteraction}
+          onScroll={markUserInteraction}
+          className="flex overflow-x-auto scrollbar-hide py-4 px-4 sm:px-10 gap-4 sm:gap-8 cursor-grab active:cursor-grabbing touch-pan-x overscroll-x-contain"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-x pan-y',
+            scrollbarWidth: 'none'
+          }}
+        >
+          {displayItems.map((cat, idx) => (
+            <ReferenceStyleCard key={`${cat.id}-${idx}`} category={cat} />
           ))}
-        </Marquee>
-
-        {/* Row 2: Right Auto-Scroll */}
-        <Marquee speed={35} direction="right" pauseOnHover className="py-2">
-          {row2.map((cat, idx) => (
-            <CategoryCraftCard key={`${cat._id}-r2-${idx}`} category={cat} index={idx + 3} />
-          ))}
-        </Marquee>
+        </div>
       </div>
     </section>
   );
 }
 
-function CategoryCraftCard({ category, index }) {
-  const IconComponent = categoryIcons[category.slug] || Code2;
-  const gradientClass = defaultGradientBadges[index % defaultGradientBadges.length];
+// 3D Pedestal Stage Reference Card Component (Optimized for Smooth Touch & Desktop Hover)
+function ReferenceStyleCard({ category }) {
+  const MainIcon = category.icon;
+  const StageIcon = category.stageIcon;
 
   return (
-    <div className="w-[340px] sm:w-[380px] shrink-0 mx-3">
+    <div className="w-[280px] xs:w-[320px] sm:w-[370px] md:w-[400px] shrink-0">
       <Link to={`/courses?category=${category.slug}`}>
-        <GlowingEffect
-          glowColor="rgba(67, 56, 242, 0.4)"
-          accentGlow="rgba(255, 107, 53, 0.4)"
-          containerClassName="h-full"
+        <div
+          className={`relative h-[240px] sm:h-[280px] rounded-[24px] sm:rounded-[28px] bg-gradient-to-br ${category.gradient} p-5 sm:p-7 flex flex-col justify-between overflow-hidden text-white ${category.shadowColor} border border-white/20 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] active:scale-[0.99]`}
         >
-          <div className="relative h-full p-6 sm:p-7 flex flex-col justify-between overflow-hidden">
-            {/* Background Craft Grid Subtle Pattern */}
-            <div 
-              className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"
-              style={{
-                backgroundImage: `radial-gradient(circle at 1px 1px, var(--ink) 1px, transparent 0)`,
-                backgroundSize: '16px 16px',
-              }}
-            />
+          {/* Top Row: Category Name + Subtitle */}
+          <div className="relative z-10 max-w-[62%] sm:max-w-[65%] text-left">
+            <h3 className="text-xl sm:text-3xl font-extrabold font-manrope leading-tight mb-1.5 sm:mb-2 tracking-tight text-white drop-shadow-sm">
+              {category.name}
+            </h3>
 
-            {/* Gradient Corner Accent */}
-            <div className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl ${gradientClass} rounded-bl-full pointer-events-none`} />
-
-            {/* Top Row: Icon + Course Tag */}
-            <div className="flex items-center justify-between mb-6 relative z-10">
-              <div className="w-12 h-12 rounded-xl bg-[var(--primary-soft)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)] shadow-sm group-hover:scale-110 transition-transform duration-300">
-                <IconComponent className="w-6 h-6" />
-              </div>
-
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--ink-muted)]">
-                {category.courseCount || 10} courses
-              </span>
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10">
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2 group-hover:text-[var(--primary)] transition-colors flex items-center gap-2"
-                style={{ fontFamily: 'Manrope, sans-serif' }}>
-                {category.name}
-                <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[var(--primary)]" />
-              </h3>
-
-              <p className="text-sm text-[var(--ink-muted)] line-clamp-2 leading-relaxed font-normal">
-                {category.description || 'Master key concepts with hands-on real-world projects.'}
-              </p>
-            </div>
+            <p className="text-xs sm:text-sm font-medium text-white/90 line-clamp-2 leading-relaxed">
+              {category.sentence}
+            </p>
           </div>
-        </GlowingEffect>
+
+          {/* Bottom Row: Course Count Badge */}
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-sm">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              {category.courseCount} Courses
+            </span>
+          </div>
+
+          {/* 3D Pedestal Stage & Icon Art */}
+          <div className="absolute right-2 bottom-2 sm:right-4 sm:bottom-4 w-36 sm:w-48 h-36 sm:h-48 pointer-events-none flex flex-col items-center justify-end">
+            {/* Top 3D Floating Icon Element */}
+            <motion.div 
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-12 h-12 sm:w-18 sm:h-18 rounded-xl sm:rounded-2xl bg-white text-slate-900 shadow-[0_12px_28px_rgba(0,0,0,0.25)] flex items-center justify-center relative z-20 border-2 border-white/80"
+            >
+              <StageIcon className="w-6 h-6 sm:w-9 sm:h-9 text-slate-800" />
+            </motion.div>
+
+            {/* Middle 3D Step Pedestal Stage 1 */}
+            <div className="w-24 sm:w-36 h-8 sm:h-12 bg-white/30 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-lg border border-white/40 -mt-4 sm:-mt-5 relative z-10 flex items-center justify-center">
+              <MainIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white/80" />
+            </div>
+
+            {/* Base 3D Step Pedestal Stage 2 */}
+            <div className="w-32 sm:w-44 h-10 sm:h-14 bg-white/20 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-md border border-white/30 -mt-4 sm:-mt-5 relative z-0" />
+          </div>
+        </div>
       </Link>
     </div>
   );
