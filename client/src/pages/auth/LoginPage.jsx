@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Eye, EyeOff, LogIn, AlertCircle, Loader2 } from 'lucide-react';
 
 export function LoginPage() {
@@ -38,24 +37,24 @@ export function LoginPage() {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold font-manrope text-[var(--ink)] mb-1">
+        <h1 className="font-display text-3xl font-light text-[#000000] mb-1">
           {t('auth.welcomeBack') || 'Welcome Back'}
         </h1>
-        <p className="text-xs sm:text-sm text-[var(--ink-muted)] font-medium">
-          {t('auth.loginSubtitle') || 'Sign in to access your courses and continue learning.'}
+        <p className="font-body text-xs text-[#71717A]">
+          {t('auth.loginSubtitle') || 'Sign in to access your learning tracks and progress.'}
         </p>
       </div>
 
       {error && (
-        <div className="mb-5 p-3.5 bg-red-50 text-red-600 border border-red-200 rounded-xl flex items-center gap-2.5 text-xs font-bold">
+        <div className="mb-5 p-3.5 bg-red-50 text-red-600 border border-red-200 rounded-2xl flex items-center gap-2.5 text-xs font-mono">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 font-body">
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
+          <label className="block text-xs font-mono text-[#000000] uppercase tracking-wider">
             {t('auth.emailLabel') || 'Email Address'}
           </label>
           <input
@@ -63,7 +62,7 @@ export function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all"
+            className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-[#E4E4E7] bg-[#FBFBF5] text-[#000000] text-sm focus:outline-none focus:border-[#000000] transition-all"
             placeholder="name@example.com"
             disabled={loading}
           />
@@ -71,12 +70,12 @@ export function LoginPage() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
+            <label className="block text-xs font-mono text-[#000000] uppercase tracking-wider">
               {t('auth.passwordLabel') || 'Password'}
             </label>
             <Link 
               to="/forgot-password" 
-              className="text-xs font-bold text-[var(--primary)] hover:underline"
+              className="text-xs font-mono text-[#71717A] hover:text-[#000000] hover:underline"
             >
               {t('auth.forgotPassword') || 'Forgot Password?'}
             </Link>
@@ -87,14 +86,14 @@ export function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full min-h-[44px] px-4 py-2.5 pr-11 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all"
+              className="w-full min-h-[44px] px-4 py-2.5 pr-11 rounded-xl border border-[#E4E4E7] bg-[#FBFBF5] text-[#000000] text-sm focus:outline-none focus:border-[#000000] transition-all"
               placeholder="••••••••"
               disabled={loading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--ink-muted)] hover:text-[var(--ink)] p-1.5 rounded-lg transition-colors cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-[#000000] p-1 rounded-lg transition-colors cursor-pointer"
               aria-label={showPassword ? 'Hide Password' : 'Show Password'}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -105,7 +104,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full min-h-[44px] mt-2 flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--deep-anchor,#24216F)] text-white text-xs font-extrabold rounded-full shadow-md transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full min-h-[46px] mt-3 flex items-center justify-center gap-2 bg-[#000000] hover:bg-[#27272A] text-white text-xs font-mono uppercase tracking-wider rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -118,13 +117,13 @@ export function LoginPage() {
         </button>
       </form>
 
-      <div className="mt-6 pt-4 border-t border-[var(--border)] text-center text-xs">
-        <span className="text-[var(--ink-muted)] font-medium">
+      <div className="mt-6 pt-4 border-t border-[#E4E4E7] text-center text-xs font-mono">
+        <span className="text-[#71717A]">
           {t('auth.noAccount') || "Don't have an account?"}
         </span>{' '}
         <Link 
           to="/signup" 
-          className="text-[var(--primary)] font-extrabold hover:underline ml-1"
+          className="text-[#000000] font-medium hover:underline ml-1"
         >
           {t('auth.signupLink') || 'Create an account'}
         </Link>
@@ -132,3 +131,5 @@ export function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;

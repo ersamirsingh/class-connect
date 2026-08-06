@@ -2,22 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { enrollmentApi } from '../../api/models/enrollment.api';
 import { NumberTicker } from '../../components/motion/NumberTicker';
-import { TextEffect } from '../../components/motion/TextEffect';
-import { InView } from '../../components/motion/InView';
 import { 
   PlayCircle, 
   Award, 
   CreditCard, 
-  AlertCircle, 
   BookOpen, 
   Clock, 
   User, 
-  Radio, 
-  FileText,
-  ChevronRight,
+  ArrowRight,
   Sparkles
 } from 'lucide-react';
 import { SAMPLE_COURSES } from '../../data/sampleData';
@@ -40,20 +34,19 @@ export function StudentDashboard() {
         if (loaded.length > 0) {
           setEnrollments(loaded);
         } else {
-          // Fallback sample enrollments for rich preview
           setEnrollments([
             {
               id: 'enr-1',
               courseId: SAMPLE_COURSES[0]._id,
               course: SAMPLE_COURSES[0],
-              progress: 45,
+              progress: 65,
               lastAccessed: '2 hours ago'
             },
             {
               id: 'enr-2',
               courseId: SAMPLE_COURSES[1]._id,
               course: SAMPLE_COURSES[1],
-              progress: 80,
+              progress: 90,
               lastAccessed: 'Yesterday'
             }
           ]);
@@ -65,14 +58,14 @@ export function StudentDashboard() {
             id: 'enr-1',
             courseId: SAMPLE_COURSES[0]._id,
             course: SAMPLE_COURSES[0],
-            progress: 45,
+            progress: 65,
             lastAccessed: '2 hours ago'
           },
           {
             id: 'enr-2',
             courseId: SAMPLE_COURSES[1]._id,
             course: SAMPLE_COURSES[1],
-            progress: 80,
+            progress: 90,
             lastAccessed: 'Yesterday'
           }
         ]);
@@ -87,217 +80,171 @@ export function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--canvas)] p-6 md:p-10 text-[var(--ink)] flex items-center justify-center font-sans">
-        <div className="animate-pulse font-bold text-lg text-[var(--ink-muted)]">Loading student dashboard...</div>
+      <div className="min-h-screen bg-[#FBFBF5] p-8 text-[#000000] flex items-center justify-center font-mono text-sm">
+        Loading student command centre...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--canvas)] p-6 md:p-10 text-[var(--ink)] font-sans">
-      <InView>
-        {/* Welcome Header with Profile Avatar */}
-        <header className="mb-10 flex items-center justify-between gap-6 pb-6 border-b border-[var(--border)]">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--primary)] to-indigo-600 text-white flex items-center justify-center font-extrabold text-2xl shadow-md overflow-hidden border-2 border-white">
-              {user?.avatar ? (
-                <img src={user.avatar} alt={user.name || user.firstName} className="w-full h-full object-cover" />
-              ) : (
-                <span>{(user?.name || user?.firstName || 'S').charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold font-manrope">
-                Welcome back, {user?.name || user?.firstName || 'Student'}! 👋
-              </h1>
-              <p className="text-sm text-[var(--ink-muted)] font-medium">
-                Track your active courses, resume lectures, and view certificates.
-              </p>
-            </div>
-          </div>
-
-          <Link to="/profile" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-[var(--primary)] transition-all">
-            <User className="w-4 h-4 text-[var(--primary)]" />
-            <span>Manage Profile</span>
-          </Link>
-        </header>
-      </InView>
-
-      {/* Quick-Access Icons Row */}
-      <section className="mb-10">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Link to="/payments" className="p-4 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-md hover:border-[var(--primary)] transition-all flex items-center gap-4 group">
-            <div className="w-12 h-12 rounded-2xl bg-peach-100 text-orange-600 bg-orange-50 flex items-center justify-center shrink-0">
-              <CreditCard className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm font-manrope text-[var(--ink)] group-hover:text-[var(--primary)] transition-colors">Payment History</h4>
-              <p className="text-xs text-[var(--ink-muted)]">Orders & Receipts</p>
-            </div>
-          </Link>
-
-          <Link to="/report" className="p-4 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-md hover:border-[var(--primary)] transition-all flex items-center gap-4 group">
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-              <AlertCircle className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm font-manrope text-[var(--ink)] group-hover:text-[var(--primary)] transition-colors">My Reports</h4>
-              <p className="text-xs text-[var(--ink-muted)]">Tickets & Status</p>
-            </div>
-          </Link>
-
-          <Link to="/certificates" className="p-4 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-md hover:border-[var(--primary)] transition-all flex items-center gap-4 group">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <Award className="w-6 h-6 text-emerald-600" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm font-manrope text-[var(--ink)] group-hover:text-[var(--primary)] transition-colors">Certificates</h4>
-              <p className="text-xs text-[var(--ink-muted)]">Earned Badges</p>
-            </div>
-          </Link>
-
-          <Link to="/profile" className="p-4 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-md hover:border-[var(--primary)] transition-all flex items-center gap-4 group">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <User className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm font-manrope text-[var(--ink)] group-hover:text-[var(--primary)] transition-colors">Profile</h4>
-              <p className="text-xs text-[var(--ink-muted)]">Account & Security</p>
-            </div>
-          </Link>
+    <div className="min-h-screen bg-[#FBFBF5] p-6 md:p-10 text-[#000000] font-body selection:bg-[#C1FBD4] selection:text-black">
+      {/* Header */}
+      <header className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-[#E4E4E7]">
+        <div>
+          <span className="inline-block px-3 py-1 rounded-full bg-[#C1FBD4] text-[#000000] text-xs font-mono font-medium mb-2">
+            STUDENT COMMAND CENTRE
+          </span>
+          <h1 className="font-display text-3xl sm:text-5xl font-light text-[#000000] tracking-tight">
+            Welcome back, <span className="font-normal">{user?.name || user?.firstName || 'Learner'}</span>
+          </h1>
         </div>
-      </section>
 
-      {/* Main Grid */}
-      <div className="space-y-10">
+        <Link
+          to="/profile"
+          className="flex items-center gap-3 px-4 py-2 rounded-full bg-[#FFFFFF] border border-[#E4E4E7] hover:border-[#000000] transition-colors"
+        >
+          <div className="w-7 h-7 rounded-full bg-[#000000] text-white flex items-center justify-center font-mono text-xs font-bold">
+            {(user?.name || user?.firstName || 'U').charAt(0).toUpperCase()}
+          </div>
+          <span className="font-mono text-xs text-[#000000]">View Profile</span>
+        </Link>
+      </header>
+
+      {/* Main Command Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Big Top "Continue Learning" Card */}
-        {continueEnrollment && continueEnrollment.course ? (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold font-manrope flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[var(--primary)]" /> Continue Learning
-              </h2>
-            </div>
+        {/* Continue Learning Spotlight Banner */}
+        {continueEnrollment && continueEnrollment.course && (
+          <div className="lg:col-span-8 bg-[#000000] text-white p-8 sm:p-10 rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden">
+            <div className="relative z-10 space-y-6">
+              <div className="flex items-center justify-between">
+                <span className="px-3.5 py-1 rounded-full bg-[#C1FBD4] text-[#000000] text-[10px] font-mono font-medium uppercase tracking-widest">
+                  CONTINUE LEARNING TRACK
+                </span>
+                <span className="font-mono text-xs text-[#A1A1AA]">
+                  {continueEnrollment.lastAccessed}
+                </span>
+              </div>
 
-            <motion.div 
-              whileHover={{ scale: 1.005 }}
-              className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-6 sm:p-8 rounded-[var(--radius-xl)] shadow-xl border border-indigo-700/50"
-            >
-              <div className="flex flex-col md:flex-row gap-8 items-center">
-                <div className="w-full md:w-2/5 aspect-video rounded-2xl overflow-hidden shadow-lg relative bg-slate-800 border border-white/10 shrink-0">
-                  <img src={continueEnrollment.course.thumbnail} alt={continueEnrollment.course.title} className="w-full h-full object-cover" />
-                  <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-black/60 backdrop-blur-md text-white border border-white/20">
-                    {continueEnrollment.course.type === 'live' ? '🔴 Live Session' : 'Recorded Course'}
-                  </div>
+              <div>
+                <h2 className="font-display text-3xl sm:text-4xl font-light text-white leading-tight mb-2">
+                  {continueEnrollment.course.title}
+                </h2>
+                <p className="font-body text-xs text-[#A1A1AA] line-clamp-2">
+                  {continueEnrollment.course.subtitle || continueEnrollment.course.description}
+                </p>
+              </div>
+
+              {/* Progress Line */}
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between font-mono text-xs text-[#A1A1AA]">
+                  <span>Track Completion</span>
+                  <span className="text-[#C1FBD4] font-bold">{continueEnrollment.progress || 0}%</span>
                 </div>
-
-                <div className="flex-1 space-y-4 text-left w-full">
-                  <div>
-                    <span className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Next Lecture Ahead</span>
-                    <h3 className="text-2xl font-extrabold font-manrope mt-1 text-white leading-tight">
-                      {continueEnrollment.course.title}
-                    </h3>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-indigo-200 mb-2">
-                      <span>Overall Progress</span>
-                      <span><NumberTicker value={continueEnrollment.progress || 0} />% Completed</span>
-                    </div>
-                    <div className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
-                      <div 
-                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full transition-all duration-1000"
-                        style={{ width: `${continueEnrollment.progress || 0}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-between flex-wrap gap-4">
-                    <button 
-                      onClick={() => navigate(`/course/${continueEnrollment.courseId || continueEnrollment.course._id}/explore`)}
-                      className="px-6 py-3 min-h-[44px] bg-[#5B54E8] hover:bg-[#4740D2] text-white font-extrabold text-sm rounded-full shadow-lg flex items-center gap-2 transition-all"
-                    >
-                      <PlayCircle className="w-5 h-5 fill-white text-indigo-900" />
-                      <span>Resume Lecture</span>
-                    </button>
-                    <span className="text-xs text-indigo-300 font-medium">Last accessed: {continueEnrollment.lastAccessed || 'Recently'}</span>
-                  </div>
+                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div 
+                    className="h-full bg-[#C1FBD4] rounded-full transition-all duration-500" 
+                    style={{ width: `${continueEnrollment.progress || 0}%` }}
+                  />
                 </div>
               </div>
-            </motion.div>
-          </section>
-        ) : (
-          <section>
-            <div className="bg-[var(--surface)] p-10 rounded-[var(--radius-xl)] border border-[var(--border)] text-center shadow-sm">
-              <BookOpen className="w-12 h-12 text-[var(--primary)] mx-auto mb-4" />
-              <h3 className="text-xl font-bold font-manrope mb-2">No active course enrolled</h3>
-              <p className="text-[var(--ink-muted)] mb-6 text-sm">Explore our course catalog to start your learning journey.</p>
-              <Link to="/courses" className="inline-flex px-6 py-3 min-h-[44px] bg-[var(--primary)] text-white font-bold text-sm rounded-full shadow-sm">
-                Explore Courses
-              </Link>
             </div>
-          </section>
+
+            <div className="relative z-10 pt-8 mt-6 border-t border-white/15 flex items-center justify-between">
+              <span className="font-mono text-xs text-[#A1A1AA]">
+                Next lesson ready to stream
+              </span>
+              <button
+                onClick={() => navigate(`/learning/${continueEnrollment.course._id || continueEnrollment.course.id}`)}
+                className="px-6 py-3 rounded-full bg-[#C1FBD4] text-[#000000] font-mono text-xs font-medium hover:bg-[#a3f7be] transition-colors cursor-pointer flex items-center gap-2"
+              >
+                <PlayCircle className="w-4 h-4" />
+                Resume Lecture
+              </button>
+            </div>
+          </div>
         )}
 
-        {/* "My Courses" Grid (Tapping navigates to `/course/:id/explore`) */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold font-manrope">My Enrolled Courses</h2>
-            <Link to="/courses" className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1">
-              Browse More <ChevronRight className="w-4 h-4" />
-            </Link>
+        {/* Quick Stats Panel */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="p-8 rounded-3xl bg-[#FFFFFF] border border-[#E4E4E7]">
+            <span className="font-mono text-xs text-[#71717A] uppercase tracking-wider block mb-2">
+              ENROLLED TRACKS
+            </span>
+            <div className="font-display text-4xl font-light text-[#000000] mb-1">
+              <NumberTicker value={enrollments.length} />
+            </div>
+            <p className="font-body text-xs text-[#71717A]">
+              Active technical learning tracks in your portfolio
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrollments.map((enr) => {
-              const c = enr.course || {};
-              const targetCourseId = enr.courseId || c._id || c.slug;
-
-              return (
-                <div 
-                  key={enr.id || targetCourseId}
-                  onClick={() => navigate(`/course/${targetCourseId}/explore`)}
-                  className="bg-[var(--surface)] p-5 rounded-[var(--radius-xl)] border border-[var(--border)] shadow-sm hover:shadow-md hover:border-[var(--primary)] transition-all cursor-pointer flex flex-col justify-between group"
-                >
-                  <div className="space-y-4">
-                    <div className="aspect-video w-full rounded-2xl bg-[var(--canvas)] overflow-hidden relative border border-[var(--border)]">
-                      <img src={c.thumbnail} alt={c.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-white/90 backdrop-blur-md text-[var(--ink)] shadow-sm">
-                        {c.type === 'live' ? (
-                          <span className="text-red-500 flex items-center gap-1"><Radio className="w-3 h-3 animate-pulse" /> LIVE</span>
-                        ) : (
-                          <span className="text-indigo-600 flex items-center gap-1"><PlayCircle className="w-3 h-3" /> RECORDED</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="font-bold text-base font-manrope text-[var(--ink)] line-clamp-2 group-hover:text-[var(--primary)] transition-colors">
-                        {c.title}
-                      </h3>
-                      <p className="text-xs text-[var(--ink-muted)] mt-1 line-clamp-1">
-                        {c.subtitle || c.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-4 border-t border-[var(--border)]">
-                    <div className="flex items-center justify-between text-xs font-bold mb-2">
-                      <span className="text-[var(--ink-muted)]">Progress</span>
-                      <span className="text-[var(--primary)]">{enr.progress || 0}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-[var(--canvas)] rounded-full overflow-hidden">
-                      <div className="h-full bg-[var(--primary)] rounded-full" style={{ width: `${enr.progress || 0}%` }} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="p-8 rounded-3xl bg-[#D4F9E0] border border-[#E4E4E7]">
+            <span className="font-mono text-xs text-[#000000] uppercase tracking-wider block mb-2">
+              VERIFIED CERTIFICATES
+            </span>
+            <div className="font-display text-4xl font-light text-[#000000] mb-1">
+              <NumberTicker value={enrollments.filter(e => e.progress === 100).length} />
+            </div>
+            <p className="font-body text-xs text-[#000000]">
+              Credentials ready for resume export
+            </p>
           </div>
-        </section>
+        </div>
 
       </div>
+
+      {/* Enrolled Courses Gallery */}
+      <section className="mt-12 pt-8 border-t border-[#E4E4E7]">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="font-display text-2xl sm:text-3xl font-light text-[#000000]">
+            My Learning Tracks
+          </h2>
+          <Link to="/courses" className="font-mono text-xs text-[#000000] hover:underline flex items-center gap-1">
+            Browse More Tracks <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {enrollments.map((item) => (
+            <div 
+              key={item.id || item._id} 
+              className="p-6 rounded-3xl bg-[#FFFFFF] border border-[#E4E4E7] flex flex-col justify-between space-y-4"
+            >
+              <div>
+                <span className="font-mono text-[10px] text-[#71717A] uppercase tracking-widest block mb-2">
+                  {item.course?.category?.name || 'LEARNING TRACK'}
+                </span>
+                <h3 className="font-display text-xl font-medium text-[#000000] line-clamp-2">
+                  {item.course?.title}
+                </h3>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between font-mono text-[11px] text-[#71717A]">
+                  <span>Progress</span>
+                  <span className="font-bold text-[#000000]">{item.progress || 0}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-[#FBFBF5] overflow-hidden border border-[#E4E4E7]">
+                  <div 
+                    className="h-full bg-[#000000] rounded-full" 
+                    style={{ width: `${item.progress || 0}%` }}
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate(`/learning/${item.course?._id || item.course?.id}`)}
+                className="w-full py-2.5 rounded-full bg-[#000000] text-white font-mono text-xs hover:bg-[#27272A] transition-colors cursor-pointer"
+              >
+                Go to Player →
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
+
+export default StudentDashboard;

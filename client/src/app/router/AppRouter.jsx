@@ -43,8 +43,11 @@ import { ManageReviewsPage } from '../../pages/admin/manageReviews/ManageReviews
 
 import { WalletPage } from '../../pages/wallet/WalletPage';
 import { AdminWithdrawalsPage } from '../../pages/admin/withdrawals/AdminWithdrawalsPage';
-import { DocumentVerificationPage } from '../../pages/profile/DocumentVerificationPage';
 import { AdminVerificationsPage } from '../../pages/admin/verifications/AdminVerificationsPage';
+import { DocumentVerificationPage } from '../../pages/profile/DocumentVerificationPage';
+import { PrivacyPolicyPage } from '../../pages/legal/PrivacyPolicyPage';
+import { TermsPage } from '../../pages/legal/TermsPage';
+import { RefundPolicyPage } from '../../pages/legal/RefundPolicyPage';
 
 import { ROLES } from '../../constants/roles';
 
@@ -61,6 +64,15 @@ export const AppRouter = () => {
       <Route path="/course/:idOrSlug" element={<CourseDetailPage />} />
       <Route path="/report" element={<ReportProblemPage />} />
       <Route path="/report-problem" element={<ReportProblemPage />} />
+
+      {/* Public Legal Pages */}
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/terms-of-service" element={<TermsPage />} />
+      <Route path="/terms-and-conditions" element={<TermsPage />} />
+      <Route path="/refund" element={<RefundPolicyPage />} />
+      <Route path="/refund-policy" element={<RefundPolicyPage />} />
+      <Route path="/cancellation-and-refund" element={<RefundPolicyPage />} />
 
       {/* Public Auth Routes */}
       <Route element={<AuthLayout />}>

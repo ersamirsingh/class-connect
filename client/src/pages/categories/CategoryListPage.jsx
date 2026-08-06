@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Layers, ArrowRight, Compass, Filter, Star, Radio, PlayCircle, DollarSign, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { categoryApi } from '../../api/models/category.api';
 import { courseApi } from '../../api/models/course.api';
 import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
-import { SpotlightCard } from '../../components/motion/SpotlightCard';
-import { TextEffect } from '../../components/motion/TextEffect';
-import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
 
@@ -21,11 +17,9 @@ export function CategoryListPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Icon-based filter chips
-  const [activeTypeFilter, setActiveTypeFilter] = useState('all'); // 'all' | 'live' | 'recorded'
-  const [activeRatingFilter, setActiveRatingFilter] = useState(0); // 0 | 4.5
-  const [activePriceFilter, setActivePriceFilter] = useState('all'); // 'all' | 'under1000'
-
-  const isHindi = language === 'hi';
+  const [activeTypeFilter, setActiveTypeFilter] = useState('all');
+  const [activeRatingFilter, setActiveRatingFilter] = useState(0);
+  const [activePriceFilter, setActivePriceFilter] = useState('all');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,16 +60,6 @@ export function CategoryListPage() {
     fetchData();
   }, [id]);
 
-  const gradients = [
-    'from-blue-500/10 to-indigo-500/10 text-indigo-600',
-    'from-emerald-500/10 to-teal-500/10 text-teal-600',
-    'from-orange-500/10 to-red-500/10 text-orange-600',
-    'from-purple-500/10 to-pink-500/10 text-purple-600',
-    'from-cyan-500/10 to-blue-500/10 text-cyan-600',
-    'from-yellow-500/10 to-orange-500/10 text-yellow-600',
-  ];
-
-  // Filter logic for single category view
   const filteredCourses = categoryCourses.filter(c => {
     if (activeTypeFilter === 'live' && c.type !== 'live') return false;
     if (activeTypeFilter === 'recorded' && c.type === 'live') return false;
@@ -85,203 +69,156 @@ export function CategoryListPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--canvas)] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FBFBF5] text-[#000000] flex flex-col font-body selection:bg-[#C1FBD4] selection:text-black">
       <FloatingNav />
       
-      <main className="flex-grow pt-32 pb-24">
+      <main className="flex-grow pt-28 pb-24">
         <div className="max-w-7xl mx-auto px-6">
           
           {/* SINGLE CATEGORY VIEW (`/category/:id`) */}
           {id && selectedCategory ? (
-            <div className="space-y-12">
+            <div className="space-y-10">
               {/* Category Banner */}
-              <div className="relative overflow-hidden p-8 sm:p-12 rounded-[var(--radius-xl)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-md)] flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="relative overflow-hidden p-8 sm:p-12 rounded-3xl bg-[#FFFFFF] border border-[#E4E4E7] shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 max-w-2xl text-center md:text-left">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-bold">
-                    <Layers className="w-3.5 h-3.5" /> Category Overview
-                  </div>
-                  <h1 className="text-3xl sm:text-5xl font-extrabold font-manrope text-[var(--ink)]">
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C1FBD4] text-[#000000] text-xs font-mono font-medium">
+                    <Layers className="w-3.5 h-3.5" /> CATEGORY TRACK
+                  </span>
+                  <h1 className="font-display text-4xl sm:text-6xl font-light text-[#000000] tracking-tight">
                     {selectedCategory.name}
                   </h1>
-                  <p className="text-base sm:text-lg text-[var(--ink-muted)]">
+                  <p className="font-body text-base sm:text-lg text-[#71717A] max-w-xl">
                     {selectedCategory.tagline || selectedCategory.description || "Master industry-ready skills with top expert-led courses."}
                   </p>
                 </div>
 
-                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)] flex items-center justify-center text-[var(--primary)] shadow-sm shrink-0">
+                <div className="w-24 h-24 rounded-3xl bg-[#D4F9E0] flex items-center justify-center text-[#000000] shrink-0">
                   <Compass className="w-12 h-12" />
                 </div>
               </div>
 
-              {/* Icon-Based Filter Chips */}
-              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-sm)]">
-                <div className="flex items-center gap-2 text-sm font-bold text-[var(--ink)]">
-                  <Filter className="w-4 h-4 text-[var(--primary)]" />
+              {/* Filter Chips */}
+              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#FFFFFF] border border-[#E4E4E7]">
+                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#000000]">
+                  <Filter className="w-4 h-4 text-[#000000]" />
                   <span>Filter by:</span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {/* Type chips */}
                   <button
                     onClick={() => setActiveTypeFilter('all')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeTypeFilter === 'all' ? 'bg-[var(--primary)] text-white' : 'bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--border)]'}`}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTypeFilter === 'all' ? 'bg-[#000000] text-white' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    <Sparkles className="w-3.5 h-3.5" /> All Types
+                    All Types
                   </button>
                   <button
                     onClick={() => setActiveTypeFilter('live')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeTypeFilter === 'live' ? 'bg-red-500 text-white' : 'bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--border)]'}`}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTypeFilter === 'live' ? 'bg-[#FF2A2A] text-white' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    <Radio className="w-3.5 h-3.5" /> Live Now
+                    Live Now
                   </button>
                   <button
                     onClick={() => setActiveTypeFilter('recorded')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeTypeFilter === 'recorded' ? 'bg-indigo-600 text-white' : 'bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--border)]'}`}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTypeFilter === 'recorded' ? 'bg-[#000000] text-white' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    <PlayCircle className="w-3.5 h-3.5" /> Recorded
+                    Recorded
                   </button>
 
-                  <div className="w-px h-6 bg-[var(--border)] mx-1" />
+                  <div className="w-px h-5 bg-[#E4E4E7] mx-1" />
 
-                  {/* Rating chips */}
                   <button
                     onClick={() => setActiveRatingFilter(activeRatingFilter === 4.5 ? 0 : 4.5)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activeRatingFilter === 4.5 ? 'bg-[var(--accent)] text-white' : 'bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--border)]'}`}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeRatingFilter === 4.5 ? 'bg-[#C1FBD4] text-[#000000]' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    <Star className="w-3.5 h-3.5 fill-current" /> 4.5+ Stars
+                    ★ 4.5+ Stars
                   </button>
 
-                  {/* Price chips */}
                   <button
                     onClick={() => setActivePriceFilter(activePriceFilter === 'under1000' ? 'all' : 'under1000')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${activePriceFilter === 'under1000' ? 'bg-emerald-600 text-white' : 'bg-[var(--canvas)] text-[var(--ink-muted)] hover:bg-[var(--border)]'}`}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activePriceFilter === 'under1000' ? 'bg-[#D4F9E0] text-[#000000]' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    <DollarSign className="w-3.5 h-3.5" /> Under ₹1,000
+                    Under ₹1,000
                   </button>
                 </div>
               </div>
 
               {/* Course Grid for Category */}
-              {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-[var(--surface)] rounded-[var(--radius-lg)] h-80 border border-[var(--border)]" />
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredCourses.map((course) => (
-                    <Link key={course._id} to={`/course/${course.slug || course._id}`} className="block h-full group">
-                      <SpotlightCard className="h-full bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden flex flex-col justify-between">
-                        <div className="aspect-video w-full relative bg-[var(--canvas)] overflow-hidden">
-                          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-black bg-white/90 backdrop-blur-md text-[var(--ink)] shadow-sm flex items-center gap-1">
-                            {course.type === 'live' ? (
-                              <span className="text-red-500 flex items-center gap-1"><Radio className="w-3 h-3 animate-pulse" /> LIVE</span>
-                            ) : (
-                              <span className="text-indigo-600 flex items-center gap-1"><PlayCircle className="w-3 h-3" /> RECORDED</span>
-                            )}
-                          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredCourses.map((course) => (
+                  <Link key={course._id} to={`/courses/${course.slug || course._id}`} className="block h-full group">
+                    <div className="h-full bg-[#FFFFFF] rounded-3xl border border-[#E4E4E7] hover:border-[#000000] transition-all duration-300 overflow-hidden flex flex-col justify-between p-6">
+                      <div className="aspect-video w-full relative bg-[#FBFBF5] rounded-2xl overflow-hidden mb-5">
+                        <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-mono bg-white text-[#000000] border border-[#E4E4E7]">
+                          {course.type === 'live' ? 'LIVE SESSION' : 'RECORDED TRACK'}
+                        </div>
+                      </div>
+
+                      <div className="flex-grow flex flex-col justify-between space-y-4">
+                        <div>
+                          <h3 className="font-display text-xl font-medium text-[#000000] group-hover:text-[#9F1018] transition-colors leading-snug mb-2">
+                            {course.title}
+                          </h3>
+                          <p className="font-body text-xs text-[#71717A] line-clamp-2">
+                            {course.subtitle || course.description}
+                          </p>
                         </div>
 
-                        <div className="p-6 flex flex-col flex-grow justify-between">
-                          <div>
-                            <h3 className="text-xl font-bold font-manrope mb-2 group-hover:text-[var(--primary)] transition-colors line-clamp-2">
-                              {course.title}
-                            </h3>
-                            <p className="text-sm text-[var(--ink-muted)] line-clamp-2 mb-4">
-                              {course.subtitle || course.description}
-                            </p>
+                        <div className="pt-4 border-t border-[#E4E4E7] flex items-center justify-between">
+                          <div className="flex items-center gap-1 font-mono text-xs text-[#000000]">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <span>{course.rating || '4.8'}</span>
                           </div>
-
-                          <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 fill-[var(--accent)] text-[var(--accent)]" />
-                              <span className="text-sm font-bold">{course.rating || '4.8'}</span>
-                              <span className="text-xs text-[var(--ink-muted)]">({course.totalReviews || 85})</span>
-                            </div>
-                            <div className="text-lg font-bold font-manrope text-[var(--primary-deep)]">
-                              {course.price === 0 ? 'Free' : `₹${course.price?.toLocaleString('en-IN')}`}
-                            </div>
+                          <div className="font-display text-lg font-normal text-[#000000]">
+                            {course.price === 0 ? 'Free' : `₹${course.price?.toLocaleString('en-IN')}`}
                           </div>
                         </div>
-                      </SpotlightCard>
-                    </Link>
-                  ))}
-                </div>
-              )}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           ) : (
             /* CATEGORY LIST VIEW (`/categories`) */
             <>
-              {/* Hero Section */}
-              <div className="text-center mb-20">
-                <div className="inline-flex items-center justify-center p-3 bg-[var(--surface)] rounded-full shadow-[var(--shadow-sm)] mb-6 border border-[var(--border)]">
-                  <Compass className="w-6 h-6 text-[var(--primary)]" />
-                </div>
-                <InView>
-                  <TextEffect 
-                    className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[var(--ink)] mb-6 tracking-tight"
-                  >
-                    {isHindi ? "श्रेणियाँ ब्राउज़ करें" : "Browse Categories"}
-                  </TextEffect>
-                  <p className="text-lg md:text-xl text-[var(--ink-muted)] max-w-2xl mx-auto">
-                    {isHindi 
-                      ? "विभिन्न विषयों में ज्ञान खोजें और वह कोर्स चुनें जो आपके लिए सही हो।"
-                      : "Discover knowledge across diverse fields and find the perfect path for your growth."}
-                  </p>
-                </InView>
+              <div className="text-center mb-16 max-w-3xl mx-auto">
+                <span className="inline-block px-3.5 py-1 rounded-full bg-[#C1FBD4] text-[#000000] text-xs font-mono font-medium mb-4">
+                  BROWSE ALL PATHS
+                </span>
+                <h1 className="font-display text-4xl sm:text-6xl font-light text-[#000000] tracking-tight mb-4">
+                  Explore Learning Tracks
+                </h1>
+                <p className="font-body text-base sm:text-lg text-[#71717A]">
+                  Discover knowledge across specialized fields and find the exact path for your growth.
+                </p>
               </div>
 
-              {/* Grid */}
-              {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-[var(--surface)] rounded-[var(--radius-lg)] h-48 border border-[var(--border)]" />
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  <AnimatePresence>
-                    {categories.map((category, index) => {
-                      const gradientClass = gradients[index % gradients.length];
-                      const [bgGrad, textColor] = gradientClass.split(' text-');
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {categories.map((category) => (
+                  <Link key={category._id} to={`/category/${category._id || category.slug}`} className="block h-full group">
+                    <div className="h-full bg-[#FFFFFF] rounded-3xl border border-[#E4E4E7] hover:border-[#000000] transition-all duration-300 p-8 flex flex-col justify-between">
+                      <div className="flex items-start justify-between mb-8">
+                        <div className="w-14 h-14 rounded-2xl bg-[#D4F9E0] flex items-center justify-center text-[#000000]">
+                          <Layers className="w-7 h-7" />
+                        </div>
+                        <div className="w-10 h-10 rounded-full border border-[#E4E4E7] flex items-center justify-center bg-[#FBFBF5] text-[#000000] group-hover:bg-[#000000] group-hover:text-white transition-colors duration-300">
+                          <ArrowRight className="w-4 h-4" />
+                        </div>
+                      </div>
                       
-                      return (
-                        <motion.div
-                          key={category._id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.4, delay: index * 0.05 }}
-                        >
-                          <Link to={`/category/${category._id || category.slug}`} className="block h-full group">
-                            <SpotlightCard className="h-full bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden p-8 flex flex-col justify-between">
-                              <div className="flex items-start justify-between mb-8">
-                                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${bgGrad} flex items-center justify-center transition-transform duration-500 group-hover:scale-110`}>
-                                  <Layers className={`w-7 h-7 text-${textColor}`} />
-                                </div>
-                                <div className="w-10 h-10 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--canvas)] text-[var(--ink-muted)] group-hover:bg-[var(--primary)] group-hover:text-[var(--surface)] group-hover:border-[var(--primary)] transition-colors duration-300">
-                                  <ArrowRight className="w-5 h-5" />
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <h3 className="text-2xl font-bold text-[var(--ink)] mb-2 group-hover:text-[var(--primary)] transition-colors">
-                                  {category.name}
-                                </h3>
-                                <p className="text-[var(--ink-muted)] font-medium">
-                                  {category.courseCount !== undefined ? `${category.courseCount} Courses` : 'Explore courses'}
-                                </p>
-                              </div>
-                            </SpotlightCard>
-                          </Link>
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
-                </div>
-              )}
+                      <div>
+                        <h3 className="font-display text-2xl font-light text-[#000000] mb-2 group-hover:text-[#9F1018] transition-colors">
+                          {category.name}
+                        </h3>
+                        <p className="font-body text-xs text-[#71717A]">
+                          {category.courseCount !== undefined ? `${category.courseCount} Courses Available` : 'Explore courses'}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </>
           )}
 

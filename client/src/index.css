@@ -3,33 +3,40 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════
-   REDLINE LEARNING SYSTEM — Visual Design Tokens
-   Cinematic Black Canvas + Controlled Crimson Energy
+   SHOPIFY-INSPIRED CLASSCONNECT DESIGN SYSTEM
+   Two Parallel Design Tracks:
+   - Cinematic Marketing Track: #000000 (Canvas Night)
+   - Transactional & Product Track: #FBFBF5 (Canvas Cream) / #FFFFFF
+   - Signature Accent: #C1FBD4 (Aloe Mint) & #D4F9E0 (Pistachio)
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Canvas & Core Surfaces ── */
-  --canvas-black: #050505;
-  --elevated-black: #0B0B0D;
-  --surface-charcoal: #141416;
-  --surface-glass: rgba(11, 11, 13, 0.85);
+  /* ── Canvas Night (Marketing & Hero) ── */
+  --canvas-night: #000000;
+  --canvas-night-elevated: #0A0A0A;
+  --surface-dark: #141416;
 
-  /* ── Red Energy System ── */
-  --red-primary: #FF2A2A;
-  --red-crimson: #9F1018;
-  --red-highlight: #FF4D3D;
-  --red-glow-soft: rgba(255, 42, 42, 0.15);
-  --red-glow-deep: rgba(159, 16, 24, 0.30);
+  /* ── Canvas Light & Transactional ── */
+  --canvas-cream: #FBFBF5;
+  --canvas-light: #FFFFFF;
+  --surface-light: #FFFFFF;
+
+  /* ── Shopify Accents ── */
+  --aloe-mint: #C1FBD4;
+  --pistachio-green: #D4F9E0;
+  --primary-red: #FF2A2A;
+  --deep-crimson: #9F1018;
 
   /* ── Ink & Text ── */
+  --ink-black: #000000;
+  --ink-dark: #17172A;
   --text-white: #F7F7F5;
-  --text-muted: #A8A8AE;
-  --text-dim: #66666E;
-  --tech-grey: #2A2A2E;
+  --text-muted-dark: #A1A1AA;
+  --text-muted-light: #71717A;
 
-  /* ── Glass Borders ── */
-  --border-glass: rgba(255, 255, 255, 0.07);
-  --border-red: rgba(255, 42, 42, 0.35);
+  /* ── Hairline Borders ── */
+  --hairline-dark: rgba(255, 255, 255, 0.10);
+  --hairline-light: #E4E4E7;
 
   /* ── Typography Families ── */
   --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -37,9 +44,9 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* Global Reset & Base Styling */
+/* Base Styles */
 html, body {
-  background-color: var(--canvas-black);
+  background-color: var(--canvas-night);
   color: var(--text-white);
   font-family: var(--font-body);
   margin: 0;
@@ -49,10 +56,16 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Light / Transactional Track Class */
+.theme-light {
+  background-color: var(--canvas-cream);
+  color: var(--ink-black);
+}
+
 /* Selection Color */
 ::selection {
-  background: var(--red-crimson);
-  color: var(--text-white);
+  background: var(--aloe-mint);
+  color: var(--ink-black);
 }
 
 /* Custom Sleek Scrollbar */
@@ -61,14 +74,14 @@ html, body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--canvas-black);
+  background: var(--canvas-night);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1A1A20;
+  background: #27272A;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--red-crimson);
+  background: var(--aloe-mint);
 }
 
 /* Typography Utility Classes */
@@ -82,43 +95,65 @@ html, body {
   font-family: var(--font-mono);
 }
 
-/* Redline Spatial Glow Utility */
-.bg-redline-glow {
-  background: radial-gradient(
-    circle at 50% 30%,
-    rgba(159, 16, 24, 0.35) 0%,
-    rgba(255, 42, 42, 0.12) 35%,
-    rgba(5, 5, 5, 0) 70%
-  );
+/* Display Thin Heading Preset (Shopify Neue Haas style at thin weight 330) */
+.display-thin {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.02em;
 }
 
-.bg-redline-ambient {
-  background: radial-gradient(
-    ellipse at 50% -10%,
-    rgba(255, 42, 42, 0.20) 0%,
-    rgba(159, 16, 24, 0.08) 45%,
-    rgba(5, 5, 5, 0) 75%
-  );
+/* Shopify Pill Button Utility */
+.pill-btn-white {
+  background-color: #FFFFFF;
+  color: #000000;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 250ms ease;
+}
+.pill-btn-white:hover {
+  background-color: #F4F4F5;
+  transform: translateY(-1px);
 }
 
-/* Glass Surface Utilities */
-.glass-panel {
-  background: rgba(11, 11, 13, 0.75);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+.pill-btn-black {
+  background-color: #000000;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 250ms ease;
+}
+.pill-btn-black:hover {
+  background-color: #27272A;
+  transform: translateY(-1px);
 }
 
-.glass-panel-hover {
-  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+.pill-btn-aloe {
+  background-color: var(--aloe-mint);
+  color: #000000;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 250ms ease;
 }
-.glass-panel-hover:hover {
-  border-color: rgba(255, 42, 42, 0.4);
-  box-shadow: 0 0 30px rgba(255, 42, 42, 0.12);
-  transform: translateY(-2px);
+.pill-btn-aloe:hover {
+  background-color: #a3f7be;
+  transform: translateY(-1px);
 }
 
-/* High contrast keyboard focus styles */
+.pill-btn-outline-dark {
+  background-color: transparent;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 250ms ease;
+}
+.pill-btn-outline-dark:hover {
+  border-color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* High contrast focus ring */
 *:focus-visible {
-  outline: 2px solid var(--red-primary);
+  outline: 2px solid var(--aloe-mint);
   outline-offset: 3px;
 }
