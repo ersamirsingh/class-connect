@@ -44,14 +44,13 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* Base Styles */
+/* Base Styles - Do NOT set overflow-x: hidden on html/body to preserve position: sticky */
 html, body {
   background-color: var(--canvas-night);
   color: var(--text-white);
   font-family: var(--font-body);
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -95,7 +94,7 @@ html, body {
   font-family: var(--font-mono);
 }
 
-/* Display Thin Heading Preset (Shopify Neue Haas style at thin weight 330) */
+/* Display Thin Heading Preset */
 .display-thin {
   font-family: var(--font-display);
   font-weight: 300;

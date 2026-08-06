@@ -15,7 +15,6 @@ export const ImageSequenceHero = () => {
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [loadedCount, setLoadedCount] = useState(0);
-  const [isInitialPosterLoaded, setIsInitialPosterLoaded] = useState(false);
 
   // Non-React state refs to prevent re-renders on scroll
   const imagesCacheRef = useRef(new Map());
@@ -66,12 +65,8 @@ export const ImageSequenceHero = () => {
       });
     };
 
-    // 1. Immediately load poster / first frame
-    loadSingleFrame(1).then(() => {
-      if (!isCancelled) {
-        setIsInitialPosterLoaded(true);
-      }
-    });
+    // 1. Immediately load poster frame 001
+    loadSingleFrame(1);
 
     // 2. Coarse milestone preload (every 6th frame) for instant seek coverage
     const coarseFrames = [];
@@ -177,6 +172,7 @@ export const ImageSequenceHero = () => {
         const totalScrollable = rect.height - window.innerHeight;
         
         if (totalScrollable > 0) {
+          // Calculate scrollProgress strictly within container bounds [0, 1]
           const scrollProgress = Math.min(1, Math.max(0, -rect.top / totalScrollable));
           const calculatedTarget = Math.round(1 + scrollProgress * (TOTAL_FRAMES - 1));
           targetFrameRef.current = calculatedTarget;
@@ -223,10 +219,10 @@ export const ImageSequenceHero = () => {
         }
       }
 
-      // Smooth interpolation toward target frame
+      // Responsive interpolation toward target frame
       const diff = targetFrameRef.current - currentFrameRef.current;
       if (Math.abs(diff) > 0.01) {
-        currentFrameRef.current += diff * 0.28;
+        currentFrameRef.current += diff * 0.45;
       } else {
         currentFrameRef.current = targetFrameRef.current;
       }
@@ -254,10 +250,8 @@ export const ImageSequenceHero = () => {
   if (isReducedMotion || isMobile) {
     return (
       <section className="relative min-h-[85vh] w-full flex flex-col justify-center items-center bg-[#050505] px-6 text-center overflow-hidden">
-        {/* Background Radial Glow */}
         <div className="absolute inset-0 bg-redline-glow pointer-events-none opacity-60" />
         
-        {/* Poster Still Image */}
         <div className="absolute inset-0 opacity-40 z-0">
           <img
             src="/hero-frames/ezgif-frame-001.jpg"
@@ -287,8 +281,8 @@ export const ImageSequenceHero = () => {
   }
 
   return (
-    <section ref={containerRef} className="relative h-[350vh] w-full bg-[#050505]">
-      {/* Sticky Canvas Viewport */}
+    <section ref={containerRef} className="relative h-[400vh] w-full bg-[#050505]">
+      {/* Pinned Sticky Viewport Window */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
         {/* Canvas Element */}
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover z-0" />
@@ -306,7 +300,7 @@ export const ImageSequenceHero = () => {
           <div ref={textBeatContentRef} />
         </div>
 
-        {/* Floating Top Header Badging & Action */}
+        {/* Top Header Badging */}
         <div className="absolute top-28 sm:top-32 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-auto">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0B0B0D]/80 border border-white/10 backdrop-blur-md text-xs font-mono text-[#A8A8AE]">
             <span className="w-2 h-2 rounded-full bg-[#FF2A2A] animate-pulse" />

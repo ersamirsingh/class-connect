@@ -39,14 +39,14 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#F7F7F5] overflow-x-hidden selection:bg-[#C1FBD4] selection:text-black">
+    <div className="min-h-screen bg-[#000000] text-[#F7F7F5] selection:bg-[#C1FBD4] selection:text-black">
       {/* Desktop Red Particle Cursor Effect */}
       <RedParticleCursor />
 
       {/* Floating Translucent Navigation */}
       <FloatingNav />
 
-      {/* Signature Scroll-Driven 240-Frame Hero */}
+      {/* Signature Pinned Sticky Scroll 240-Frame Hero */}
       <ImageSequenceHero />
 
       {/* Platform Telemetry Pulse Crawler */}
