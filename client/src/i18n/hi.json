@@ -11,7 +11,19 @@
     "help": "मदद",
     "about": "हमारे बारे में",
     "admin": "एडमिन",
-    "categories": "कैटेगरी"
+    "categories": "श्रेणियाँ"
+  },
+  "admin": {
+    "dashboard": "डैशबोर्ड",
+    "manageCourses": "कोर्स प्रबंधित करें",
+    "manageCategories": "श्रेणियाँ प्रबंधित करें",
+    "manageUsers": "छात्र निर्देशिका",
+    "manageAdmins": "एडमिन प्रबंधित करें",
+    "verifications": "आईडी सत्यापन",
+    "withdrawals": "निकासी अनुरोध",
+    "payments": "भुगतान प्रबंधित करें",
+    "reports": "रिपोर्ट की गई समस्याएं",
+    "cms": "सीएमएस सामग्री संपादक"
   },
   "hero": {
     "headline": "ऐसी स्किल्स सीखें जो आगे ले जाएं",

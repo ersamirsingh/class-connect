@@ -8,42 +8,49 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[var(--surface)] border-t border-[var(--border)]">
-      <div className="page-container py-12 md:py-16">
+    <footer className="relative bg-[#050505] border-t border-white/10 overflow-hidden">
+      {/* Background Radial Glow */}
+      <div className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-redline-glow opacity-40 blur-[100px] -z-0" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
         {/* Top section */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
           {/* Brand column */}
-          <div className="md:col-span-2">
-            <Link to="/" className="flex items-center gap-2.5 mb-4 group">
-              <div className="w-9 h-9 rounded-xl bg-[var(--primary)] flex items-center justify-center
-                shadow-[var(--shadow-primary)] group-hover:scale-105 transition-transform">
-                <BookOpen className="w-5 h-5 text-white" />
+          <div className="lg:col-span-2">
+            <Link to="/" className="flex items-center gap-3 mb-5 group">
+              <div className="w-9 h-9 rounded-full bg-[#FF2A2A] flex items-center justify-center shadow-[0_0_20px_rgba(255,42,42,0.5)] group-hover:scale-105 transition-transform">
+                <BookOpen className="w-4.5 h-4.5 text-white" />
               </div>
-              <span className="text-lg font-extrabold tracking-tight text-[var(--ink)]"
-                style={{ fontFamily: 'Manrope, sans-serif' }}>
-                ClassConnect
+              <span className="font-display text-xl font-medium tracking-tight text-[#F7F7F5]">
+                ClassConnect <span className="text-[#FF2A2A]">Redline</span>
               </span>
             </Link>
-            <p className="text-sm text-[var(--ink-muted)] max-w-xs leading-relaxed mb-6">
-              {t('hero.subtitle', 'India\'s most visual learning platform. Master real-world skills with expert-led courses.')}
+            <p className="font-body text-sm text-[#A8A8AE] max-w-xs leading-relaxed mb-6">
+              {t('hero.subtitle', 'A bold, cinematic learning system. Master real-world engineering skills with industry-proven tracks.')}
             </p>
             <div className="flex items-center gap-3">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-[var(--canvas)] flex items-center justify-center
-                  text-[var(--ink-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)]
-                  transition-all duration-200">
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-[#0B0B0D] border border-white/10 flex items-center justify-center text-[#A8A8AE] hover:text-[#FF2A2A] hover:border-[#FF2A2A]/40 transition-all duration-200"
+              >
                 <Globe className="w-4 h-4" />
               </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-[var(--canvas)] flex items-center justify-center
-                  text-[var(--ink-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-soft)]
-                  transition-all duration-200">
+              <a 
+                href="https://youtube.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-[#0B0B0D] border border-white/10 flex items-center justify-center text-[#A8A8AE] hover:text-[#FF2A2A] hover:border-[#FF2A2A]/40 transition-all duration-200"
+              >
                 <Play className="w-4 h-4" />
               </a>
-              <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-[var(--canvas)] flex items-center justify-center
-                  text-[var(--ink-muted)] hover:text-[var(--success)] hover:bg-[var(--success-soft)]
-                  transition-all duration-200">
+              <a 
+                href="https://wa.me/919876543210" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-[#0B0B0D] border border-white/10 flex items-center justify-center text-[#A8A8AE] hover:text-[#FF2A2A] hover:border-[#FF2A2A]/40 transition-all duration-200"
+              >
                 <MessageCircle className="w-4 h-4" />
               </a>
             </div>
@@ -51,23 +58,47 @@ export function Footer() {
 
           {/* Quick links */}
           <div>
-            <h4 className="text-sm font-bold text-[var(--ink)] mb-4 uppercase tracking-wider">
+            <h4 className="font-mono text-xs font-semibold text-[#F7F7F5] mb-4 uppercase tracking-widest">
               {t('common.explore', 'Explore')}
             </h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3 font-body text-sm">
               <li>
-                <Link to="/courses" className="text-sm text-[var(--ink-muted)] hover:text-[var(--primary)] transition-colors">
+                <Link to="/courses" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
                   {t('nav.courses')}
                 </Link>
               </li>
               <li>
-                <Link to="/categories" className="text-sm text-[var(--ink-muted)] hover:text-[var(--primary)] transition-colors">
+                <Link to="/categories" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
                   {t('nav.categories')}
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-sm text-[var(--ink-muted)] hover:text-[var(--primary)] transition-colors">
+                <Link to="/about" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
                   {t('nav.about')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="font-mono text-xs font-semibold text-[#F7F7F5] mb-4 uppercase tracking-widest">
+              {t('footer.legal', 'Legal')}
+            </h4>
+            <ul className="space-y-3 font-body text-sm">
+              <li>
+                <Link to="/privacy-policy" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
+                  {t('legal.privacy_title', 'Privacy Policy')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
+                  {t('legal.terms_title', 'Terms & Conditions')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
+                  {t('legal.refund_title', 'Cancellation & Refund')}
                 </Link>
               </li>
             </ul>
@@ -75,23 +106,33 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h4 className="text-sm font-bold text-[var(--ink)] mb-4 uppercase tracking-wider">
+            <h4 className="font-mono text-xs font-semibold text-[#F7F7F5] mb-4 uppercase tracking-widest">
               {t('footer.support', 'Support')}
             </h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3 font-body text-sm">
               <li>
-                <Link to="/login" className="text-sm text-[var(--ink-muted)] hover:text-[var(--primary)] transition-colors">
+                <Link to="/login" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
                   {t('nav.login')}
                 </Link>
               </li>
               <li>
-                <Link to="/signup" className="text-sm text-[var(--ink-muted)] hover:text-[var(--primary)] transition-colors">
+                <Link to="/signup" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
                   {t('nav.signup')}
                 </Link>
               </li>
               <li>
-                <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer"
-                  className="text-sm text-[var(--ink-muted)] hover:text-[var(--primary)] transition-colors">
+                <Link to="/report-problem" className="text-[#A8A8AE] hover:text-[#FF2A2A] transition-colors">
+                  {t('footer.report', 'Report Problem')}
+                </Link>
+              </li>
+              <li>
+                <a 
+                  href="https://wa.me/919876543210" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[#FF4D3D] hover:text-[#FF2A2A] font-mono text-xs transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
                   {t('cta.whatsapp', 'Chat on WhatsApp')}
                 </a>
               </li>
@@ -100,15 +141,13 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-[var(--border)] my-8" />
+        <div className="h-px bg-white/10 my-10" />
 
         {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[var(--ink-faint)]">
-            © {year} ClassConnect. All rights reserved.
-          </p>
-          <p className="text-xs text-[var(--ink-faint)] flex items-center gap-1">
-            Made with <Heart className="w-3 h-3 text-[var(--accent)] fill-[var(--accent)]" /> in India
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[#66666E]">
+          <p>© {year} ClassConnect Redline Learning System. All rights reserved.</p>
+          <p className="flex items-center gap-1.5">
+            Crafted with <Heart className="w-3.5 h-3.5 text-[#FF2A2A] fill-[#FF2A2A]" /> for high-momentum learners
           </p>
         </div>
       </div>

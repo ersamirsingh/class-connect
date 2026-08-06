@@ -17,7 +17,9 @@ import {
   CheckCircle2,
   Clock,
   ArrowUpRight,
-  ShieldAlert
+  ShieldAlert,
+  FileCheck,
+  Building2
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts';
 import { NumberTicker } from '../../components/motion/NumberTicker';
@@ -83,6 +85,8 @@ export function AdminDashboard() {
     { title: 'Manage Courses', icon: <BookOpen />, path: '/admin/courses', color: '#5B54E8' },
     { title: 'Manage Students', icon: <Users />, path: '/admin/students', color: '#2FA876' },
     { title: 'Manage Admins', icon: <Settings />, path: '/admin/admins', color: '#2B2B38' },
+    { title: 'ID Verifications', icon: <FileCheck />, path: '/admin/verifications', color: '#3B82F6' },
+    { title: 'Withdrawal Requests', icon: <Building2 />, path: '/admin/withdrawals', color: '#10B981' },
     { title: 'Manage Payments', icon: <CreditCard />, path: '/admin/payments', color: '#D97706' },
     { title: 'Manage Withdrawals', icon: <CreditCard />, path: '/admin/withdrawals', color: '#10B981' },
     { title: 'Doc Verifications', icon: <FileText />, path: '/admin/verifications', color: '#059669' },
@@ -187,7 +191,7 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* Right Col: Icon-Led Recent Activity Feed (Icon-led list, not a dense table) */}
+        {/* Right Col: Icon-Led Recent Activity Feed */}
         <div className="p-6 rounded-[var(--radius-xl)] bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-lg font-manrope">Recent Activity</h3>
@@ -279,3 +283,5 @@ function StatCard({ title, value, icon, sparklineData, sparklineKey, strokeColor
     </motion.div>
   );
 }
+
+export default AdminDashboard;

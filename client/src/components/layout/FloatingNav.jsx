@@ -18,7 +18,6 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
-import { ThemeToggle } from '../shared/ThemeToggle';
 import { NotificationBell } from '../shared/NotificationBell';
 
 const mainNavItems = [
@@ -43,7 +42,6 @@ export function FloatingNav() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (barMenuRef.current && !barMenuRef.current.contains(event.target)) {
@@ -54,7 +52,6 @@ export function FloatingNav() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close menus on route change
   useEffect(() => {
     setMobileOpen(false);
     setBarMenuOpen(false);
@@ -72,26 +69,29 @@ export function FloatingNav() {
       {/* FLOATING NAVBAR CONTAINER */}
       <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-7xl transition-all duration-300">
         <nav
-          className={`w-full rounded-2xl border transition-all duration-300 ${
+          className={`w-full rounded-full border transition-all duration-300 ${
             scrolled
-              ? 'bg-[var(--surface)]/90 backdrop-blur-md border-[var(--border)] shadow-[var(--shadow-md)] py-2 px-4 sm:px-6'
-              : 'bg-[var(--surface)]/80 backdrop-blur-md border-[var(--border)] shadow-sm py-2.5 px-4 sm:px-6'
+              ? 'bg-[#0B0B0D]/90 backdrop-blur-xl border-white/10 shadow-[0_0_25px_rgba(0,0,0,0.8)] py-2 px-5 sm:px-7'
+              : 'bg-[#0B0B0D]/75 backdrop-blur-lg border-white/10 shadow-lg py-2.5 px-5 sm:px-7'
           }`}
         >
-          <div className="flex items-center justify-between h-12">
+          <div className="flex items-center justify-between h-11">
             
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-8.5 h-8.5 rounded-xl bg-[var(--primary)] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
-                <BookOpen className="w-4.5 h-4.5 text-white" />
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-8 h-8 rounded-full bg-[#FF2A2A] flex items-center justify-center shadow-[0_0_15px_rgba(255,42,42,0.5)] group-hover:scale-105 transition-transform duration-200">
+                <BookOpen className="w-4 h-4 text-white" />
               </div>
-              <span className="text-base font-extrabold tracking-tight text-[var(--ink)] hidden sm:block" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                ClassConnect
-              </span>
+              <div className="flex flex-col">
+                <span className="font-display text-base font-medium tracking-tight text-[#F7F7F5] flex items-center gap-1.5">
+                  ClassConnect
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF2A2A] animate-pulse" />
+                </span>
+              </div>
             </Link>
 
-            {/* Navigation Links (Courses, Categories, About) */}
-            <div className="hidden md:flex items-center gap-1">
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center gap-2">
               {mainNavItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 const IconComp = item.icon;
@@ -99,10 +99,10 @@ export function FloatingNav() {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono tracking-wide transition-all duration-200 ${
                       isActive
-                        ? 'text-[var(--primary)] bg-[var(--primary-soft)]'
-                        : 'text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]'
+                        ? 'text-[#FF2A2A] bg-[#FF2A2A]/10 border border-[#FF2A2A]/30'
+                        : 'text-[#A8A8AE] hover:text-[#F7F7F5] hover:bg-white/5'
                     }`}
                   >
                     <IconComp className="w-3.5 h-3.5" />
@@ -112,28 +112,27 @@ export function FloatingNav() {
               })}
             </div>
 
-            {/* Right Action Icons & Bar Menu Button */}
-            <div className="flex items-center gap-2">
+            {/* Right Action Icons & Bar Menu */}
+            <div className="flex items-center gap-3">
               {isAuthenticated && <NotificationBell />}
               <LanguageSwitcher variant="compact" />
-              <ThemeToggle />
 
-              {/* BAR MENU BUTTON WRAPPING Profile, Dashboard, Signup/Login */}
+              {/* Bar Menu Dropdown */}
               <div className="relative ml-1" ref={barMenuRef}>
                 <button
                   onClick={() => setBarMenuOpen(!barMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink)] hover:bg-[var(--primary-soft)] hover:border-[var(--primary)]/30 transition-all duration-200 shadow-xs cursor-pointer min-h-[36px]"
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-[#141416] text-[#F7F7F5] hover:border-[#FF2A2A]/40 transition-all duration-200 cursor-pointer min-h-[36px]"
                   aria-label="Open Bar Menu"
                 >
-                  <Menu className="w-4 h-4 text-[var(--primary)]" />
+                  <Menu className="w-4 h-4 text-[#FF2A2A]" />
                   {isAuthenticated ? (
-                    <div className="w-5.5 h-5.5 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold text-[10px]">
+                    <div className="w-5.5 h-5.5 rounded-full bg-[#FF2A2A]/20 text-[#FF4D3D] flex items-center justify-center font-bold text-[10px]">
                       {(user?.name || user?.firstName || 'U').charAt(0).toUpperCase()}
                     </div>
                   ) : (
-                    <User className="w-4 h-4 text-[var(--ink-muted)]" />
+                    <User className="w-4 h-4 text-[#A8A8AE]" />
                   )}
-                  <ChevronDown className={`w-3 h-3 text-[var(--ink-muted)] transition-transform duration-200 ${barMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3 h-3 text-[#A8A8AE] transition-transform duration-200 ${barMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Dropdown Menu */}
@@ -144,70 +143,65 @@ export function FloatingNav() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 8 }}
                       transition={{ duration: 0.15, ease: 'easeOut' }}
-                      className="absolute right-0 mt-2 w-60 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xl p-2 z-50 overflow-hidden"
+                      className="absolute right-0 mt-3 w-64 rounded-2xl bg-[#0B0B0D] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.9)] p-2.5 z-50 overflow-hidden"
                     >
-                      {/* User Header Info */}
                       {isAuthenticated && (
-                        <div className="px-3 py-2.5 mb-1.5 border-b border-[var(--border)] bg-[var(--canvas)] rounded-xl">
-                          <p className="text-xs font-black text-[var(--ink)] truncate">{user?.name || user?.firstName || 'Student'}</p>
-                          <p className="text-[10px] font-semibold text-[var(--ink-muted)] truncate">{user?.email || ''}</p>
+                        <div className="px-3.5 py-3 mb-2 border-b border-white/10 bg-[#141416] rounded-xl">
+                          <p className="font-display text-xs font-semibold text-[#F7F7F5] truncate">{user?.name || user?.firstName || 'Student'}</p>
+                          <p className="font-mono text-[10px] text-[#A8A8AE] truncate">{user?.email || ''}</p>
                         </div>
                       )}
 
-                      <div className="space-y-0.5">
-                        {/* 1. Dashboard Menu Option */}
+                      <div className="space-y-1">
                         <Link
                           to={dashboardPath}
-                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-all duration-200"
+                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-mono text-[#F7F7F5] hover:text-[#FF2A2A] hover:bg-white/5 transition-all duration-200"
                         >
-                          <LayoutDashboard className="w-4 h-4 text-[var(--primary)]" />
+                          <LayoutDashboard className="w-4 h-4 text-[#FF2A2A]" />
                           <span>Dashboard</span>
                         </Link>
 
-                        {/* 2. Profile Menu Option */}
                         <Link
                           to="/profile"
-                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-all duration-200"
+                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-mono text-[#F7F7F5] hover:text-[#FF2A2A] hover:bg-white/5 transition-all duration-200"
                         >
-                          <User className="w-4 h-4 text-indigo-500" />
+                          <User className="w-4 h-4 text-[#FF4D3D]" />
                           <span>My Profile</span>
                         </Link>
 
-                        {/* 3. Wallet & Referrals Menu Option */}
                         <Link
                           to="/wallet"
-                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-all duration-200"
+                          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-mono text-[#F7F7F5] hover:text-[#FF2A2A] hover:bg-white/5 transition-all duration-200"
                         >
-                          <Wallet className="w-4 h-4 text-emerald-500" />
+                          <Wallet className="w-4 h-4 text-emerald-400" />
                           <span>My Wallet & Referrals</span>
                         </Link>
 
-                        <div className="h-px bg-[var(--border)] my-1" />
+                        <div className="h-px bg-white/10 my-1.5" />
 
-                        {/* 3. Signup / Login / Logout Options */}
                         {isAuthenticated ? (
                           <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 text-left cursor-pointer"
+                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-mono text-[#FF2A2A] hover:bg-[#9F1018]/20 transition-all duration-200 text-left cursor-pointer"
                           >
-                            <LogOut className="w-4 h-4 text-red-500" />
+                            <LogOut className="w-4 h-4 text-[#FF2A2A]" />
                             <span>Log Out</span>
                           </button>
                         ) : (
                           <>
                             <Link
                               to="/signup"
-                              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[var(--primary)] bg-[var(--primary-soft)] hover:bg-[var(--primary)] hover:text-white transition-all duration-200"
+                              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-mono font-medium text-white bg-[#FF2A2A] hover:bg-[#FF4D3D] transition-all duration-200 shadow-[0_0_15px_rgba(255,42,42,0.4)]"
                             >
                               <UserPlus className="w-4 h-4" />
-                              <span>Sign Up (Create Account)</span>
+                              <span>Create Account</span>
                             </Link>
 
                             <Link
                               to="/login"
-                              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--canvas)] transition-all duration-200"
+                              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-mono text-[#A8A8AE] hover:text-[#F7F7F5] hover:bg-white/5 transition-all duration-200"
                             >
-                              <LogIn className="w-4 h-4 text-[var(--ink-muted)]" />
+                              <LogIn className="w-4 h-4 text-[#A8A8AE]" />
                               <span>Log In</span>
                             </Link>
                           </>
@@ -221,10 +215,10 @@ export function FloatingNav() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden p-1.5 rounded-xl text-[var(--ink)] hover:bg-[var(--primary-soft)] transition-colors"
+                className="md:hidden p-1.5 rounded-full text-[#F7F7F5] hover:bg-white/10 transition-colors"
                 aria-label="Toggle Mobile Menu"
               >
-                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileOpen ? <X className="w-5 h-5 text-[#FF2A2A]" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
 
@@ -240,28 +234,28 @@ export function FloatingNav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-[76px] z-40 md:hidden px-4"
+            className="fixed inset-x-0 top-[80px] z-40 md:hidden px-4"
           >
-            <div className="bg-[var(--surface)]/95 backdrop-blur-md rounded-2xl shadow-xl p-4 flex flex-col gap-1 border border-[var(--border)]">
+            <div className="bg-[#0B0B0D]/95 backdrop-blur-xl rounded-2xl p-5 flex flex-col gap-2 border border-white/10 shadow-2xl">
               {mainNavItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  className={`px-4 py-3 rounded-xl text-sm font-mono tracking-wide transition-colors ${
                     location.pathname === item.path
-                      ? 'text-[var(--primary)] bg-[var(--primary-soft)]'
-                      : 'text-[var(--ink)] hover:bg-[var(--primary-soft)]'
+                      ? 'text-[#FF2A2A] bg-[#FF2A2A]/10 border border-[#FF2A2A]/30'
+                      : 'text-[#F7F7F5] hover:bg-white/5'
                   }`}
                 >
                   {item.label}
                 </Link>
               ))}
 
-              <div className="h-px bg-[var(--border)] my-2" />
+              <div className="h-px bg-white/10 my-2" />
 
               <Link
                 to={dashboardPath}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-[var(--primary)] hover:bg-[var(--primary-soft)]"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-mono text-[#FF2A2A] hover:bg-white/5"
               >
                 <LayoutDashboard className="w-4 h-4" />
                 <span>Dashboard</span>
@@ -269,7 +263,7 @@ export function FloatingNav() {
 
               <Link
                 to="/profile"
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-[var(--ink)] hover:bg-[var(--primary-soft)]"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-mono text-[#F7F7F5] hover:bg-white/5"
               >
                 <User className="w-4 h-4" />
                 <span>My Profile</span>
@@ -278,17 +272,17 @@ export function FloatingNav() {
               {isAuthenticated ? (
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 w-full text-left"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-mono text-[#FF2A2A] hover:bg-[#9F1018]/20 w-full text-left"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Log Out</span>
                 </button>
               ) : (
-                <div className="flex gap-2 mt-2 pt-2 border-t border-[var(--border)]">
-                  <Link to="/login" className="flex-1 text-center py-2.5 rounded-xl text-xs font-bold border border-[var(--border)] text-[var(--ink)]">
+                <div className="flex gap-3 mt-3 pt-3 border-t border-white/10">
+                  <Link to="/login" className="flex-1 text-center py-3 rounded-xl text-xs font-mono border border-white/10 text-[#F7F7F5]">
                     Log In
                   </Link>
-                  <Link to="/signup" className="flex-1 text-center py-2.5 rounded-xl text-xs font-bold bg-[var(--primary)] text-white">
+                  <Link to="/signup" className="flex-1 text-center py-3 rounded-xl text-xs font-mono bg-[#FF2A2A] text-white">
                     Sign Up
                   </Link>
                 </div>
@@ -298,8 +292,7 @@ export function FloatingNav() {
         )}
       </AnimatePresence>
 
-      {/* Top Floating Navbar Spacer to prevent overlapping page content */}
-      <div className="h-20" />
+      <div className="h-16" />
     </>
   );
 }

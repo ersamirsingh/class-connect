@@ -4,28 +4,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, BookOpen, FolderOpen, Users, ShieldCheck,
   CreditCard, AlertTriangle, FileText, LogOut, ChevronLeft,
-  ChevronRight, User, Menu
+  ChevronRight, User, Menu, FileCheck, Building2
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
 
 const adminNavItems = [
-  { key: 'admin.dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-  { key: 'admin.manageCourses', path: '/admin/courses', icon: BookOpen },
-  { key: 'admin.manageCategories', path: '/admin/categories', icon: FolderOpen },
-  { key: 'admin.manageUsers', path: '/admin/users', icon: Users },
-  { key: 'admin.manageAdmins', path: '/admin/admins', icon: ShieldCheck },
-  { key: 'admin.payments', path: '/admin/payments', icon: CreditCard },
-  { key: 'admin.reports', path: '/admin/reports', icon: AlertTriangle },
-  { key: 'admin.cms', path: '/admin/cms', icon: FileText },
-  { key: 'nav.profile', path: '/admin/profile', icon: User },
+  { label: 'Admin Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+  { label: 'Manage Courses', path: '/admin/courses', icon: BookOpen },
+  { label: 'Manage Categories', path: '/admin/categories', icon: FolderOpen },
+  { label: 'Manage Users', path: '/admin/users', icon: Users },
+  { label: 'Manage Admins', path: '/admin/admins', icon: ShieldCheck },
+  { label: 'ID Verifications', path: '/admin/verifications', icon: FileCheck },
+  { label: 'Withdrawal Requests', path: '/admin/withdrawals', icon: Building2 },
+  { label: 'Payments', path: '/admin/payments', icon: CreditCard },
+  { label: 'Reports', path: '/admin/reports', icon: AlertTriangle },
+  { label: 'Content Management', path: '/admin/cms', icon: FileText },
+  { label: 'Profile', path: '/admin/profile', icon: User },
 ];
 
 export function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
@@ -65,10 +67,10 @@ export function AdminLayout() {
                   ? 'text-[var(--primary)] bg-[var(--primary-soft)]'
                   : 'text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]'
                 }`}
-              title={collapsed && !mobile ? t(item.key) : undefined}
+              title={collapsed && !mobile ? item.label : undefined}
             >
               <Icon className="w-4.5 h-4.5 shrink-0" />
-              {(!collapsed || mobile) && <span>{t(item.key)}</span>}
+              {(!collapsed || mobile) && <span>{item.label}</span>}
             </Link>
           );
         })}
@@ -81,10 +83,10 @@ export function AdminLayout() {
           onClick={handleLogout}
           className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold
             text-[var(--ink-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-soft)]
-            transition-all duration-200`}
+            transition-all duration-200 cursor-pointer`}
         >
           <LogOut className="w-4.5 h-4.5 shrink-0" />
-          {(!collapsed || mobile) && <span>{t('nav.logout')}</span>}
+          {(!collapsed || mobile) && <span>{t('nav.logout') || 'Log Out'}</span>}
         </button>
       </div>
     </div>
@@ -105,7 +107,7 @@ export function AdminLayout() {
           className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-[var(--surface)]
             border border-[var(--border)] flex items-center justify-center
             text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--primary-soft)]
-            transition-all duration-200 shadow-[var(--shadow-xs)]"
+            transition-all duration-200 shadow-[var(--shadow-xs)] cursor-pointer"
         >
           {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
         </button>
@@ -143,11 +145,11 @@ export function AdminLayout() {
           <div className="flex items-center justify-between h-14 px-4">
             <button
               onClick={() => setMobileOpen(true)}
-              className="p-2 rounded-xl text-[var(--ink)] hover:bg-[var(--primary-soft)] transition-colors"
+              className="p-2 rounded-xl text-[var(--ink)] hover:bg-[var(--primary-soft)] transition-colors cursor-pointer"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <span className="text-sm font-bold text-[var(--ink)]">Admin</span>
+            <span className="text-sm font-bold text-[var(--ink)]">Admin Panel</span>
             <ThemeToggle />
           </div>
         </header>
@@ -167,3 +169,5 @@ export function AdminLayout() {
     </div>
   );
 }
+
+export default AdminLayout;

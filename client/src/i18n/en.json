@@ -13,6 +13,18 @@
     "admin": "Admin",
     "categories": "Categories"
   },
+  "admin": {
+    "dashboard": "Dashboard",
+    "manageCourses": "Manage Courses",
+    "manageCategories": "Manage Categories",
+    "manageUsers": "Student Directory",
+    "manageAdmins": "Manage Admins",
+    "verifications": "ID Verifications",
+    "withdrawals": "Withdrawal Requests",
+    "payments": "Manage Payments",
+    "reports": "Reported Problems",
+    "cms": "CMS Content Editor"
+  },
   "hero": {
     "headline": "Learn skills that move you forward.",
     "subtitle": "India's most visual learning platform. Master real-world skills with expert-led courses in Hindi & English.",
