@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Layers, ArrowRight, Compass, Filter, Star, Radio, PlayCircle, DollarSign, Sparkles } from 'lucide-react';
+import { Layers, ArrowRight, Compass, Filter, Star } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { categoryApi } from '../../api/models/category.api';
 import { courseApi } from '../../api/models/course.api';
@@ -29,28 +29,55 @@ export function CategoryListPage() {
         const loadedCats = Array.isArray(catRes.data)
           ? catRes.data
           : (catRes.data?.categories || (Array.isArray(catRes) ? catRes : SAMPLE_CATEGORIES));
-        setCategories(loadedCats);
+        setCategories(loadedCats.length > 0 ? loadedCats : SAMPLE_CATEGORIES);
 
         if (id) {
-          const match = loadedCats.find(c => c._id === id || c.slug === id) || {
+          const matchedCategory = loadedCats.find(c => 
+            c._id === id || 
+            c.slug === id || 
+            c.slug === id.replace(/-web-development/, '').replace(/-masterclass/, '')
+          ) || SAMPLE_CATEGORIES.find(c => c._id === id || c.slug === id) || {
+            _id: id,
+            name: id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            tagline: 'Master industry-relevant skills with top experts',
+          };
+          
+          setSelectedCategory(matchedCategory);
+
+          const courseRes = await courseApi.getCourses({ category: matchedCategory._id || matchedCategory.slug });
+          const loadedCourses = Array.isArray(courseRes.data)
+            ? courseRes.data
+            : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
+
+          if (loadedCourses.length > 0) {
+            setCategoryCourses(loadedCourses);
+          } else {
+            // Filter sample courses matching category
+            const sampleMatch = SAMPLE_COURSES.filter(c => 
+              c.category?.slug === id || 
+              c.category?._id === id || 
+              c.slug === id ||
+              c.category?.slug === matchedCategory.slug
+            );
+            setCategoryCourses(sampleMatch.length > 0 ? sampleMatch : SAMPLE_COURSES);
+          }
+        }
+      } catch (error) {
+        console.warn('Fallback to sample data for category:', error);
+        if (id) {
+          const match = SAMPLE_CATEGORIES.find(c => c._id === id || c.slug === id) || {
             _id: id,
             name: id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             tagline: 'Master industry-relevant skills with top experts',
           };
           setSelectedCategory(match);
 
-          const courseRes = await courseApi.getCourses({ category: match._id || match.slug });
-          const loadedCourses = Array.isArray(courseRes.data)
-            ? courseRes.data
-            : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : SAMPLE_COURSES));
-          setCategoryCourses(loadedCourses);
-        }
-      } catch (error) {
-        console.warn('Fallback to sample data for category:', error);
-        if (id) {
-          const match = SAMPLE_CATEGORIES.find(c => c._id === id || c.slug === id) || SAMPLE_CATEGORIES[0];
-          setSelectedCategory(match);
-          setCategoryCourses(SAMPLE_COURSES);
+          const sampleMatch = SAMPLE_COURSES.filter(c => 
+            c.category?.slug === id || 
+            c.slug === id ||
+            c.category?._id === id
+          );
+          setCategoryCourses(sampleMatch.length > 0 ? sampleMatch : SAMPLE_COURSES);
         }
       } finally {
         setIsLoading(false);
@@ -82,7 +109,7 @@ export function CategoryListPage() {
               <div className="relative overflow-hidden p-8 sm:p-12 rounded-3xl bg-[#FFFFFF] border border-[#E4E4E7] shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 max-w-2xl text-center md:text-left">
                   <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C1FBD4] text-[#000000] text-xs font-mono font-medium">
-                    <Layers className="w-3.5 h-3.5" /> CATEGORY TRACK
+                    <Layers className="w-3.5 h-3.5" /> TECHNICAL LEARNING TRACK
                   </span>
                   <h1 className="font-display text-4xl sm:text-6xl font-light text-[#000000] tracking-tight">
                     {selectedCategory.name}
@@ -109,19 +136,19 @@ export function CategoryListPage() {
                     onClick={() => setActiveTypeFilter('all')}
                     className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTypeFilter === 'all' ? 'bg-[#000000] text-white' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    All Types
+                    All Tracks
                   </button>
                   <button
                     onClick={() => setActiveTypeFilter('live')}
                     className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTypeFilter === 'live' ? 'bg-[#FF2A2A] text-white' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    Live Now
+                    Live Masterclasses
                   </button>
                   <button
                     onClick={() => setActiveTypeFilter('recorded')}
                     className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activeTypeFilter === 'recorded' ? 'bg-[#000000] text-white' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
                   >
-                    Recorded
+                    Recorded Architecture
                   </button>
 
                   <div className="w-px h-5 bg-[#E4E4E7] mx-1" />
@@ -132,13 +159,6 @@ export function CategoryListPage() {
                   >
                     ★ 4.5+ Stars
                   </button>
-
-                  <button
-                    onClick={() => setActivePriceFilter(activePriceFilter === 'under1000' ? 'all' : 'under1000')}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${activePriceFilter === 'under1000' ? 'bg-[#D4F9E0] text-[#000000]' : 'bg-[#FBFBF5] text-[#71717A] border border-[#E4E4E7]'}`}
-                  >
-                    Under ₹1,000
-                  </button>
                 </div>
               </div>
 
@@ -147,16 +167,25 @@ export function CategoryListPage() {
                 {filteredCourses.map((course) => (
                   <Link key={course._id} to={`/courses/${course.slug || course._id}`} className="block h-full group">
                     <div className="h-full bg-[#FFFFFF] rounded-3xl border border-[#E4E4E7] hover:border-[#000000] transition-all duration-300 overflow-hidden flex flex-col justify-between p-6">
-                      <div className="aspect-video w-full relative bg-[#FBFBF5] rounded-2xl overflow-hidden mb-5">
-                        <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-mono bg-white text-[#000000] border border-[#E4E4E7]">
-                          {course.type === 'live' ? 'LIVE SESSION' : 'RECORDED TRACK'}
+                      
+                      {/* High Resolution Course Thumbnail */}
+                      <div className="aspect-video w-full relative bg-[#000000] rounded-2xl overflow-hidden mb-5">
+                        <img 
+                          src={course.thumbnail || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80"} 
+                          alt={course.title} 
+                          onError={(e) => {
+                            e.target.src = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80";
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-mono bg-black/80 backdrop-blur-md text-white border border-white/10">
+                          {course.type === 'live' ? 'LIVE SESSION' : 'SYSTEMS TRACK'}
                         </div>
                       </div>
 
                       <div className="flex-grow flex flex-col justify-between space-y-4">
                         <div>
-                          <h3 className="font-display text-xl font-medium text-[#000000] group-hover:text-[#9F1018] transition-colors leading-snug mb-2">
+                          <h3 className="font-display text-xl font-medium text-[#000000] group-hover:text-[#FF2A2A] transition-colors leading-snug mb-2">
                             {course.title}
                           </h3>
                           <p className="font-body text-xs text-[#71717A] line-clamp-2">
@@ -167,7 +196,7 @@ export function CategoryListPage() {
                         <div className="pt-4 border-t border-[#E4E4E7] flex items-center justify-between">
                           <div className="flex items-center gap-1 font-mono text-xs text-[#000000]">
                             <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                            <span>{course.rating || '4.8'}</span>
+                            <span>{course.rating || '4.9'}</span>
                           </div>
                           <div className="font-display text-lg font-normal text-[#000000]">
                             {course.price === 0 ? 'Free' : `₹${course.price?.toLocaleString('en-IN')}`}
@@ -208,7 +237,7 @@ export function CategoryListPage() {
                       </div>
                       
                       <div>
-                        <h3 className="font-display text-2xl font-light text-[#000000] mb-2 group-hover:text-[#9F1018] transition-colors">
+                        <h3 className="font-display text-2xl font-light text-[#000000] mb-2 group-hover:text-[#FF2A2A] transition-colors">
                           {category.name}
                         </h3>
                         <p className="font-body text-xs text-[#71717A]">

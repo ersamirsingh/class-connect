@@ -229,6 +229,17 @@
     "contact": "Contact",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
+    "legal": "Legal",
+    "support": "Support",
+    "report": "Report Problem",
     "social": "Connect with us"
+  },
+  "legal": {
+    "privacy_title": "Privacy Policy",
+    "privacy_subtitle": "We value your trust and are committed to protecting your personal data and privacy.",
+    "terms_title": "Terms & Conditions",
+    "terms_subtitle": "Please read these terms carefully before accessing or using the ClassConnect platform.",
+    "refund_title": "Cancellation & Refund Policy",
+    "refund_subtitle": "Transparency and clarity regarding course purchases, digital asset access, and refund terms."
   }
 }

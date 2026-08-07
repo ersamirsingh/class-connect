@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Star, Clock, Users, ArrowUpRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Star, ArrowUpRight } from 'lucide-react';
 import { ShimmerButton } from './ShimmerButton';
 
 export const CourseCoverflow = ({ courses = [] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartXRef = useRef(0);
+  const isDraggingRef = useRef(false);
 
   if (!courses || courses.length === 0) return null;
 
@@ -17,8 +18,33 @@ export const CourseCoverflow = ({ courses = [] }) => {
     setActiveIndex((prev) => (prev - 1 + courses.length) % courses.length);
   };
 
+  // Mouse & Touch Drag Handler for smooth left-right sliding
+  const handlePointerDown = (e) => {
+    touchStartXRef.current = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+    isDraggingRef.current = true;
+  };
+
+  const handlePointerUp = (e) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    const endX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX) || 0;
+    const diff = endX - touchStartXRef.current;
+
+    if (diff < -50) {
+      handleNext();
+    } else if (diff > 50) {
+      handlePrev();
+    }
+  };
+
   return (
-    <div className="relative py-16 w-full overflow-hidden">
+    <div 
+      className="relative py-16 w-full overflow-hidden select-none cursor-grab active:cursor-grabbing"
+      onMouseDown={handlePointerDown}
+      onMouseUp={handlePointerUp}
+      onTouchStart={handlePointerDown}
+      onTouchEnd={handlePointerUp}
+    >
       {/* Coverflow Container */}
       <div className="relative h-[480px] sm:h-[520px] max-w-6xl mx-auto flex items-center justify-center">
         {courses.map((course, idx) => {
@@ -30,8 +56,6 @@ export const CourseCoverflow = ({ courses = [] }) => {
           }
 
           const isActive = position === 0;
-          const isLeft = position === -1 || (position < 0 && position >= -2);
-          const isRight = position === 1 || (position > 0 && position <= 2);
 
           // Position math for 3D depth effect
           const translateX = position * 320;
@@ -40,7 +64,7 @@ export const CourseCoverflow = ({ courses = [] }) => {
           const rotateY = position * -18;
           const zIndex = 30 - Math.abs(position) * 10;
 
-          if (Math.abs(position) > 2) return null; // Hide far off cards
+          if (Math.abs(position) > 2) return null;
 
           return (
             <motion.div
@@ -55,7 +79,7 @@ export const CourseCoverflow = ({ courses = [] }) => {
               }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => setActiveIndex(idx)}
-              className={`absolute top-0 w-[340px] sm:w-[420px] h-[450px] sm:h-[480px] rounded-3xl p-6 bg-[#0B0B0D] border transition-colors cursor-pointer select-none flex flex-col justify-between ${
+              className={`absolute top-0 w-[340px] sm:w-[420px] h-[450px] sm:h-[480px] rounded-3xl p-6 bg-[#0B0B0D] border transition-all duration-300 flex flex-col justify-between ${
                 isActive
                   ? 'border-[#C1FBD4]/60 shadow-[0_0_50px_rgba(193,251,212,0.15)]'
                   : 'border-white/10 hover:border-white/20'
@@ -65,15 +89,18 @@ export const CourseCoverflow = ({ courses = [] }) => {
               {/* Media Header */}
               <div className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-[#141416] mb-4">
                 <img
-                  src={course.image || course.thumbnail || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80'}
+                  src={course.thumbnail || course.image || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80'}
                   alt={course.title}
+                  onError={(e) => {
+                    e.target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80';
+                  }}
                   className="w-full h-full object-cover opacity-90"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0D] via-transparent to-transparent" />
                 
                 <div className="absolute top-3 left-3">
                   <span className="px-3 py-1 rounded-full bg-[#000000]/80 backdrop-blur-md border border-white/10 text-[10px] font-mono text-[#C1FBD4] uppercase tracking-wider">
-                    {course.category?.name || course.category || 'FEATURED TRACK'}
+                    {course.category?.name || course.category || 'SYSTEMS TRACK'}
                   </span>
                 </div>
 
@@ -118,7 +145,7 @@ export const CourseCoverflow = ({ courses = [] }) => {
         })}
       </div>
 
-      {/* Navigation Arrow Controls */}
+      {/* Navigation Controls */}
       <div className="flex items-center justify-center gap-4 mt-6">
         <button
           onClick={handlePrev}

@@ -6,6 +6,10 @@ import { RedParticleCursor } from '../../components/motion/RedParticleCursor';
 import { PlatformPulseCrawler } from '../../components/motion/PlatformPulseCrawler';
 import { CourseCoverflow } from '../../components/motion/CourseCoverflow';
 import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
+import { AsymmetricCategoryGallery } from '../../components/home/AsymmetricCategoryGallery';
+import { VisualStoryTimeline } from '../../components/home/VisualStoryTimeline';
+import { EditorialLearnerGallery } from '../../components/home/EditorialLearnerGallery';
+import { StudentSuccessShowcase } from '../../components/home/StudentSuccessShowcase';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
@@ -46,16 +50,22 @@ export function HomePage() {
       {/* Floating Translucent Navigation */}
       <FloatingNav />
 
-      {/* Signature Pinned Sticky Scroll 240-Frame Hero */}
+      {/* 1. Signature Pinned Sticky Scroll 240-Frame Hero */}
       <ImageSequenceHero />
 
-      {/* Platform Telemetry Pulse Crawler */}
+      {/* 2. Platform Telemetry Pulse Crawler */}
       <PlatformPulseCrawler />
 
-      {/* 3D Depth Course Coverflow Carousel Showcase */}
+      {/* 3. Verified Student Placement & Success Data Showcase */}
+      <StudentSuccessShowcase />
+
+      {/* 4. Asymmetric Category Photography Showcase */}
+      <AsymmetricCategoryGallery />
+
+      {/* 5. 3D Depth Course Coverflow Carousel Showcase */}
       <section className="relative py-24 px-6 max-w-7xl mx-auto border-t border-white/10">
         <div className="text-center max-w-3xl mx-auto mb-8">
-          <span className="inline-block px-3 py-1 rounded-full bg-[#C1FBD4]/10 border border-[#C1FBD4]/30 text-[#C1FBD4] font-mono text-xs uppercase tracking-widest mb-3">
+          <span className="inline-block px-3.5 py-1 rounded-full bg-[#C1FBD4]/10 border border-[#C1FBD4]/30 text-[#C1FBD4] font-mono text-xs uppercase tracking-widest mb-3">
             EXPLORE FEATURED TRACKS
           </span>
           <h2 className="font-display text-4xl sm:text-6xl font-light text-[#F7F7F5]">
@@ -66,10 +76,16 @@ export function HomePage() {
         <CourseCoverflow courses={courses} />
       </section>
 
-      {/* Category Craft Deck Section */}
+      {/* 6. Sequential Visual Story Timeline Panels */}
+      <VisualStoryTimeline />
+
+      {/* 7. Category Craft Deck Section */}
       <CategoryCraftDeck categories={categories} />
 
-      {/* Cinematic Footer */}
+      {/* 8. Editorial Learner Photo Gallery */}
+      <EditorialLearnerGallery />
+
+      {/* 9. Cinematic Footer */}
       <Footer />
     </div>
   );
