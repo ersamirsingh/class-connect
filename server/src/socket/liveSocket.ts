@@ -4,9 +4,13 @@ import { LiveModerationService } from '../modules/live/liveModeration.service';
 import { logger } from '../utils/logger';
 
 export const initLiveSocket = (httpServer: HTTPServer) => {
+  const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+    .split(',')
+    .map((url) => url.trim());
+
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: allowedOrigins,
       credentials: true,
     },
   });

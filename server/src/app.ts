@@ -5,12 +5,14 @@ import { mongoSanitizeMiddleware } from './middlewares/mongoSanitize.middleware'
 
 const app: Application = express();
 
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((url) => url.trim());
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || origin === clientUrl) {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error(`CORS Blocked: Origin ${origin} is not allowed by CORS configuration.`));
