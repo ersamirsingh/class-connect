@@ -240,7 +240,6 @@ export const ManageCmsPage = () => {
           <Sparkles className="w-4 h-4" />
           <span>Featured Courses Tab</span>
         </button>
->>>>>>> origin/samir-v2
       </div>
 
       {/* Alert Message */}
