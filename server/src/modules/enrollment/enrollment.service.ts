@@ -108,6 +108,25 @@ export class EnrollmentService {
     };
   }
 
+  static async verifyPublicCertificate(uniqueId: string) {
+    const progress = await ProgressModel.findOne({ certificateId: uniqueId });
+    if (!progress || !progress.certificateId) {
+      throw new Error('Invalid or unverified certificate ID.');
+    }
+
+    const student = await UserModel.findById(progress.student);
+    const course = await CourseModel.findById(progress.course);
+
+    return {
+      certificateId: progress.certificateId,
+      issuedAt: progress.certificateIssuedAt || progress.updatedAt,
+      studentName: student?.name || 'ClassConnect Scholar',
+      courseTitle: course?.title || 'Course Masterclass',
+      instructorName: course?.instructor?.name || 'ClassConnect Master',
+      isValid: true,
+    };
+  }
+
   static async checkEnrollmentStatus(studentId: string, courseId: string) {
     const enrollment = await EnrollmentModel.findOne({ student: studentId, course: courseId, status: 'active' });
     return { isEnrolled: !!enrollment, orderId: enrollment?.order, enrollment };

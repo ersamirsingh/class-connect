@@ -16,6 +16,11 @@ export const enrollmentApi = {
     return response.data;
   },
 
+  verifyPublicCertificate: async (uniqueId) => {
+    const response = await api.get(`/enrollments/verify-public/${uniqueId}`);
+    return response.data;
+  },
+
   getUnlockStatus: async (courseId) => {
     const response = await api.get(`/enrollments/unlock-status/${courseId}`);
     return response.data;

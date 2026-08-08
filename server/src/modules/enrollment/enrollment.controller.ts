@@ -40,6 +40,16 @@ export class EnrollmentController {
     }
   }
 
+  static async verifyPublicCertificate(req: any, res: Response): Promise<void> {
+    try {
+      const uniqueId = req.params.uniqueId as string;
+      const cert = await EnrollmentService.verifyPublicCertificate(uniqueId);
+      res.status(200).json({ success: true, data: cert });
+    } catch (error: any) {
+      res.status(404).json({ success: false, message: error.message });
+    }
+  }
+
   static async checkStatus(req: AuthRequest, res: Response): Promise<void> {
     try {
       const studentId = req.user!._id.toString();
