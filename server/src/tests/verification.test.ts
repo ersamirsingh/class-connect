@@ -37,13 +37,13 @@ describe('10. Document Verification Module', () => {
     adminToken = await createTestToken(admin);
   });
 
-  it('Happy Path: Student submits valid PAN document, Admin approves verification', async () => {
+  it('Happy Path: Student submits mandatory Aadhaar document (PAN optional), Admin approves verification', async () => {
     const submitRes = await request(app)
       .post('/api/verification/submit')
       .set('Authorization', `Bearer ${student1Token}`)
       .send({
-        panNumber: 'ABCDE1234F',
-        panImageUrl: 'https://cloudinary.com/pan1.jpg',
+        aadhaarNumber: '123456789012',
+        aadhaarImageUrl: 'https://cloudinary.com/aadhaar1.jpg',
       });
 
     expect(submitRes.status).toBe(200);
@@ -58,13 +58,26 @@ describe('10. Document Verification Module', () => {
     expect(reviewRes.body.data.status).toBe('verified');
   });
 
-  it('Attack Case: Duplicate PAN Submission across two different student accounts flagged for admin review', async () => {
-    const submit1 = await request(app)
+  it('Validation Case: Rejects submission missing mandatory Aadhaar details', async () => {
+    const submitRes = await request(app)
       .post('/api/verification/submit')
       .set('Authorization', `Bearer ${student1Token}`)
       .send({
         panNumber: 'ABCDE1234F',
         panImageUrl: 'https://cloudinary.com/pan1.jpg',
+      });
+
+    expect(submitRes.status).toBe(400);
+    expect(submitRes.body.message).toContain('Aadhaar number and Aadhaar card document image are required');
+  });
+
+  it('Attack Case: Duplicate Submission across two different student accounts flagged for admin review', async () => {
+    const submit1 = await request(app)
+      .post('/api/verification/submit')
+      .set('Authorization', `Bearer ${student1Token}`)
+      .send({
+        aadhaarNumber: '123456789012',
+        aadhaarImageUrl: 'https://cloudinary.com/aadhaar1.jpg',
       });
     expect(submit1.status).toBe(200);
 
@@ -72,13 +85,13 @@ describe('10. Document Verification Module', () => {
       .post('/api/verification/submit')
       .set('Authorization', `Bearer ${student2Token}`)
       .send({
-        panNumber: 'ABCDE1234F',
-        panImageUrl: 'https://cloudinary.com/pan2.jpg',
+        aadhaarNumber: '123456789012',
+        aadhaarImageUrl: 'https://cloudinary.com/aadhaar2.jpg',
       });
 
     expect(submit2.status).toBe(200);
 
-    // Verify Admin queue catches duplicate PAN numbers across accounts
+    // Verify Admin queue catches submissions
     const queueRes = await request(app)
       .get('/api/verification/admin/queue')
       .set('Authorization', `Bearer ${adminToken}`);
@@ -90,8 +103,8 @@ describe('10. Document Verification Module', () => {
   it('Attack Case: Student attempting to self-approve verification by calling admin endpoint directly', async () => {
     const doc = await DocumentVerificationModel.create({
       student: student1Id,
-      panNumber: 'XYZDE5678G',
-      panImageUrl: 'https://cloudinary.com/pan.jpg',
+      aadhaarNumber: '987654321098',
+      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
       status: 'pending',
     });
 

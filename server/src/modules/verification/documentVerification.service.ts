@@ -6,31 +6,40 @@ export class DocumentVerificationService {
    */
   static async submitVerification(
     studentId: string,
-    payload: { panNumber: string; panImageUrl: string; aadhaarImageUrl?: string }
+    payload: { aadhaarNumber: string; aadhaarImageUrl: string; panNumber?: string; panImageUrl?: string }
   ): Promise<IDocumentVerification> {
-    if (!payload.panNumber || !payload.panImageUrl) {
-      throw new Error('PAN number and PAN document image are required.');
+    if (!payload.aadhaarNumber || !payload.aadhaarNumber.trim() || !payload.aadhaarImageUrl) {
+      throw new Error('Aadhaar number and Aadhaar card document image are required.');
     }
 
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i;
-    if (!panRegex.test(payload.panNumber.trim())) {
-      throw new Error('Invalid PAN number format (e.g. ABCDE1234F).');
+    const cleanAadhaar = payload.aadhaarNumber.replace(/\s+/g, '');
+    if (!/^\d{12}$/.test(cleanAadhaar)) {
+      throw new Error('Invalid Aadhaar number format (must be 12 numeric digits).');
+    }
+
+    if (payload.panNumber && payload.panNumber.trim()) {
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i;
+      if (!panRegex.test(payload.panNumber.trim())) {
+        throw new Error('Invalid PAN number format (e.g. ABCDE1234F).');
+      }
     }
 
     let verification = await DocumentVerificationModel.findOne({ student: studentId });
     if (verification) {
-      verification.panNumber = payload.panNumber.trim().toUpperCase();
-      verification.panImageUrl = payload.panImageUrl;
-      if (payload.aadhaarImageUrl) verification.aadhaarImageUrl = payload.aadhaarImageUrl;
+      verification.aadhaarNumber = cleanAadhaar;
+      verification.aadhaarImageUrl = payload.aadhaarImageUrl;
+      if (payload.panNumber !== undefined) verification.panNumber = payload.panNumber.trim().toUpperCase();
+      if (payload.panImageUrl !== undefined) verification.panImageUrl = payload.panImageUrl;
       verification.status = 'pending';
       verification.rejectionReason = '';
       await verification.save();
     } else {
       verification = await DocumentVerificationModel.create({
         student: studentId,
-        panNumber: payload.panNumber.trim().toUpperCase(),
-        panImageUrl: payload.panImageUrl,
-        aadhaarImageUrl: payload.aadhaarImageUrl || '',
+        aadhaarNumber: cleanAadhaar,
+        aadhaarImageUrl: payload.aadhaarImageUrl,
+        panNumber: payload.panNumber ? payload.panNumber.trim().toUpperCase() : '',
+        panImageUrl: payload.panImageUrl || '',
         status: 'pending',
       });
     }
