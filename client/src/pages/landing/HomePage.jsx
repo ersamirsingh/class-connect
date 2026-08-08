@@ -34,7 +34,8 @@ import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
+import { contentApi } from '../../api/models/content.api';
+import { SAMPLE_CATEGORIES } from '../../data/sampleData';
 
 // --- Sample Testimonials Data ---
 const testimonials = [
@@ -123,9 +124,10 @@ export function HomePage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
-  const [featuredCourses, setFeaturedCourses] = useState(SAMPLE_COURSES);
+  const [featuredCourses, setFeaturedCourses] = useState([]);
+  const [featuredHeader, setFeaturedHeader] = useState({ title: 'Featured courses', subtitle: 'Hand-picked by our experts, these courses represent the best of what ClassConnect has to offer.' });
   const [isLoadingCats, setIsLoadingCats] = useState(false);
-  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   useEffect(() => {
@@ -144,16 +146,27 @@ export function HomePage() {
     };
 
     const fetchCourses = async () => {
+      setIsLoadingCourses(true);
       try {
-        const response = await courseApi.getCourses();
-        const apiCourses = Array.isArray(response.data)
-          ? response.data
-          : (response.data?.courses || (Array.isArray(response) ? response : []));
-        if (apiCourses.length > 0) {
-          setFeaturedCourses(apiCourses.slice(0, 6));
+        const response = await contentApi.getPublicContent('home');
+        const blocks = Array.isArray(response.data) ? response.data : (Array.isArray(response) ? response : []);
+        const featuredBlock = blocks.find(b => b.section === 'featured_courses');
+        if (featuredBlock && featuredBlock.isActive) {
+          setFeaturedCourses(featuredBlock.data?.courses || []);
+          if (featuredBlock.title) {
+            setFeaturedHeader(prev => ({
+              title: featuredBlock.title,
+              subtitle: featuredBlock.subtitle || prev.subtitle
+            }));
+          }
+        } else {
+          setFeaturedCourses([]);
         }
       } catch (error) {
-        console.warn('Using sample courses fallback:', error.message);
+        console.warn('Failed to fetch admin featured courses:', error.message);
+        setFeaturedCourses([]);
+      } finally {
+        setIsLoadingCourses(false);
       }
     };
 
@@ -309,10 +322,10 @@ export function HomePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
               <h2 className="text-3xl md:text-4xl font-manrope font-bold mb-4">
-                <TextEffect preset="fade-up">Featured courses</TextEffect>
+                <TextEffect preset="fade-up">{featuredHeader.title}</TextEffect>
               </h2>
               <p className="text-[var(--ink-muted)] text-lg max-w-xl">
-                Hand-picked by our experts, these courses represent the best of what ClassConnect has to offer.
+                {featuredHeader.subtitle}
               </p>
             </div>
             <Link to="/courses" className="inline-flex items-center gap-2 text-[var(--primary)] font-semibold hover:text-[var(--primary-deep)] transition-colors">
@@ -325,6 +338,15 @@ export function HomePage() {
               {[1, 2, 3].map(i => (
                 <div key={i} className="h-96 rounded-[var(--radius-lg)] bg-[var(--canvas)] animate-pulse" />
               ))}
+            </div>
+          ) : featuredCourses.length === 0 ? (
+            <div className="text-center py-16 px-6 bg-[var(--canvas)] rounded-[var(--radius-xl)] border border-dashed border-[var(--border)] max-w-2xl mx-auto">
+              <BookOpen className="w-12 h-12 text-[var(--ink-muted)] mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-bold font-manrope mb-2">No Featured Courses Configured</h3>
+              <p className="text-sm text-[var(--ink-muted)] mb-6">Our admin team is currently updating the featured course selection. Check back soon or explore our full catalog below.</p>
+              <Link to="/courses" className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white rounded-full text-xs font-extrabold hover:bg-[var(--primary-soft)] transition-colors">
+                Explore All Courses <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

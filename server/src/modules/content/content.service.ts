@@ -1,4 +1,5 @@
 import { ContentBlockModel, IContentBlock } from './content.model';
+import { CourseModel } from '../course/course.model';
 
 const DEFAULT_CONTENT_BLOCKS = [
   {
@@ -46,23 +47,19 @@ const DEFAULT_CONTENT_BLOCKS = [
   },
   {
     page: 'home',
-    section: 'testimonial',
-    title: 'Super clear and engaging!',
-    subtitle: '',
+    section: 'featured_courses',
+    title: 'Featured courses',
+    subtitle: 'Hand-picked by our experts, these courses represent the best of what ClassConnect has to offer.',
     data: {
-      author: 'Priya Patel',
-      authorRole: 'UI/UX Student',
-      authorPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250',
-      rating: 5,
-      comment: 'I love how every class is icon-driven and visual. No boring textbook paragraphs, just pure interactive learning!',
+      courseIds: [],
     },
-    order: 4,
+    order: 3,
     isActive: true,
   },
 ];
 
 export class ContentService {
-  static async getPublicContent(page = 'home'): Promise<IContentBlock[]> {
+  static async getPublicContent(page = 'home'): Promise<any[]> {
     let blocks = await ContentBlockModel.find({ page, isActive: true }).sort({ order: 1 });
     
     // Seed defaults if database is empty for this page
@@ -71,11 +68,47 @@ export class ContentService {
       blocks = await ContentBlockModel.find({ page, isActive: true }).sort({ order: 1 });
     }
 
-    return blocks;
+    const plainBlocks = await Promise.all(
+      blocks.map(async (block) => {
+        const obj = block.toObject();
+        if (obj.section === 'featured_courses' && Array.isArray(obj.data?.courseIds) && obj.data.courseIds.length > 0) {
+          const rawCourses = await CourseModel.find({ _id: { $in: obj.data.courseIds } }).populate('category');
+          const courseMap = new Map(rawCourses.map((c) => [c._id.toString(), c]));
+          const orderedCourses = obj.data.courseIds
+            .map((id: any) => courseMap.get(id.toString()))
+            .filter(Boolean);
+          obj.data.courses = orderedCourses;
+        } else if (obj.section === 'featured_courses') {
+          obj.data = obj.data || {};
+          obj.data.courses = [];
+        }
+        return obj;
+      })
+    );
+
+    return plainBlocks;
   }
 
-  static async getAllContentAdmin(): Promise<IContentBlock[]> {
-    return ContentBlockModel.find().sort({ page: 1, order: 1 });
+  static async getAllContentAdmin(): Promise<any[]> {
+    const blocks = await ContentBlockModel.find().sort({ page: 1, order: 1 });
+    const plainBlocks = await Promise.all(
+      blocks.map(async (block) => {
+        const obj = block.toObject();
+        if (obj.section === 'featured_courses' && Array.isArray(obj.data?.courseIds) && obj.data.courseIds.length > 0) {
+          const rawCourses = await CourseModel.find({ _id: { $in: obj.data.courseIds } }).populate('category');
+          const courseMap = new Map(rawCourses.map((c) => [c._id.toString(), c]));
+          const orderedCourses = obj.data.courseIds
+            .map((id: any) => courseMap.get(id.toString()))
+            .filter(Boolean);
+          obj.data.courses = orderedCourses;
+        } else if (obj.section === 'featured_courses') {
+          obj.data = obj.data || {};
+          obj.data.courses = [];
+        }
+        return obj;
+      })
+    );
+    return plainBlocks;
   }
 
   static async createContentBlock(payload: Partial<IContentBlock>): Promise<IContentBlock> {
