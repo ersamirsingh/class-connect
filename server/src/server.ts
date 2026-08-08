@@ -10,7 +10,12 @@ import { initLiveSocket } from './socket/liveSocket';
 
 const startServer = async () => {
   try {
-    await Promise.all([connectDB(), connectRedis()]);
+    // Concurrent startup: Connect MongoDB and Redis in parallel using Promise.all
+    logger.info('Initializing MongoDB & Redis connections concurrently...');
+    await Promise.all([
+      connectDB().then(() => logger.info('MongoDB connected successfully')),
+      connectRedis().then(() => logger.info('Redis connected successfully')),
+    ]);
 
     const httpServer = http.createServer(app);
     initLiveSocket(httpServer);
@@ -18,16 +23,6 @@ const startServer = async () => {
     httpServer.listen(config.port, () => {
       logger.info(`Server & Socket.io listening on http://localhost:${config.port}`);
     });
-
-    // Connect to MongoDB and Redis asynchronously without delaying port binding
-    connectDB()
-      .then(() => logger.info('MongoDB connected successfully'))
-      .catch((err) => logger.error(`MongoDB connection error: ${err.message}`));
-
-    connectRedis()
-      .then(() => logger.info('Redis connected successfully'))
-      .catch((err) => logger.error(`Redis connection error: ${err.message}`));
-
   } catch (error: any) {
     logger.error(`Failed to start server: ${error.message}`);
     process.exit(1);
