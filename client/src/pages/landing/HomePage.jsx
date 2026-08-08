@@ -80,32 +80,36 @@ export function HomePage() {
   const [categories, setCategories] = useState([]);
   const [featuredCourses, setFeaturedCourses] = useState([]);
   const [studentResultsCms, setStudentResultsCms] = useState(null);
+  const [liveClassesCms, setLiveClassesCms] = useState(null);
+  const [videoTestimonialsCms, setVideoTestimonialsCms] = useState(null);
+  const [faqCms, setFaqCms] = useState(null);
+  const [testimonialsCms, setTestimonialsCms] = useState(null);
+
   const [isLoadingCats, setIsLoadingCats] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await categoryApi.getCategories();
-        const apiCats = response.data?.categories || [];
+        const apiCats = response.data?.categories || (Array.isArray(response.data) ? response.data : []);
         if (apiCats.length > 0) {
           setCategories(apiCats);
         }
       } catch (error) {
-        console.warn('Using sample categories fallback:', error.message);
+        console.warn('Failed to load categories:', error.message);
       }
     };
 
     const fetchCourses = async () => {
       try {
         const response = await courseApi.getCourses();
-        const apiCourses = response.data?.courses || [];
+        const apiCourses = response.data?.courses || (Array.isArray(response.data) ? response.data : []);
         if (apiCourses.length > 0) {
           setFeaturedCourses(apiCourses.slice(0, 6));
         }
       } catch (error) {
-        console.warn('Using sample courses fallback:', error.message);
+        console.warn('Failed to load courses:', error.message);
       }
     };
 
@@ -117,11 +121,21 @@ export function HomePage() {
           : (response?.data?.blocks || []);
         
         const resultsBlock = blocks.find(b => b.section === 'student-results' && b.isActive);
-        if (resultsBlock?.data) {
-          setStudentResultsCms(resultsBlock.data);
-        }
+        if (resultsBlock) setStudentResultsCms(resultsBlock);
+
+        const liveBlock = blocks.find(b => b.section === 'live-classes' && b.isActive);
+        if (liveBlock) setLiveClassesCms(liveBlock);
+
+        const videoBlock = blocks.find(b => b.section === 'video-testimonials' && b.isActive);
+        if (videoBlock) setVideoTestimonialsCms(videoBlock);
+
+        const faqBlock = blocks.find(b => b.section === 'faqs' && b.isActive);
+        if (faqBlock) setFaqCms(faqBlock);
+
+        const testBlock = blocks.find(b => b.section === 'testimonial' && b.isActive);
+        if (testBlock) setTestimonialsCms(testBlock);
       } catch (error) {
-        console.warn('Using sample CMS results fallback:', error.message);
+        console.warn('Failed to load CMS blocks:', error.message);
       }
     };
 
@@ -319,7 +333,7 @@ export function HomePage() {
       </section>
 
       {/* 6. Live Classes & Workshops Section (Directly Below Featured Courses) */}
-      <LiveClassesWorkshopsSection />
+      <LiveClassesWorkshopsSection cmsData={liveClassesCms} />
 
       {/* 7. How It Works Section */}
       <HowItWorksFlowSection />
@@ -331,10 +345,10 @@ export function HomePage() {
       <CompareOptionsSection />
 
       {/* 10. Merged Side-by-Side Section: Student Loved Stories (Left) + FAQs (Right) */}
-      <MergedTestimonialsFaqSection />
+      <MergedTestimonialsFaqSection cmsData={testimonialsCms} faqCmsData={faqCms} />
 
       {/* 11. Student Video Testimonials Showcase */}
-      <StudentVideoTestimonialsSection />
+      <StudentVideoTestimonialsSection cmsData={videoTestimonialsCms} />
 
       <Footer />
     </div>

@@ -173,7 +173,11 @@ export function CourseDetailPage() {
                 <span className="px-3.5 py-1 bg-[var(--canvas)] text-[var(--primary)] text-xs font-bold rounded-full border border-[var(--border)]">
                   {typeof course.category === 'object' ? course.category?.name : (course.category || 'General')}
                 </span>
-                {course.type === 'live' ? (
+                {course.liveSchedule?.status === 'live' ? (
+                  <span className="px-3.5 py-1 bg-red-600 text-white text-xs font-extrabold rounded-full flex items-center gap-1.5 shadow-md animate-pulse">
+                    <Radio className="w-3.5 h-3.5 text-white" /> 🔴 LIVE BROADCAST ACTIVE NOW
+                  </span>
+                ) : course.type === 'live' ? (
                   <span className="px-3.5 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full flex items-center gap-1">
                     <Radio className="w-3.5 h-3.5 animate-pulse" /> Live + Recorded
                   </span>

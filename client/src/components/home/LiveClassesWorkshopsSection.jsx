@@ -42,7 +42,13 @@ const liveSessions = [
   },
 ];
 
-export function LiveClassesWorkshopsSection() {
+export function LiveClassesWorkshopsSection({ cmsData }) {
+  const sessions = (cmsData?.data?.items && cmsData.data.items.length > 0)
+    ? cmsData.data.items
+    : liveSessions;
+
+  const sectionTitle = cmsData?.title || 'Live Classes & Workshops';
+
   return (
     <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)] relative overflow-hidden">
       {/* Background Subtle Aura Glow */}
@@ -59,7 +65,7 @@ export function LiveClassesWorkshopsSection() {
             </div>
 
             <h2 className="text-2xl md:text-3xl font-manrope font-extrabold text-[var(--ink)] tracking-tight">
-              Live Classes & Workshops
+              {sectionTitle}
             </h2>
 
             <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-red-500/15 text-red-600 border border-red-500/25 uppercase tracking-wide">
@@ -68,16 +74,17 @@ export function LiveClassesWorkshopsSection() {
           </div>
 
           <Link
-            to="/courses?filter=live"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--primary)] hover:text-[var(--primary-deep)] transition-colors"
+            to="/courses"
+            className="hidden sm:flex items-center gap-1 text-xs font-extrabold text-[var(--primary)] hover:text-[var(--deep-anchor)] transition-colors"
           >
-            View Schedule <ArrowRight className="w-4 h-4" />
+            <span>View All Schedule</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        {/* Live Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {liveSessions.map((session, index) => (
+        {/* Live & Workshop Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {sessions.map((session, index) => (
             <motion.div
               key={session.id}
               initial={{ opacity: 0, y: 20 }}

@@ -13,6 +13,7 @@ router.get('/admin/all', authenticateUser, authorizeRoles('admin'), CourseContro
 router.post('/', authenticateUser, authorizeRoles('admin'), CourseController.createCourse);
 router.put('/toggle-suggested/:id', authenticateUser, authorizeRoles('admin'), CourseController.toggleSuggested);
 router.put('/:id', authenticateUser, authorizeRoles('admin'), CourseController.updateCourse);
+router.put('/:id/live-status', authenticateUser, authorizeRoles('admin'), CourseController.updateLiveStatus);
 router.delete('/:id', authenticateUser, authorizeRoles('admin'), CourseController.deleteCourse);
 
 router.post('/:id/preview/play', (req, res, next) => {

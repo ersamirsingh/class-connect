@@ -50,11 +50,14 @@ export function CustomVideoPlayer({
 
   const userEmail = user?.email || 'student@classconnect.com';
 
+  const hasTriggered90Ref = useRef(false);
+
   useEffect(() => {
     const targetSrc = src || DEFAULT_FALLBACK_VIDEO;
     setVideoSrc(targetSrc);
     setHasError(false);
     setIsPlaying(false);
+    hasTriggered90Ref.current = false;
     if (videoRef.current) {
       videoRef.current.load();
     }
@@ -102,7 +105,8 @@ export function CustomVideoPlayer({
       setCurrentTime(curr);
       setDuration(dur);
 
-      if (dur > 0 && (curr / dur) >= 0.90) {
+      if (dur > 0 && (curr / dur) >= 0.90 && !hasTriggered90Ref.current) {
+        hasTriggered90Ref.current = true;
         if (onAuto90PercentComplete) {
           onAuto90PercentComplete();
         }

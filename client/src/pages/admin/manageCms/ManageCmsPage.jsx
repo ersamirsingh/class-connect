@@ -238,6 +238,101 @@ export const ManageCmsPage = () => {
             onClick={() =>
               setEditingBlock({
                 page: 'home',
+                section: 'live-classes',
+                title: 'Live Classes & Workshops',
+                subtitle: 'Join live sessions with top instructors and solve real problems together.',
+                data: {
+                  items: [
+                    {
+                      id: `live-${Date.now()}`,
+                      status: 'LIVE NOW',
+                      isLiveNow: true,
+                      registered: '340 registered',
+                      title: 'Advanced React 19 & Server Components Masterclass',
+                      host: 'Rohan Sharma',
+                      type: 'Interactive Session',
+                      actionText: 'Join Room',
+                      actionLink: '/courses',
+                      image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'
+                    }
+                  ]
+                },
+                order: blocks.length + 1,
+                isActive: true,
+              })
+            }
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white rounded-full text-xs font-extrabold hover:bg-indigo-700 transition-all min-h-[44px] shadow-sm cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Add Workshops Block</span>
+          </button>
+
+          <button
+            onClick={() =>
+              setEditingBlock({
+                page: 'home',
+                section: 'video-testimonials',
+                title: 'Real Video Reviews',
+                subtitle: 'Listen to video feedback directly from our learners',
+                data: {
+                  items: [
+                    {
+                      id: `v-${Date.now()}`,
+                      studentName: 'Rohan Sharma',
+                      role: 'Full-Stack Engineer',
+                      courseName: 'Full-Stack Architecture & Microservices',
+                      hikeStat: '45% Salary Increase',
+                      quote: 'The live coding sessions & visual diagrams made microservices so easy to understand!',
+                      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                      posterUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'
+                    }
+                  ]
+                },
+                order: blocks.length + 1,
+                isActive: true,
+              })
+            }
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 text-white rounded-full text-xs font-extrabold hover:bg-purple-700 transition-all min-h-[44px] shadow-sm cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Add Video Review Block</span>
+          </button>
+
+          <button
+            onClick={() =>
+              setEditingBlock({
+                page: 'home',
+                section: 'faqs',
+                title: 'Frequently Asked Questions',
+                subtitle: 'Common questions about ClassConnect courses and learning model.',
+                data: {
+                  items: [
+                    {
+                      id: 1,
+                      question: 'Do I get full lifetime access?',
+                      answer: 'Yes! Once you enroll in a course, you receive full lifetime access to all video lessons, live recordings, and code repositories.'
+                    },
+                    {
+                      id: 2,
+                      question: 'Are the courses taught in Hindi or English?',
+                      answer: 'Our courses feature a bilingual learning system — key technical terms are explained in English, with step-by-step practical walk-throughs in clear Hindi and English.'
+                    }
+                  ]
+                },
+                order: blocks.length + 1,
+                isActive: true,
+              })
+            }
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-amber-600 text-white rounded-full text-xs font-extrabold hover:bg-amber-700 transition-all min-h-[44px] shadow-sm cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Add FAQ Block</span>
+          </button>
+
+          <button
+            onClick={() =>
+              setEditingBlock({
+                page: 'home',
                 section: 'banner',
                 title: 'New Visual Banner',
                 subtitle: 'Short descriptive subtitle',

@@ -52,6 +52,33 @@ export function ManageCoursesPage() {
   const [thumbnailUploadSuccess, setThumbnailUploadSuccess] = useState(false);
   const [thumbnailUploadError, setThumbnailUploadError] = useState('');
   
+  // Preview Video File Upload State
+  const previewVideoInputRef = useRef(null);
+  const [previewVideoUploading, setPreviewVideoUploading] = useState(false);
+  const [previewVideoUploadError, setPreviewVideoUploadError] = useState('');
+
+  const handlePreviewVideoUpload = async (file) => {
+    if (!file) return;
+    const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/ogg', 'video/x-matroska'];
+    if (!validTypes.includes(file.type)) {
+      setPreviewVideoUploadError('Please select a valid video file (MP4, WebM, MOV).');
+      return;
+    }
+    setPreviewVideoUploading(true);
+    setPreviewVideoUploadError('');
+    try {
+      const res = await uploadApi.uploadFile(file, 'class-connect/previews');
+      const uploadedUrl = res.url || res.playbackUrl || res.data?.url;
+      if (!uploadedUrl) throw new Error('Upload succeeded but no video URL was returned.');
+      setCourseFormData(prev => ({ ...prev, previewVideo: uploadedUrl }));
+    } catch (err) {
+      console.error('Preview video upload error:', err);
+      setPreviewVideoUploadError(err.message || 'Failed to upload preview video.');
+    } finally {
+      setPreviewVideoUploading(false);
+    }
+  };
+  
   // Navigation Flow States: 'courses' | 'topics' | 'lectures'
   const [viewMode, setViewMode] = useState('courses');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -1398,14 +1425,73 @@ export function ManageCoursesPage() {
                     </div>
                   </div>
 
+                  {/* Preview Video Upload Dropzone */}
                   <div>
-                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Preview Video URL</label>
-                    <input 
-                      type="text"
-                      value={courseFormData.previewVideo} onChange={e => setCourseFormData({...courseFormData, previewVideo: e.target.value})}
-                      placeholder="e.g. https://www.w3schools.com/html/mov_bbb.mp4"
-                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                    <label className="block mb-2 text-xs font-bold text-[var(--ink-muted)] uppercase">Course Preview Video</label>
+                    {courseFormData.previewVideo ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-black p-2 flex flex-col gap-2">
+                        <video
+                          src={courseFormData.previewVideo}
+                          controls
+                          className="w-full h-40 object-contain rounded-lg"
+                        />
+                        <div className="flex items-center justify-between px-2">
+                          <span className="text-[10px] text-white/70 font-mono truncate max-w-[70%]">{courseFormData.previewVideo}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => previewVideoInputRef.current?.click()}
+                              className="px-2.5 py-1 bg-white/20 text-white hover:bg-white/30 text-xs font-bold rounded-md transition-colors cursor-pointer"
+                            >
+                              Replace
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCourseFormData({ ...courseFormData, previewVideo: '' })}
+                              className="px-2.5 py-1 bg-red-600 text-white hover:bg-red-700 text-xs font-bold rounded-md transition-colors cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => !previewVideoUploading && previewVideoInputRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); const f = e.dataTransfer.files?.[0]; if (f) handlePreviewVideoUpload(f); }}
+                        className={`w-full h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${
+                          previewVideoUploading
+                            ? 'border-amber-400 bg-amber-50/50'
+                            : 'border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]'
+                        }`}
+                      >
+                        {previewVideoUploading ? (
+                          <>
+                            <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+                            <span className="text-xs font-bold text-amber-600">Uploading preview video...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Video className="w-7 h-7 text-[var(--ink-muted)]" />
+                            <span className="text-xs font-bold text-[var(--ink-muted)]">Click or drag preview video here</span>
+                            <span className="text-[10px] text-[var(--ink-muted)]/60">MP4, WebM, MOV</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    <input
+                      ref={previewVideoInputRef}
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePreviewVideoUpload(f); e.target.value = ''; }}
                     />
+                    {previewVideoUploadError && (
+                      <p className="text-xs text-red-500 font-semibold mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> {previewVideoUploadError}
+                      </p>
+                    )}
                   </div>
 
                   {/* Status & Promotion Toggles */}

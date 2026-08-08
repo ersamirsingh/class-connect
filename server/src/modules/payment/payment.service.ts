@@ -27,6 +27,31 @@ export class PaymentService {
     const receiptId = `REC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const priceToCharge = course.discountPrice && course.discountPrice > 0 ? course.discountPrice : course.price;
 
+    // Handle Instant Free Course Enrollment (price === 0)
+    if (priceToCharge <= 0) {
+      const freeOrder = new OrderModel({
+        student: payload.studentId,
+        course: payload.courseId,
+        gateway: payload.gateway,
+        gatewayOrderId: `FREE-${receiptId}`,
+        amount: 0,
+        currency: 'INR',
+        status: 'success',
+        receiptId,
+      });
+      await freeOrder.save();
+      await PaymentService.grantCourseEnrollment(payload.studentId, payload.courseId, freeOrder._id.toString());
+      return {
+        isFree: true,
+        orderId: freeOrder._id,
+        receiptId,
+        amount: 0,
+        currency: 'INR',
+        courseTitle: course.title,
+        message: 'Successfully enrolled in free course!',
+      };
+    }
+
     let gatewayData: any;
     if (payload.gateway === 'razorpay') {
       gatewayData = await RazorpayService.createOrder(priceToCharge, 'INR', receiptId);
@@ -66,6 +91,7 @@ export class PaymentService {
   }
 
   static async verifyRazorpayPayment(payload: {
+    studentId: string;
     orderId: string;
     razorpayPaymentId: string;
     razorpayOrderId: string;
@@ -74,6 +100,10 @@ export class PaymentService {
     const order = await OrderModel.findById(payload.orderId);
     if (!order) {
       throw new Error('Order record not found.');
+    }
+
+    if (order.student.toString() !== payload.studentId) {
+      throw new Error('Unauthorized: Order does not belong to the current authenticated student.');
     }
 
     const isValid = RazorpayService.verifySignature(
@@ -98,9 +128,13 @@ export class PaymentService {
     return { success: true, message: 'Payment verified & course access granted!', order };
   }
 
-  static async verifyStripePayment(orderId: string, paymentIntentId: string) {
+  static async verifyStripePayment(studentId: string, orderId: string, paymentIntentId: string) {
     const order = await OrderModel.findById(orderId);
     if (!order) throw new Error('Order not found.');
+
+    if (order.student.toString() !== studentId) {
+      throw new Error('Unauthorized: Order does not belong to the current authenticated student.');
+    }
 
     order.gatewayPaymentId = paymentIntentId;
     order.status = 'success';

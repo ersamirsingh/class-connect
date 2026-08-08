@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { liveApi } from '../../api/models/live.api';
 import { notificationApi } from '../../api/models/notification.api';
+import { courseApi } from '../../api/models/course.api';
 import { Bell, Send } from 'lucide-react';
 
 export function AdminGoLiveModal({ course, isOpen, onClose }) {
@@ -49,7 +50,7 @@ export function AdminGoLiveModal({ course, isOpen, onClose }) {
 
   useEffect(() => {
     if (course) {
-      setIsLiveActive(course.type === 'live');
+      setIsLiveActive(course.liveSchedule?.status === 'live' || course.type === 'live');
     }
   }, [course]);
 
@@ -58,6 +59,11 @@ export function AdminGoLiveModal({ course, isOpen, onClose }) {
   const handleStartBroadcast = async () => {
     setIsLiveActive(true);
     let notifText = '';
+    try {
+      await courseApi.updateLiveStatus(course._id, 'live');
+    } catch (e) {
+      console.warn('Failed to update live status in DB:', e);
+    }
     if (notifyStudentsOnLive) {
       try {
         setIsSendingNotif(true);
@@ -90,8 +96,13 @@ export function AdminGoLiveModal({ course, isOpen, onClose }) {
     }
   };
 
-  const handleEndBroadcast = () => {
+  const handleEndBroadcast = async () => {
     setIsLiveActive(false);
+    try {
+      await courseApi.updateLiveStatus(course._id, 'ended');
+    } catch (e) {
+      console.warn('Failed to update live status in DB:', e);
+    }
     setActionMsg({ type: 'success', text: `Broadcast ended. Session recorded and saved to course archive.` });
   };
 

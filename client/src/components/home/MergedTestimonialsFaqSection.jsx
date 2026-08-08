@@ -72,7 +72,17 @@ const FAQS = [
   }
 ];
 
-export function MergedTestimonialsFaqSection() {
+export function MergedTestimonialsFaqSection({ cmsData, faqCmsData }) {
+  const testimonialsList = (cmsData?.data?.items && cmsData.data.items.length > 0)
+    ? cmsData.data.items
+    : TESTIMONIALS;
+
+  const faqList = (faqCmsData?.data?.items && faqCmsData.data.items.length > 0)
+    ? faqCmsData.data.items
+    : (cmsData?.data?.faqs && cmsData.data.faqs.length > 0)
+      ? cmsData.data.faqs
+      : FAQS;
+
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   const toggleFaq = (index) => {
@@ -110,9 +120,9 @@ export function MergedTestimonialsFaqSection() {
 
             {/* Testimonials 2x2 Grid of Borderless Depth Edge Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {TESTIMONIALS.map((t) => (
+              {testimonialsList.map((t, idx) => (
                 <motion.div
-                  key={t.id}
+                  key={t.id || idx}
                   whileHover={{ y: -4 }}
                   transition={{ duration: 0.3 }}
                   className="bg-white rounded-3xl p-5 relative borderless shadow-[0_10px_30px_-8px_rgba(0,0,0,0.06)] hover:shadow-[0_18px_40px_-10px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col justify-between"
@@ -131,7 +141,7 @@ export function MergedTestimonialsFaqSection() {
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
                     <div className="flex items-center gap-2.5">
                       <img 
-                        src={t.avatar} 
+                        src={t.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'} 
                         alt={t.name} 
                         className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-50 shadow-xs"
                       />
@@ -147,7 +157,7 @@ export function MergedTestimonialsFaqSection() {
 
                     {/* Star Rating */}
                     <div className="flex items-center gap-0.5 text-amber-400">
-                      {[...Array(t.rating)].map((_, i) => (
+                      {[...Array(t.rating || 5)].map((_, i) => (
                         <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
@@ -177,7 +187,7 @@ export function MergedTestimonialsFaqSection() {
 
             {/* Accordion FAQ Borderless Depth Cards */}
             <div className="space-y-3">
-              {FAQS.map((faq, idx) => {
+              {faqList.map((faq, idx) => {
                 const isOpen = openFaqIndex === idx;
 
                 return (

@@ -68,22 +68,34 @@ const VIDEO_TESTIMONIALS = [
   }
 ];
 
-export function StudentVideoTestimonialsSection() {
+export function StudentVideoTestimonialsSection({ cmsData }) {
+  const testimonialsList = (cmsData?.data?.items && cmsData.data.items.length > 0)
+    ? cmsData.data.items
+    : VIDEO_TESTIMONIALS;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef(null);
 
-  const currentTestimonial = VIDEO_TESTIMONIALS[currentIndex];
+  const rawTestimonial = testimonialsList[currentIndex] || testimonialsList[0] || VIDEO_TESTIMONIALS[0];
+  const currentTestimonial = {
+    ...rawTestimonial,
+    avatarStack: rawTestimonial.avatarStack || [
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80'
+    ]
+  };
 
   const handlePrev = () => {
     setIsPlaying(false);
-    setCurrentIndex((prev) => (prev === 0 ? VIDEO_TESTIMONIALS.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? testimonialsList.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
     setIsPlaying(false);
-    setCurrentIndex((prev) => (prev === VIDEO_TESTIMONIALS.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev === testimonialsList.length - 1 ? 0 : prev + 1));
   };
 
   const togglePlay = () => {

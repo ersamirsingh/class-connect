@@ -85,6 +85,21 @@ export class CourseController {
     }
   }
 
+  static async updateLiveStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const { status, meetingUrl } = req.body;
+      if (!status || !['scheduled', 'live', 'ended'].includes(status)) {
+        res.status(400).json({ success: false, message: 'Valid status (scheduled, live, ended) is required.' });
+        return;
+      }
+      const course = await CourseService.updateLiveStatus(id, status, meetingUrl);
+      res.status(200).json({ success: true, message: `Live broadcast status updated to "${status}".`, data: course });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
   static async trackPreviewPlay(req: Request, res: Response): Promise<void> {
     try {
       const id = req.params.id as string;

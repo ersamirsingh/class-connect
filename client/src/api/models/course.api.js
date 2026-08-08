@@ -31,4 +31,9 @@ export const courseApi = {
     const response = await api.delete(`/courses/${id}`);
     return response.data;
   },
+
+  updateLiveStatus: async (id, status, meetingUrl) => {
+    const response = await api.put(`/courses/${id}/live-status`, { status, meetingUrl });
+    return response.data;
+  },
 };

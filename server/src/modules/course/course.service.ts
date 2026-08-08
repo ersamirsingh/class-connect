@@ -85,6 +85,25 @@ export class CourseService {
     return !!res;
   }
 
+  static async updateLiveStatus(id: string, status: 'scheduled' | 'live' | 'ended', meetingUrl?: string): Promise<ICourse> {
+    const course = await CourseModel.findById(id);
+    if (!course) throw new Error('Course not found.');
+    
+    course.liveSchedule = {
+      ...course.liveSchedule,
+      status,
+      ...(meetingUrl !== undefined ? { meetingUrl } : {}),
+      ...(status === 'live' ? { startTime: new Date() } : {}),
+      ...(status === 'ended' ? { endTime: new Date() } : {}),
+    };
+
+    if (status === 'live') {
+      course.type = 'live';
+    }
+
+    return course.save();
+  }
+
 
 
   static async trackPreviewPlay(courseId: string, user?: any, guestCount: number = 0) {

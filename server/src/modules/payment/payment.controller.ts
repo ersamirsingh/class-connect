@@ -22,10 +22,12 @@ export class PaymentController {
 
   static async verifyPayment(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const studentId = req.user!._id.toString();
       const { gateway, orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature, paymentIntentId } = req.body;
 
       if (gateway === 'razorpay') {
         const result = await PaymentService.verifyRazorpayPayment({
+          studentId,
           orderId,
           razorpayPaymentId,
           razorpayOrderId,
@@ -34,7 +36,7 @@ export class PaymentController {
         res.status(200).json(result);
         return;
       } else if (gateway === 'stripe') {
-        const result = await PaymentService.verifyStripePayment(orderId, paymentIntentId);
+        const result = await PaymentService.verifyStripePayment(studentId, orderId, paymentIntentId);
         res.status(200).json(result);
         return;
       } else {
