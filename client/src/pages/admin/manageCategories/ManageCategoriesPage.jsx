@@ -19,7 +19,6 @@ import {
   Tag,
   BookOpen
 } from 'lucide-react';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../../data/sampleData';
 
 export function ManageCategoriesPage() {
   const { t } = useLanguage();
@@ -55,25 +54,37 @@ export function ManageCategoriesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [catRes, courseRes] = await Promise.all([
-        categoryApi.getAllCategoriesAdmin().catch(() => ({ data: [] })),
-        courseApi.getAllCoursesAdmin().catch(() => ({ data: [] }))
-      ]);
+      let loadedCats = [];
+      let loadedCourses = [];
 
-      const loadedCats = Array.isArray(catRes.data)
-        ? catRes.data
-        : (catRes.data?.categories || (Array.isArray(catRes) ? catRes : SAMPLE_CATEGORIES));
+      try {
+        const catRes = await categoryApi.getAllCategoriesAdmin();
+        if (Array.isArray(catRes?.data)) loadedCats = catRes.data;
+        else if (Array.isArray(catRes?.data?.categories)) loadedCats = catRes.data.categories;
+        else if (Array.isArray(catRes?.categories)) loadedCats = catRes.categories;
+      } catch (err) {
+        const pubCat = await categoryApi.getCategories().catch(() => ({ data: [] }));
+        if (Array.isArray(pubCat?.data)) loadedCats = pubCat.data;
+        else if (Array.isArray(pubCat?.data?.categories)) loadedCats = pubCat.data.categories;
+      }
 
-      const loadedCourses = Array.isArray(courseRes.data)
-        ? courseRes.data
-        : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : SAMPLE_COURSES));
+      try {
+        const courseRes = await courseApi.getAllCoursesAdmin();
+        if (Array.isArray(courseRes?.data)) loadedCourses = courseRes.data;
+        else if (Array.isArray(courseRes?.data?.courses)) loadedCourses = courseRes.data.courses;
+        else if (Array.isArray(courseRes?.courses)) loadedCourses = courseRes.courses;
+      } catch (err) {
+        const pubCourses = await courseApi.getCourses().catch(() => ({ data: [] }));
+        if (Array.isArray(pubCourses?.data)) loadedCourses = pubCourses.data;
+        else if (Array.isArray(pubCourses?.data?.courses)) loadedCourses = pubCourses.data.courses;
+      }
 
-      setCategories(loadedCats.length > 0 ? loadedCats : SAMPLE_CATEGORIES);
-      setCourses(loadedCourses.length > 0 ? loadedCourses : SAMPLE_COURSES);
+      setCategories(loadedCats);
+      setCourses(loadedCourses);
     } catch (err) {
-      console.error(err);
-      setCategories(SAMPLE_CATEGORIES);
-      setCourses(SAMPLE_COURSES);
+      console.error('Failed to load categories in ManageCategoriesPage:', err);
+      setCategories([]);
+      setCourses([]);
     } finally {
       setLoading(false);
     }

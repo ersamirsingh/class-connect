@@ -20,7 +20,6 @@ import {
   ChevronRight,
   Sparkles
 } from 'lucide-react';
-import { SAMPLE_COURSES } from '../../data/sampleData';
 import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
 
 export function StudentDashboard() {
@@ -37,46 +36,10 @@ export function StudentDashboard() {
         const loaded = Array.isArray(res?.data)
           ? res.data
           : (res?.data?.enrollments || (Array.isArray(res) ? res : []));
-        
-        if (loaded.length > 0) {
-          setEnrollments(loaded);
-        } else {
-          // Fallback sample enrollments for rich preview
-          setEnrollments([
-            {
-              id: 'enr-1',
-              courseId: SAMPLE_COURSES[0]._id,
-              course: SAMPLE_COURSES[0],
-              progress: 45,
-              lastAccessed: '2 hours ago'
-            },
-            {
-              id: 'enr-2',
-              courseId: SAMPLE_COURSES[1]._id,
-              course: SAMPLE_COURSES[1],
-              progress: 80,
-              lastAccessed: 'Yesterday'
-            }
-          ]);
-        }
-      } catch (error) {
-        console.warn('Using sample enrollments fallback:', error);
-        setEnrollments([
-          {
-            id: 'enr-1',
-            courseId: SAMPLE_COURSES[0]._id,
-            course: SAMPLE_COURSES[0],
-            progress: 45,
-            lastAccessed: '2 hours ago'
-          },
-          {
-            id: 'enr-2',
-            courseId: SAMPLE_COURSES[1]._id,
-            course: SAMPLE_COURSES[1],
-            progress: 80,
-            lastAccessed: 'Yesterday'
-          }
-        ]);
+        setEnrollments(loaded);
+      } catch (err) {
+        console.warn('Failed to load student enrollments:', err);
+        setEnrollments([]);
       } finally {
         setLoading(false);
       }

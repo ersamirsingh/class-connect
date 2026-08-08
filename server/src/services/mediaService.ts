@@ -176,7 +176,7 @@ export class MediaService {
   /**
    * Delete asset from provider
    */
-  static async deleteAsset(assetId: string, provider: 'bunny_stream' | 'bunny_storage' | 'cloudinary' | 'local_fallback'): Promise<boolean> {
+  static async deleteAsset(assetId: string, provider: 'bunny_stream' | 'bunny_storage' | 'local_fallback'): Promise<boolean> {
     if (!assetId) return false;
 
     if (provider === 'bunny_stream' && config.bunnyStreamApiKey && config.bunnyStreamLibraryId) {

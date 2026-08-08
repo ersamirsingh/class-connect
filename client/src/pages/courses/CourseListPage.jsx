@@ -5,7 +5,6 @@ import { Search, Star, BookOpen, Sparkles, X, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
@@ -17,8 +16,8 @@ export function CourseListPage() {
   const { language } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  const [allCourses, setAllCourses] = useState(SAMPLE_COURSES);
-  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
+  const [allCourses, setAllCourses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   
   const categoryParam = searchParams.get('category') || '';
@@ -34,22 +33,27 @@ export function CourseListPage() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
+        setIsLoading(true);
         const [categoriesRes, coursesRes] = await Promise.all([
           categoryApi.getCategories(),
           courseApi.getCourses()
         ]);
         
-        const apiCats = Array.isArray(categoriesRes.data)
+        const apiCats = Array.isArray(categoriesRes?.data)
           ? categoriesRes.data
-          : (categoriesRes.data?.categories || (Array.isArray(categoriesRes) ? categoriesRes : []));
-        const apiCourses = Array.isArray(coursesRes.data)
+          : (categoriesRes?.data?.categories || (Array.isArray(categoriesRes) ? categoriesRes : []));
+        const apiCourses = Array.isArray(coursesRes?.data)
           ? coursesRes.data
-          : (coursesRes.data?.courses || (Array.isArray(coursesRes) ? coursesRes : []));
+          : (coursesRes?.data?.courses || (Array.isArray(coursesRes) ? coursesRes : []));
 
-        if (apiCats.length > 0) setCategories(apiCats);
-        if (apiCourses.length > 0) setAllCourses(apiCourses);
+        setCategories(apiCats);
+        setAllCourses(apiCourses);
       } catch (error) {
-        console.warn('Using sample courses fallback for CourseListPage:', error.message);
+        console.warn('Failed to load live courses:', error.message);
+        setCategories([]);
+        setAllCourses([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     

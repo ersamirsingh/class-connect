@@ -15,4 +15,14 @@ export const notificationApi = {
     const response = await api.put('/notifications/read-all');
     return response.data;
   },
+
+  broadcastLiveAlert: async (data) => {
+    const response = await api.post('/notifications/broadcast-live', data);
+    return response.data;
+  },
+
+  scheduleLiveAlert: async (data) => {
+    const response = await api.post('/notifications/schedule-live', data);
+    return response.data;
+  },
 };

@@ -43,7 +43,7 @@ describe('10. Document Verification Module', () => {
       .set('Authorization', `Bearer ${student1Token}`)
       .send({
         aadhaarNumber: '123456789012',
-        aadhaarImageUrl: 'https://cloudinary.com/aadhaar1.jpg',
+        aadhaarImageUrl: 'https://cdn.example.com/aadhaar1.jpg',
       });
 
     expect(submitRes.status).toBe(200);
@@ -64,7 +64,7 @@ describe('10. Document Verification Module', () => {
       .set('Authorization', `Bearer ${student1Token}`)
       .send({
         panNumber: 'ABCDE1234F',
-        panImageUrl: 'https://cloudinary.com/pan1.jpg',
+        panImageUrl: 'https://cdn.example.com/pan1.jpg',
       });
 
     expect(submitRes.status).toBe(400);
@@ -77,7 +77,7 @@ describe('10. Document Verification Module', () => {
       .set('Authorization', `Bearer ${student1Token}`)
       .send({
         aadhaarNumber: '123456789012',
-        aadhaarImageUrl: 'https://cloudinary.com/aadhaar1.jpg',
+        aadhaarImageUrl: 'https://cdn.example.com/aadhaar1.jpg',
       });
     expect(submit1.status).toBe(200);
 
@@ -86,7 +86,7 @@ describe('10. Document Verification Module', () => {
       .set('Authorization', `Bearer ${student2Token}`)
       .send({
         aadhaarNumber: '123456789012',
-        aadhaarImageUrl: 'https://cloudinary.com/aadhaar2.jpg',
+        aadhaarImageUrl: 'https://cdn.example.com/aadhaar2.jpg',
       });
 
     expect(submit2.status).toBe(200);
@@ -104,7 +104,7 @@ describe('10. Document Verification Module', () => {
     const doc = await DocumentVerificationModel.create({
       student: student1Id,
       aadhaarNumber: '987654321098',
-      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
+      aadhaarImageUrl: 'https://cdn.example.com/aadhaar.jpg',
       status: 'pending',
     });
 

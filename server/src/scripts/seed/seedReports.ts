@@ -41,7 +41,7 @@ export async function seedReports() {
       status: 'resolved' as const,
       description: 'Video lecture 2 on Keyword Research had a buffering pause at 03:45. Resolved after cache clear.',
       relatedCourse: courseGoogleAds?._id,
-      adminNote: 'Verified video asset delivery on Cloudinary server. User confirmed resolved.',
+      adminNote: 'Verified video asset delivery on CDN server. User confirmed resolved.',
     },
     {
       student: student2._id,

@@ -23,10 +23,14 @@ import {
   Sliders
 } from 'lucide-react';
 import { liveApi } from '../../api/models/live.api';
+import { notificationApi } from '../../api/models/notification.api';
+import { Bell, Send } from 'lucide-react';
 
 export function AdminGoLiveModal({ course, isOpen, onClose }) {
   const [isLiveActive, setIsLiveActive] = useState(false);
   const [sessionData, setSessionData] = useState(null);
+  const [notifyStudentsOnLive, setNotifyStudentsOnLive] = useState(true);
+  const [isSendingNotif, setIsSendingNotif] = useState(false);
   const [participants, setParticipants] = useState([
     { _id: 'stu-1', name: 'Md Yusuf', email: 'student1@test.com', audioMuted: false, videoOff: false, status: 'active', photo: 'https://class-connect.b-cdn.net/avatars/1786211720236-avatar-1786211720236.svg' },
     { _id: 'stu-2', name: 'Mahi Raj', email: 'student2@test.com', audioMuted: false, videoOff: true, status: 'active', photo: 'https://class-connect.b-cdn.net/avatars/1786211720641-avatar-1786211720641.svg' },
@@ -51,9 +55,39 @@ export function AdminGoLiveModal({ course, isOpen, onClose }) {
 
   if (!isOpen || !course) return null;
 
-  const handleStartBroadcast = () => {
+  const handleStartBroadcast = async () => {
     setIsLiveActive(true);
-    setActionMsg({ type: 'success', text: `🔴 Live Broadcast Started for "${course.title}". Students can now join live.` });
+    let notifText = '';
+    if (notifyStudentsOnLive) {
+      try {
+        setIsSendingNotif(true);
+        const res = await notificationApi.broadcastLiveAlert({
+          courseId: course._id,
+          courseTitle: course.title
+        });
+        notifText = ` 🔔 Notification dispatched to ${res.count || 'all enrolled'} students!`;
+      } catch (err) {
+        console.warn('Failed to broadcast live notification:', err);
+      } finally {
+        setIsSendingNotif(false);
+      }
+    }
+    setActionMsg({ type: 'success', text: `🔴 Live Broadcast Started for "${course.title}".${notifText}` });
+  };
+
+  const handleSendLiveAlertNow = async () => {
+    try {
+      setIsSendingNotif(true);
+      const res = await notificationApi.broadcastLiveAlert({
+        courseId: course._id,
+        courseTitle: course.title
+      });
+      setActionMsg({ type: 'success', text: `🔔 Live notification sent to ${res.count || 'all'} students!` });
+    } catch (err) {
+      setActionMsg({ type: 'error', text: 'Failed to send live notification.' });
+    } finally {
+      setIsSendingNotif(false);
+    }
   };
 
   const handleEndBroadcast = () => {
@@ -145,6 +179,26 @@ export function AdminGoLiveModal({ course, isOpen, onClose }) {
           </div>
 
           <div className="flex items-center gap-3">
+            <label className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer select-none bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+              <input 
+                type="checkbox" 
+                checked={notifyStudentsOnLive} 
+                onChange={(e) => setNotifyStudentsOnLive(e.target.checked)} 
+                className="w-3.5 h-3.5 accent-indigo-500 rounded cursor-pointer" 
+              />
+              <span>🔔 Send Live Alert</span>
+            </label>
+
+            <button
+              onClick={handleSendLiveAlertNow}
+              disabled={isSendingNotif}
+              title="Dispatch instant broadcast notification to all students"
+              className="px-3.5 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/40 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Bell className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{isSendingNotif ? 'Sending...' : 'Alert Students'}</span>
+            </button>
+
             {isLiveActive ? (
               <button 
                 onClick={handleEndBroadcast}
@@ -156,6 +210,7 @@ export function AdminGoLiveModal({ course, isOpen, onClose }) {
             ) : (
               <button 
                 onClick={handleStartBroadcast}
+                disabled={isSendingNotif}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black rounded-full transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-current" />

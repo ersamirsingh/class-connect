@@ -14,12 +14,10 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
-
 export function UniversalSearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
-  const [courses, setCourses] = useState(SAMPLE_COURSES);
-  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
+  const [courses, setCourses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -35,13 +33,17 @@ export function UniversalSearchModal({ isOpen, onClose }) {
     const fetchData = async () => {
       try {
         const [cRes, catRes] = await Promise.all([
-          courseApi.getCourses(),
-          categoryApi.getCategories()
+          courseApi.getCourses().catch(() => ({ data: [] })),
+          categoryApi.getCategories().catch(() => ({ data: [] }))
         ]);
-        if (cRes.data?.courses?.length) setCourses(cRes.data.courses);
-        if (catRes.data?.categories?.length) setCategories(catRes.data.categories);
+        const loadedCourses = Array.isArray(cRes?.data) ? cRes.data : (cRes?.data?.courses || (Array.isArray(cRes) ? cRes : []));
+        const loadedCats = Array.isArray(catRes?.data) ? catRes.data : (catRes?.data?.categories || (Array.isArray(catRes) ? catRes : []));
+        setCourses(loadedCourses);
+        setCategories(loadedCats);
       } catch (err) {
-        console.warn('Search data fallback active:', err.message);
+        console.warn('Search data fetch error:', err.message);
+        setCourses([]);
+        setCategories([]);
       }
     };
     fetchData();

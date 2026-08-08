@@ -5,7 +5,6 @@ import { Layers, ArrowRight, Compass, Filter, Star, Radio, PlayCircle, DollarSig
 import { useLanguage } from '../../context/LanguageContext';
 import { categoryApi } from '../../api/models/category.api';
 import { courseApi } from '../../api/models/course.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 import { SpotlightCard } from '../../components/motion/SpotlightCard';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
@@ -15,8 +14,8 @@ import { Footer } from '../../components/guest/Footer';
 export function CategoryListPage() {
   const { id } = useParams();
   const { language } = useLanguage();
-  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
-  const [categoryCourses, setCategoryCourses] = useState(SAMPLE_COURSES);
+  const [categories, setCategories] = useState([]);
+  const [categoryCourses, setCategoryCourses] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,9 +31,9 @@ export function CategoryListPage() {
       setIsLoading(true);
       try {
         const catRes = await categoryApi.getCategories();
-        const loadedCats = Array.isArray(catRes.data)
+        const loadedCats = Array.isArray(catRes?.data)
           ? catRes.data
-          : (catRes.data?.categories || (Array.isArray(catRes) ? catRes : SAMPLE_CATEGORIES));
+          : (catRes?.data?.categories || (Array.isArray(catRes) ? catRes : []));
         setCategories(loadedCats);
 
         if (id) {
@@ -48,32 +47,26 @@ export function CategoryListPage() {
 
           try {
             const courseRes = await courseApi.getCourses({ category: match._id || match.slug });
-            const loadedCourses = Array.isArray(courseRes.data)
+            const loadedCourses = Array.isArray(courseRes?.data)
               ? courseRes.data
-              : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
-            
-            if (loadedCourses.length > 0) {
-              setCategoryCourses(loadedCourses);
-            } else {
-              // Fallback filter from SAMPLE_COURSES
-              const matchedSample = SAMPLE_COURSES.filter(c => {
-                const cCatSlug = typeof c.category === 'object' ? c.category?.slug : '';
-                const cCatName = typeof c.category === 'object' ? c.category?.name : String(c.category || '');
-                return cCatSlug.toLowerCase() === match.slug.toLowerCase() || cCatName.toLowerCase() === match.name.toLowerCase();
-              });
-              setCategoryCourses(matchedSample.length > 0 ? matchedSample : SAMPLE_COURSES);
-            }
-          } catch (err) {
-            setCategoryCourses(SAMPLE_COURSES);
+              : (courseRes?.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
+            setCategoryCourses(loadedCourses);
+          } catch (courseErr) {
+            console.warn('Failed to load courses for category:', courseErr);
+            setCategoryCourses([]);
           }
+        } else {
+          // Load overall courses if no category ID filter
+          const courseRes = await courseApi.getCourses();
+          const loadedCourses = Array.isArray(courseRes?.data)
+            ? courseRes.data
+            : (courseRes?.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
+          setCategoryCourses(loadedCourses);
         }
-      } catch (error) {
-        console.warn('Fallback to sample data for category:', error);
-        if (id) {
-          const match = SAMPLE_CATEGORIES.find(c => c._id === id || c.slug === id) || SAMPLE_CATEGORIES[0];
-          setSelectedCategory(match);
-          setCategoryCourses(SAMPLE_COURSES);
-        }
+      } catch (err) {
+        console.warn('Failed to load live categories:', err);
+        setCategories([]);
+        setCategoryCourses([]);
       } finally {
         setIsLoading(false);
       }
@@ -315,7 +308,7 @@ export function CategoryListPage() {
                                     style={{ backgroundColor: `${accentColor}CC` }}
                                   >
                                     <Sparkles className="w-3 h-3" />
-                                    {category.courseCount !== undefined ? `${category.courseCount} Courses` : '5 Courses'}
+                                    {`${category.courseCount || 0} Courses`}
                                   </span>
                                 </div>
                               </div>

@@ -371,10 +371,10 @@ async function buildTestReportDoc() {
           ),
           ...testCaseCard(
             '6.2',
-            'Cloudinary Private Asset Protection (Unsigned URL Bypass Attempt)',
-            'An attacker attempts to construct raw Cloudinary video URLs directly to bypass platform authentication.',
-            '1. Attempt direct access to Cloudinary private video path without token signature.',
-            'Cloudinary private delivery rule blocks raw asset access. Backend delivers signed short-lived URLs only after enrollment verification.',
+            'CDN Private Asset Protection (Unsigned URL Bypass Attempt)',
+            'An attacker attempts to construct raw CDN video URLs directly to bypass platform authentication.',
+            '1. Attempt direct access to CDN private video path without token signature.',
+            'CDN private delivery rule blocks raw asset access. Backend delivers authenticated URLs only after enrollment verification.',
             'Attack Case'
           ),
 
@@ -461,7 +461,7 @@ async function buildTestReportDoc() {
           paragraph('While 100% of core backend APIs and business logic are verified by the automated Jest test suite, the following visual and external gateway integration tests must be performed manually prior to major release deployments:'),
           new Paragraph({ bullet: { level: 0 }, children: [new TextRun({ text: 'Real Payment Gateway Sandbox Flows: ', bold: true }), new TextRun({ text: 'Verify live Razorpay UPI QR pop-up modal and Stripe Test Card checkout flows in browser.' })] }),
           new Paragraph({ bullet: { level: 0 }, children: [new TextRun({ text: 'Socket.io UI Reconnection Handshake: ', bold: true }), new TextRun({ text: 'Verify live chat auto-reconnect behavior when client toggles offline/online network mode.' })] }),
-          new Paragraph({ bullet: { level: 0 }, children: [new TextRun({ text: 'Cloudinary Video Player Watermark: ', bold: true }), new TextRun({ text: 'Visually verify dynamic student email overlay watermark in video player.' })] }),
+          new Paragraph({ bullet: { level: 0 }, children: [new TextRun({ text: 'Video Player Watermark: ', bold: true }), new TextRun({ text: 'Visually verify dynamic student email overlay watermark in video player.' })] }),
           new Paragraph({ bullet: { level: 0 }, children: [new TextRun({ text: 'PDF Receipt Layout Rendering: ', bold: true }), new TextRun({ text: 'Download generated order PDF receipt and inspect invoice styling in Adobe Acrobat / browser.' })] }),
         ],
       },

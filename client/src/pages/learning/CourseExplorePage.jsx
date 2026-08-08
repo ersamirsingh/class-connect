@@ -125,36 +125,19 @@ export const CourseExplorePage = () => {
   // Find next incomplete lecture for "Continue where you left off" jump card
   const nextIncompleteLecture = allLectures.find((l) => !completedLectures.includes(l._id));
 
-  // Mock or real Live sessions schedule array
-  const liveSessions = course.liveSchedule
+  // Live sessions schedule array directly from database
+  const liveSessions = course.liveSchedule && course.liveSchedule.startTime
     ? [
         {
           id: '1',
           title: `${course.title} — Live Interactive Masterclass`,
-          startTime: course.liveSchedule.startTime || new Date(Date.now() + 3600000),
-          endTime: course.liveSchedule.endTime || new Date(Date.now() + 7200000),
-          meetingUrl: course.liveSchedule.meetingUrl || 'https://meet.google.com/demo-live-class',
+          startTime: course.liveSchedule.startTime,
+          endTime: course.liveSchedule.endTime || new Date(new Date(course.liveSchedule.startTime).getTime() + 3600000),
+          meetingUrl: course.liveSchedule.meetingUrl || '',
           status: course.liveSchedule.status || 'scheduled',
         },
       ]
-    : [
-        {
-          id: 'demo-live-1',
-          title: 'Live Q&A & Mentorship Workshop',
-          startTime: new Date(Date.now() + 2 * 3600000),
-          endTime: new Date(Date.now() + 4 * 3600000),
-          meetingUrl: 'https://meet.google.com/demo-live-class',
-          status: 'live',
-        },
-        {
-          id: 'demo-live-2',
-          title: 'Live Code Review & Architecture Sync',
-          startTime: new Date(Date.now() + 26 * 3600000),
-          endTime: new Date(Date.now() + 28 * 3600000),
-          meetingUrl: 'https://meet.google.com/demo-live-class',
-          status: 'upcoming',
-        },
-      ];
+    : [];
 
   return (
     <div className="min-h-screen bg-[#FBFAF7] dark:bg-[#090D16] flex flex-col justify-between transition-colors duration-200 text-[#2B2B38] dark:text-slate-100">
@@ -239,23 +222,37 @@ export const CourseExplorePage = () => {
                   <Play className="w-6 h-6 fill-white" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase text-[#5B54E8] dark:text-[#818cf8] tracking-wider">Quick Resume</span>
+                  <span className="text-[10px] font-black uppercase text-[#5B54E8] dark:text-[#818cf8] tracking-wider">
+                    {progressPercent >= 90 ? 'Course Status: Completed 🎉' : 'Course Status: In Progress'}
+                  </span>
                   <h3 className="text-base font-extrabold text-[#2B2B38] dark:text-white">
-                    {nextIncompleteLecture ? nextIncompleteLecture.title : 'All Lectures Completed! 🎉'}
+                    {progressPercent >= 90 ? 'Course Completed! Certificate Unlocked 🎓' : (nextIncompleteLecture ? `Next: ${nextIncompleteLecture.title}` : 'All Lectures Watched')}
                   </h3>
                   <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
-                    Progress: {completedCount} / {totalLecturesCount} Lectures ({progressPercent}%)
+                    Course Progress: {completedCount} / {totalLecturesCount} Lectures ({progressPercent}%) — {progressPercent >= 90 ? 'Certificate Unlocked!' : 'Requires 90% Course Progress for Certificate'}
                   </p>
                 </div>
               </div>
 
-              <Link
-                to={`/learning/${course._id}`}
-                className="btn-visual bg-[#5B54E8] hover:bg-[#4740D2] text-white text-xs font-black px-5 py-3 rounded-2xl shadow-md flex items-center gap-2 shrink-0"
-              >
-                <span>Continue Learning</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="flex items-center gap-2 shrink-0">
+                {progressPercent >= 90 && (
+                  <Link
+                    to={`/certificate/${course._id}`}
+                    className="btn-visual bg-gradient-to-r from-amber-500 to-emerald-600 text-white text-xs font-black px-4 py-3 rounded-2xl shadow-md flex items-center gap-1.5"
+                  >
+                    <Award className="w-4 h-4" />
+                    <span>View Certificate 🎓</span>
+                  </Link>
+                )}
+
+                <Link
+                  to={`/learning/${course._id}`}
+                  className="btn-visual bg-[#5B54E8] hover:bg-[#4740D2] text-white text-xs font-black px-5 py-3 rounded-2xl shadow-md flex items-center gap-2"
+                >
+                  <span>Continue Learning</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
             {/* UNIT ACCORDION LIST */}
@@ -266,7 +263,11 @@ export const CourseExplorePage = () => {
 
               {course.sections && course.sections.length > 0 ? (
                 course.sections.map((unit, uIdx) => {
-                  const unitCompleted = unit.lectures.filter((l) => completedLectures.includes(l._id)).length;
+                  const unitCompleted = unit.lectures.filter((l) =>
+                    completedLectures.some(
+                      (id) => String(id) === String(l._id) || String(id) === String(l.id) || id === l.title || l.completed
+                    )
+                  ).length;
                   const unitTotal = unit.lectures.length || 1;
                   const isExpanded = expandedUnitIndex === uIdx;
                   const isUnlocked = course.type === 'live' || uIdx === 0 || (unlockStatus.unlockedSections && unlockStatus.unlockedSections.includes(uIdx));
@@ -313,28 +314,38 @@ export const CourseExplorePage = () => {
                       {isExpanded && (
                         <div className="divide-y divide-slate-100 dark:divide-slate-800 p-3 bg-[#FBFAF7] dark:bg-[#090D16]">
                           {unit.lectures.map((lec) => {
-                            const isDone = completedLectures.includes(lec._id);
+                            const isDone = completedLectures.some(
+                              (id) => String(id) === String(lec._id) || String(id) === String(lec.id) || id === lec.title || lec.completed
+                            );
                             return (
                               <div
                                 key={lec._id || lec.title}
-                                className="p-3 rounded-2xl flex items-center justify-between text-xs font-semibold hover:bg-white dark:hover:bg-slate-900 transition-colors"
+                                className={`p-3.5 rounded-2xl flex items-center justify-between text-xs font-semibold transition-colors ${
+                                  isDone
+                                    ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40'
+                                    : 'hover:bg-white dark:hover:bg-slate-900'
+                                }`}
                               >
                                 <div className="flex items-center gap-3">
                                   {isDone ? (
-                                    <CheckCircle2 className="w-4 h-4 text-[#2FA876] shrink-0" />
+                                    <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                   ) : (
-                                    <PlayCircle className={`w-4 h-4 shrink-0 ${isUnlocked ? 'text-[#5B54E8]' : 'text-slate-400'}`} />
+                                    <PlayCircle className={`w-4.5 h-4.5 shrink-0 ${isUnlocked ? 'text-[#5B54E8]' : 'text-slate-400'}`} />
                                   )}
-                                  <span className={isDone ? 'line-through text-slate-400 font-medium' : isUnlocked ? 'text-[#2B2B38] dark:text-white font-bold' : 'text-slate-400 font-medium'}>
+                                  <span className={isDone ? 'text-emerald-900 dark:text-emerald-200 font-extrabold' : isUnlocked ? 'text-[#2B2B38] dark:text-white font-bold' : 'text-slate-400 font-medium'}>
                                     {lec.title}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-[10px] text-slate-400 font-bold">{lec.duration}</span>
-                                  {isUnlocked ? (
+                                  <span className="text-[10px] text-slate-400 font-bold">{lec.duration || '10 mins'}</span>
+                                  {isDone ? (
+                                    <span className="px-3 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-[10px] shadow-2xs border border-emerald-300/40">
+                                      Completed ✓
+                                    </span>
+                                  ) : isUnlocked ? (
                                     <Link
                                       to={`/learning/${course._id}`}
-                                      className="px-3 py-1 rounded-xl bg-[#5B54E8]/10 text-[#5B54E8] font-black text-[10px] hover:bg-[#5B54E8]/20 transition-colors"
+                                      className="px-3.5 py-1 rounded-xl bg-[#5B54E8]/10 text-[#5B54E8] font-black text-[10px] hover:bg-[#5B54E8]/20 transition-colors"
                                     >
                                       Play
                                     </Link>
@@ -368,70 +379,76 @@ export const CourseExplorePage = () => {
             </h2>
 
             {/* FLAT HORIZONTAL SCROLLABLE ROW OF LIVE SESSION CARDS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveSessions.map((session) => {
-                const isLiveNow = session.status === 'live';
-                const isCompleted = session.status === 'completed';
+            {liveSessions.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {liveSessions.map((session) => {
+                  const isLiveNow = session.status === 'live';
+                  const isCompleted = session.status === 'completed';
 
-                return (
-                  <div
-                    key={session.id}
-                    className="bg-white dark:bg-[#111827] rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
+                  return (
+                    <div
+                      key={session.id}
+                      className="bg-white dark:bg-[#111827] rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-4"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          {isLiveNow ? (
+                            <span className="px-3 py-1 rounded-full bg-[#FF7A59] text-white text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1">
+                              🔴 LIVE NOW
+                            </span>
+                          ) : isCompleted ? (
+                            <span className="px-3 py-1 rounded-full bg-[#2FA876]/10 text-[#2FA876] text-[10px] font-black uppercase tracking-wider">
+                              ✓ Completed
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full bg-[#5B54E8]/10 text-[#5B54E8] text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                              <Clock className="w-3 h-3" /> Upcoming
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="font-extrabold text-base text-[#2B2B38] dark:text-white">{session.title}</h3>
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-[#5B54E8]" />
+                          <span>{new Date(session.startTime).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
                         {isLiveNow ? (
-                          <span className="px-3 py-1 rounded-full bg-[#FF7A59] text-white text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1">
-                            🔴 LIVE NOW
-                          </span>
+                          <a
+                            href={session.meetingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-visual bg-[#FF7A59] hover:bg-[#E56848] text-white w-full text-xs font-black py-2.5 rounded-2xl flex items-center justify-center gap-2 shadow-md"
+                          >
+                            <ExternalLink className="w-4 h-4" /> Join Live Masterclass
+                          </a>
                         ) : isCompleted ? (
-                          <span className="px-3 py-1 rounded-full bg-[#2FA876]/10 text-[#2FA876] text-[10px] font-black uppercase tracking-wider">
-                            ✓ Completed
-                          </span>
+                          <button
+                            disabled
+                            className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold text-center"
+                          >
+                            Recording Unavailable
+                          </button>
                         ) : (
-                          <span className="px-3 py-1 rounded-full bg-[#5B54E8]/10 text-[#5B54E8] text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Upcoming
-                          </span>
+                          <button
+                            disabled
+                            className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold text-center cursor-not-allowed"
+                          >
+                            Starts Soon
+                          </button>
                         )}
                       </div>
-
-                      <h3 className="font-extrabold text-base text-[#2B2B38] dark:text-white">{session.title}</h3>
-                      <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#5B54E8]" />
-                        <span>{new Date(session.startTime).toLocaleString()}</span>
-                      </div>
                     </div>
-
-                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-                      {isLiveNow ? (
-                        <a
-                          href={session.meetingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-visual bg-[#FF7A59] hover:bg-[#E56848] text-white w-full text-xs font-black py-2.5 rounded-2xl flex items-center justify-center gap-2 shadow-md"
-                        >
-                          <ExternalLink className="w-4 h-4" /> Join Live Masterclass
-                        </a>
-                      ) : isCompleted ? (
-                        <button
-                          disabled
-                          className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold text-center"
-                        >
-                          Recording Unavailable
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold text-center cursor-not-allowed"
-                        >
-                          Starts Soon
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-8 text-center bg-white dark:bg-[#111827] rounded-3xl border border-slate-200/80 dark:border-slate-800 text-slate-500 font-medium text-xs">
+                No live masterclass scheduled yet for this course. Check back later or explore recorded units!
+              </div>
+            )}
           </div>
         )}
 

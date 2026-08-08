@@ -11,12 +11,7 @@ const DEFAULT_CATEGORIES = [
 
 export class CategoryService {
   static async getCategories(): Promise<ICategory[]> {
-    let categories = await CategoryModel.find({ isActive: true }).sort({ name: 1 });
-    if (categories.length === 0) {
-      await CategoryModel.insertMany(DEFAULT_CATEGORIES);
-      categories = await CategoryModel.find({ isActive: true }).sort({ name: 1 });
-    }
-    return categories;
+    return CategoryModel.find({ isActive: true }).sort({ name: 1 });
   }
 
   static async getAllCategoriesAdmin(): Promise<ICategory[]> {

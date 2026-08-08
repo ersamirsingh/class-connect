@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, ShieldAlert, Award, ArrowLeft, CheckCircle2, Copy, Check } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Award, ArrowLeft, CheckCircle2, Copy, Check, Search } from 'lucide-react';
 import { enrollmentApi } from '../../api/models/enrollment.api';
 import { Navbar } from '../../components/guest/Navbar';
 import { Footer } from '../../components/guest/Footer';
@@ -40,24 +40,55 @@ export function VerifyCertificatePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const [inputCode, setInputCode] = useState(uniqueId || '');
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (inputCode.trim()) {
+      window.location.href = `/verify-certificate/${inputCode.trim()}`;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[var(--canvas)] flex flex-col justify-between font-sans text-[var(--ink)]">
       <Navbar />
 
       <main className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-12 space-y-8 flex-1">
         
-        {/* Navigation back link */}
-        <div className="flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-[var(--primary)] hover:underline">
-            <ArrowLeft className="w-4 h-4" /> Back to Home
-          </Link>
-          <button
-            onClick={handleCopyLink}
-            className="px-4 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-extrabold flex items-center gap-2 hover:bg-slate-50 cursor-pointer shadow-xs"
-          >
-            {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-            <span>{copied ? 'Link Copied!' : 'Share Verification Link'}</span>
-          </button>
+        {/* Navigation & Public Search Header */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-[var(--primary)] hover:underline">
+              <ArrowLeft className="w-4 h-4" /> Back to Home
+            </Link>
+            <button
+              onClick={handleCopyLink}
+              className="px-4 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-extrabold flex items-center gap-2 hover:bg-slate-50 cursor-pointer shadow-xs"
+            >
+              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+              <span>{copied ? 'Link Copied!' : 'Share Verification Link'}</span>
+            </button>
+          </div>
+
+          <form onSubmit={handleSearchSubmit} className="bg-[var(--surface)] p-6 rounded-3xl border border-[var(--border)] shadow-sm space-y-3">
+            <h2 className="text-lg font-extrabold font-manrope">Verify Any Student Certificate</h2>
+            <p className="text-xs text-[var(--ink-muted)]">Enter official Hash Code (e.g. <code className="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-mono">CC-CERT-9A8B7C-178621</code>) to verify authenticity.</p>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input 
+                  type="text" 
+                  value={inputCode} 
+                  onChange={(e) => setInputCode(e.target.value)} 
+                  placeholder="Paste Certificate Hash Code..." 
+                  className="w-full pl-10 pr-4 py-3 bg-[var(--canvas)] border border-[var(--border)] rounded-2xl text-xs font-mono font-bold focus:outline-none focus:border-[var(--primary)]" 
+                />
+              </div>
+              <button type="submit" className="px-6 py-3 bg-[var(--primary)] text-white text-xs font-extrabold rounded-2xl hover:bg-[var(--deep-anchor,#24216F)] transition-colors cursor-pointer shadow-md">
+                Verify Credential
+              </button>
+            </div>
+          </form>
         </div>
 
         {loading ? (

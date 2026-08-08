@@ -33,4 +33,24 @@ export class NotificationController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  static async broadcastLiveAlert(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { courseId, courseTitle, liveUrl } = req.body;
+      const result = await NotificationService.notifyStudentsLiveStart(courseId || 'general', courseTitle || 'Live Class', liveUrl);
+      res.status(200).json({ success: true, message: `Live notification sent to ${result.count} students!`, count: result.count });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  static async scheduleLiveAlert(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { courseId, courseTitle, startTime, topic } = req.body;
+      const result = await NotificationService.notifyStudentsScheduledLiveClass(courseId || 'general', courseTitle || 'Live Class', startTime, topic);
+      res.status(200).json({ success: true, message: `Scheduled live class alert sent to ${result.count} students!`, count: result.count });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }

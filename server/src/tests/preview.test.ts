@@ -30,7 +30,7 @@ describe('7. Preview Video View Limit Module', () => {
       slug: 'preview-test-course',
       description: 'Course with preview limit',
       category: category._id,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
+      thumbnail: 'https://cdn.example.com/thumb.jpg',
       price: 1500,
       maxPreviewViews: 3,
     });

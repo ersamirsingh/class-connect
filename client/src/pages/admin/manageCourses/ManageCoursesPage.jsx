@@ -32,7 +32,6 @@ import {
   RotateCcw,
   Ban
 } from 'lucide-react';
-import { SAMPLE_COURSES } from '../../../data/sampleData';
 import { AdminGoLiveModal } from '../../../components/live/AdminGoLiveModal';
 import { Radio, Image as ImageIcon } from 'lucide-react';
 
@@ -80,11 +79,19 @@ export function ManageCoursesPage() {
   // Course Form state
   const [courseFormData, setCourseFormData] = useState({
     title: '',
+    subtitle: '',
     description: '',
     price: '',
+    discountPrice: '',
     category: '',
     thumbnail: '',
-    type: 'recorded'
+    previewVideo: '',
+    type: 'recorded',
+    isPublished: true,
+    isFeatured: true,
+    isSuggested: true,
+    instructorName: '',
+    instructorTitle: ''
   });
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState('');
@@ -97,22 +104,60 @@ export function ManageCoursesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [courseRes, categoryRes] = await Promise.all([
-        courseApi.getAllCoursesAdmin().catch(() => ({ data: [] })),
-        categoryApi.getAllCategoriesAdmin().catch(() => ({ data: [] }))
-      ]);
-      const loadedCourses = Array.isArray(courseRes.data)
-        ? courseRes.data
-        : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : SAMPLE_COURSES));
-      const loadedCategories = Array.isArray(categoryRes.data)
-        ? categoryRes.data
-        : (categoryRes.data?.categories || (Array.isArray(categoryRes) ? categoryRes : []));
+      let loadedCourses = [];
+      let loadedCategories = [];
 
-      setCourses(loadedCourses.length > 0 ? loadedCourses : SAMPLE_COURSES);
+      try {
+        const courseRes = await courseApi.getAllCoursesAdmin();
+        if (Array.isArray(courseRes?.data)) {
+          loadedCourses = courseRes.data;
+        } else if (Array.isArray(courseRes?.data?.courses)) {
+          loadedCourses = courseRes.data.courses;
+        } else if (Array.isArray(courseRes?.courses)) {
+          loadedCourses = courseRes.courses;
+        } else if (Array.isArray(courseRes)) {
+          loadedCourses = courseRes;
+        }
+      } catch (adminErr) {
+        console.warn('Admin course fetch error, attempting public fallback:', adminErr);
+      }
+
+      // Fallback to public getCourses API if admin list is empty
+      if (loadedCourses.length === 0) {
+        try {
+          const publicRes = await courseApi.getCourses();
+          if (Array.isArray(publicRes?.data)) {
+            loadedCourses = publicRes.data;
+          } else if (Array.isArray(publicRes?.data?.courses)) {
+            loadedCourses = publicRes.data.courses;
+          } else if (Array.isArray(publicRes?.courses)) {
+            loadedCourses = publicRes.courses;
+          }
+        } catch (pubErr) {
+          console.warn('Public course fetch error:', pubErr);
+        }
+      }
+
+      // Fetch categories
+      try {
+        const categoryRes = await categoryApi.getAllCategoriesAdmin();
+        if (Array.isArray(categoryRes?.data)) {
+          loadedCategories = categoryRes.data;
+        } else if (Array.isArray(categoryRes?.data?.categories)) {
+          loadedCategories = categoryRes.data.categories;
+        } else if (Array.isArray(categoryRes?.categories)) {
+          loadedCategories = categoryRes.categories;
+        }
+      } catch (catErr) {
+        console.warn('Category fetch error:', catErr);
+      }
+
+      setCourses(loadedCourses);
       setCategories(loadedCategories);
     } catch (err) {
-      console.error(err);
-      setCourses(SAMPLE_COURSES);
+      console.error('Fetch data error in ManageCoursesPage:', err);
+      setCourses([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -122,6 +167,42 @@ export function ManageCoursesPage() {
   const handleOpenGoLiveModal = (course) => {
     setGoLiveCourse(course);
     setIsGoLiveModalOpen(true);
+  };
+
+  const handleTogglePublished = async (course) => {
+    try {
+      const nextVal = !course.isPublished;
+      await courseApi.updateCourse(course._id, { isPublished: nextVal });
+      setCourses(prev => prev.map(c => c._id === course._id ? { ...c, isPublished: nextVal } : c));
+      setSuccessMsg(`Course "${course.title}" is now ${nextVal ? 'Published' : 'Unpublished (Hidden)'}`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Toggle published error:', err);
+    }
+  };
+
+  const handleToggleFeatured = async (course) => {
+    try {
+      const nextVal = !course.isFeatured;
+      await courseApi.updateCourse(course._id, { isFeatured: nextVal });
+      setCourses(prev => prev.map(c => c._id === course._id ? { ...c, isFeatured: nextVal } : c));
+      setSuccessMsg(`Course "${course.title}" is now ${nextVal ? 'Featured' : 'Unfeatured'}`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Toggle featured error:', err);
+    }
+  };
+
+  const handleToggleSuggested = async (course) => {
+    try {
+      const nextVal = !course.isSuggested;
+      await courseApi.toggleSuggested(course._id);
+      setCourses(prev => prev.map(c => c._id === course._id ? { ...c, isSuggested: nextVal } : c));
+      setSuccessMsg(`Course "${course.title}" suggestion updated`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Toggle suggested error:', err);
+    }
   };
 
   const handleThumbnailFileChange = async (e) => {
@@ -161,15 +242,38 @@ export function ManageCoursesPage() {
       setEditingCourse(course);
       setCourseFormData({
         title: course.title || '',
+        subtitle: course.subtitle || '',
         description: course.description || '',
-        price: course.price || '',
+        price: course.price !== undefined ? course.price : '',
+        discountPrice: course.discountPrice !== undefined ? course.discountPrice : '',
         category: course.category?._id || course.category || '',
         thumbnail: course.thumbnail || '',
-        type: course.type || 'recorded'
+        previewVideo: course.previewVideo || '',
+        type: course.type || 'recorded',
+        isPublished: course.isPublished !== undefined ? course.isPublished : true,
+        isFeatured: course.isFeatured !== undefined ? course.isFeatured : true,
+        isSuggested: course.isSuggested !== undefined ? course.isSuggested : true,
+        instructorName: course.instructor?.name || 'ClassConnect Master',
+        instructorTitle: course.instructor?.title || 'Senior Instructor'
       });
     } else {
       setEditingCourse(null);
-      setCourseFormData({ title: '', description: '', price: '', category: '', thumbnail: '', type: 'recorded' });
+      setCourseFormData({
+        title: '',
+        subtitle: '',
+        description: '',
+        price: '',
+        discountPrice: '',
+        category: '',
+        thumbnail: '',
+        previewVideo: '',
+        type: 'recorded',
+        isPublished: true,
+        isFeatured: true,
+        isSuggested: true,
+        instructorName: 'ClassConnect Master',
+        instructorTitle: 'Senior Instructor'
+      });
     }
     setIsCourseModalOpen(true);
   };
@@ -179,10 +283,30 @@ export function ManageCoursesPage() {
     setFormLoading(true);
     setError('');
     try {
+      const payload = {
+        title: courseFormData.title,
+        subtitle: courseFormData.subtitle,
+        description: courseFormData.description,
+        price: Number(courseFormData.price) || 0,
+        discountPrice: Number(courseFormData.discountPrice) || 0,
+        category: courseFormData.category,
+        thumbnail: courseFormData.thumbnail,
+        previewVideo: courseFormData.previewVideo,
+        type: courseFormData.type,
+        isPublished: Boolean(courseFormData.isPublished),
+        isFeatured: Boolean(courseFormData.isFeatured),
+        isSuggested: Boolean(courseFormData.isSuggested),
+        instructor: {
+          name: courseFormData.instructorName || 'ClassConnect Master',
+          title: courseFormData.instructorTitle || 'Senior Instructor',
+          photo: courseFormData.thumbnail || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
+        }
+      };
+
       if (editingCourse) {
-        await courseApi.updateCourse(editingCourse._id, courseFormData);
+        await courseApi.updateCourse(editingCourse._id, payload);
       } else {
-        await courseApi.createCourse(courseFormData);
+        await courseApi.createCourse(payload);
       }
       setIsCourseModalOpen(false);
       fetchData();
@@ -336,7 +460,7 @@ export function ManageCoursesPage() {
       console.warn('Metadata duration calculation error:', err);
     }
 
-    // 2. Upload video file to server / Cloudinary upload API with cancellation signal
+    // 2. Upload video file to server API with cancellation signal
     try {
       const result = await uploadApi.uploadFile(file, 'class-connect/lectures', { signal: controller.signal });
       if (result && (result.url || result.data?.url)) {
@@ -491,11 +615,18 @@ export function ManageCoursesPage() {
             )}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-manrope">
-            {viewMode === 'courses' && 'Manage Courses'}
-            {viewMode === 'topics' && `Topics in "${selectedCourse?.title}"`}
-            {viewMode === 'lectures' && `Lectures in "${selectedTopic?.title}"`}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-manrope">
+              {viewMode === 'courses' && 'Manage Courses'}
+              {viewMode === 'topics' && `Topics in "${selectedCourse?.title}"`}
+              {viewMode === 'lectures' && `Lectures in "${selectedTopic?.title}"`}
+            </h1>
+            {viewMode === 'courses' && (
+              <span className="px-3 py-1 bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-black rounded-full border border-[var(--primary)]/20 shadow-xs">
+                Total: {courses.length} Courses
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Action Button based on View Mode */}
@@ -612,11 +743,13 @@ export function ManageCoursesPage() {
                             {course.type === 'live' ? '🔴 Live' : course.type === 'hybrid' ? '⚡ Hybrid' : '📹 Recorded'}
                           </span>
 
-                          {categoryName && (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/70 text-white backdrop-blur-md truncate max-w-[120px]">
-                              {categoryName}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5 pointer-events-auto">
+                            {categoryName && (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/70 text-white backdrop-blur-md truncate max-w-[120px]">
+                                {categoryName}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -635,6 +768,48 @@ export function ManageCoursesPage() {
                         <p className="text-xs text-[var(--ink-muted)] line-clamp-2 leading-relaxed">
                           {course.subtitle || course.description}
                         </p>
+                      </div>
+
+                      {/* Visibility & Category Status Bar */}
+                      <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleTogglePublished(course)}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                            course.isPublished !== false 
+                              ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' 
+                              : 'bg-slate-200 text-slate-500 border-slate-300'
+                          }`}
+                          title="Click to toggle Published status"
+                        >
+                          {course.isPublished !== false ? '✓ Published' : '🙈 Hidden (Draft)'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFeatured(course)}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                            course.isFeatured 
+                              ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' 
+                              : 'bg-slate-100 text-slate-400 border-slate-200'
+                          }`}
+                          title="Click to toggle Featured status"
+                        >
+                          {course.isFeatured ? '⭐ Featured' : 'Normal'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSuggested(course)}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                            course.isSuggested 
+                              ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/30' 
+                              : 'bg-slate-100 text-slate-400 border-slate-200'
+                          }`}
+                          title="Click to toggle Suggested status"
+                        >
+                          {course.isSuggested ? '🔥 Suggested' : 'Not Suggested'}
+                        </button>
                       </div>
 
                       {/* Metrics Bar */}
@@ -663,7 +838,7 @@ export function ManageCoursesPage() {
                       </div>
                     </div>
 
-                    {/* ACTION BUTTONS (MANAGE TOPICS -> Edit -> Delete) */}
+                    {/* ACTION BUTTONS (MANAGE TOPICS -> GO LIVE -> Edit -> Delete) */}
                     <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center gap-2">
                       <button 
                         onClick={() => handleManageCourseTopics(course)}
@@ -671,6 +846,18 @@ export function ManageCoursesPage() {
                       >
                         <Layers className="w-4 h-4" />
                         <span>Manage Topics</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setGoLiveCourse(course);
+                          setIsGoLiveOpen(true);
+                        }}
+                        className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[38px] shadow-xs cursor-pointer shrink-0"
+                        title="Go Live Studio & Moderate Room"
+                      >
+                        <Radio className="w-3.5 h-3.5 animate-pulse" />
+                        <span>Go Live</span>
                       </button>
 
                       <button 
@@ -1104,18 +1291,32 @@ export function ManageCoursesPage() {
                 )}
                 
                 <form id="course-form" onSubmit={handleSaveCourse} className="space-y-4">
-                  <div>
-                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Category (Required First)</label>
-                    <select 
-                      required
-                      value={courseFormData.category} onChange={e => setCourseFormData({...courseFormData, category: e.target.value})}
-                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
-                    >
-                      <option value="">Select Category First</option>
-                      {categories.map(cat => (
-                        <option key={cat._id} value={cat._id}>{cat.name}</option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Category (Required)</label>
+                      <select 
+                        required
+                        value={courseFormData.category} onChange={e => setCourseFormData({...courseFormData, category: e.target.value})}
+                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(cat => (
+                          <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Course Delivery Type</label>
+                      <select 
+                        value={courseFormData.type} onChange={e => setCourseFormData({...courseFormData, type: e.target.value})}
+                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                      >
+                        <option value="recorded">📹 Recorded Lectures</option>
+                        <option value="live">🔴 Live Sessions</option>
+                        <option value="hybrid">⚡ Hybrid (Live + Recorded)</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div>
@@ -1123,26 +1324,121 @@ export function ManageCoursesPage() {
                     <input 
                       type="text" required
                       value={courseFormData.title} onChange={e => setCourseFormData({...courseFormData, title: e.target.value})}
+                      placeholder="e.g. Fullstack Web Development Bootcamp 2026"
+                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Subtitle / Tagline</label>
+                    <input 
+                      type="text"
+                      value={courseFormData.subtitle} onChange={e => setCourseFormData({...courseFormData, subtitle: e.target.value})}
+                      placeholder="e.g. Master React 19, Node.js, MongoDB & Tailwind v4 from zero"
                       className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
                     />
                   </div>
                   
                   <div>
-                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Description</label>
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Detailed Description</label>
                     <textarea 
                       required rows={3}
                       value={courseFormData.description} onChange={e => setCourseFormData({...courseFormData, description: e.target.value})}
+                      placeholder="Detailed overview of what students will learn..."
                       className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)]"
                     />
                   </div>
                   
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Original Price (₹)</label>
+                      <input 
+                        type="number" required min="0"
+                        value={courseFormData.price} onChange={e => setCourseFormData({...courseFormData, price: e.target.value})}
+                        placeholder="e.g. 4999"
+                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Discount Price (₹ Optional)</label>
+                      <input 
+                        type="number" min="0"
+                        value={courseFormData.discountPrice} onChange={e => setCourseFormData({...courseFormData, discountPrice: e.target.value})}
+                        placeholder="e.g. 1499"
+                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Instructor Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[var(--border)]">
+                    <div>
+                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Instructor Name</label>
+                      <input 
+                        type="text"
+                        value={courseFormData.instructorName} onChange={e => setCourseFormData({...courseFormData, instructorName: e.target.value})}
+                        placeholder="e.g. ClassConnect Master"
+                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Instructor Title</label>
+                      <input 
+                        type="text"
+                        value={courseFormData.instructorTitle} onChange={e => setCourseFormData({...courseFormData, instructorTitle: e.target.value})}
+                        placeholder="e.g. Senior Fullstack Engineer"
+                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Price (₹)</label>
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Preview Video URL</label>
                     <input 
-                      type="number" required
-                      value={courseFormData.price} onChange={e => setCourseFormData({...courseFormData, price: e.target.value})}
+                      type="text"
+                      value={courseFormData.previewVideo} onChange={e => setCourseFormData({...courseFormData, previewVideo: e.target.value})}
+                      placeholder="e.g. https://www.w3schools.com/html/mov_bbb.mp4"
                       className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
                     />
+                  </div>
+
+                  {/* Status & Promotion Toggles */}
+                  <div className="p-4 rounded-xl bg-[var(--canvas)] border border-[var(--border)] space-y-3">
+                    <label className="block text-xs font-extrabold text-[var(--ink)] uppercase tracking-wider mb-2">Visibility & Promotion Options</label>
+                    
+                    <div className="flex flex-wrap items-center gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--ink)]">
+                        <input 
+                          type="checkbox"
+                          checked={courseFormData.isPublished}
+                          onChange={e => setCourseFormData({...courseFormData, isPublished: e.target.checked})}
+                          className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)]"
+                        />
+                        <span>Is Published (Visible on site)</span>
+                      </label>
+
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--ink)]">
+                        <input 
+                          type="checkbox"
+                          checked={courseFormData.isFeatured}
+                          onChange={e => setCourseFormData({...courseFormData, isFeatured: e.target.checked})}
+                          className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)]"
+                        />
+                        <span>Is Featured</span>
+                      </label>
+
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--ink)]">
+                        <input 
+                          type="checkbox"
+                          checked={courseFormData.isSuggested}
+                          onChange={e => setCourseFormData({...courseFormData, isSuggested: e.target.checked})}
+                          className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)]"
+                        />
+                        <span>Is Suggested</span>
+                      </label>
+                    </div>
                   </div>
                   
                   {/* Thumbnail Image File Upload Input (Replaces URL text input) */}

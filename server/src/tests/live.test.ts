@@ -49,7 +49,7 @@ describe('12. Live Class Chat & Moderation Module', () => {
       slug: 'live-class-course',
       description: 'Course with live stream',
       category: category._id,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
+      thumbnail: 'https://cdn.example.com/thumb.jpg',
       price: 2500,
     });
     courseId = course._id.toString();

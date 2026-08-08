@@ -1,3 +1,6 @@
+// NOTE: All application data (courses, categories, lectures) is dynamically queried from MongoDB.
+// This file is retained solely as an offline dev reference schema.
+
 export const SAMPLE_CATEGORIES = [
   {
     _id: 'cat-1',

@@ -35,10 +35,10 @@ export async function seedContentBlocks() {
     {
       page: 'home',
       section: 'testimonial',
-      title: 'Student Review - Mahi Raj',
+      title: 'Student Review - Priti Singh',
       subtitle: 'Verified Graduate',
       data: {
-        name: 'Mahi Raj',
+        name: 'Priti Singh',
         role: 'Growth Specialist',
         photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
         quote: 'Hands-down the best structured LMS platform. Real video lectures with zero fluff and instant response support.',

@@ -72,58 +72,106 @@ export class EnrollmentService {
       progress.completedLectures.push(lectureId);
     }
 
-    // Check if course is 100% completed
+    // Check if course is 90%+ completed
     const course = await CourseModel.findById(courseId);
     let totalLectures = 0;
     if (course && course.sections) {
       course.sections.forEach((s) => (totalLectures += s.lectures.length));
     }
-    if (totalLectures > 0 && progress.completedLectures.length >= totalLectures) {
+    
+    const completedCount = progress.completedLectures.length;
+    const progressPercent = totalLectures > 0 ? Math.round((completedCount / totalLectures) * 100) : 100;
+
+    if (progressPercent >= 90) {
       progress.isCompleted = true;
       if (!progress.certificateId) {
-        progress.certificateId = `CERT-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const hash = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const timeTag = Date.now().toString(36).toUpperCase();
+        progress.certificateId = `CC-CERT-${hash}-${timeTag}`;
         progress.certificateIssuedAt = new Date();
       }
     }
 
     await progress.save();
-    return progress;
+    return {
+      progress,
+      progressPercent,
+      completedCount,
+      totalLectures,
+      certificateUnlocked: progressPercent >= 90,
+      certificateId: progress.certificateId
+    };
   }
 
   static async getCertificate(studentId: string, courseId: string) {
-    const progress = await ProgressModel.findOne({ student: studentId, course: courseId, isCompleted: true });
-    if (!progress || !progress.certificateId) {
-      throw new Error('Certificate not available. Please complete all course lectures first.');
+    const progress = await ProgressModel.findOne({ student: studentId, course: courseId });
+    const course = await CourseModel.findById(courseId);
+    
+    let totalLectures = 0;
+    if (course && course.sections) {
+      course.sections.forEach((s) => (totalLectures += s.lectures.length));
+    }
+    const completedCount = progress?.completedLectures?.length || 0;
+    const progressPercent = totalLectures > 0 ? Math.round((completedCount / totalLectures) * 100) : 0;
+
+    if (!progress || progressPercent < 90) {
+      throw new Error(`Certificate requires at least 90% course completion. Your current progress is ${progressPercent}%.`);
+    }
+
+    if (!progress.certificateId) {
+      const hash = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const timeTag = Date.now().toString(36).toUpperCase();
+      progress.certificateId = `CC-CERT-${hash}-${timeTag}`;
+      progress.certificateIssuedAt = new Date();
+      progress.isCompleted = true;
+      await progress.save();
     }
 
     const student = await UserModel.findById(studentId);
-    const course = await CourseModel.findById(courseId);
 
     return {
       certificateId: progress.certificateId,
       issuedAt: progress.certificateIssuedAt || progress.updatedAt,
       studentName: student?.name || 'Student',
+      studentEmail: student?.email || '',
       courseTitle: course?.title || 'Course Masterclass',
-      instructorName: course?.instructor?.name || 'ClassConnect Master',
+      courseCategory: typeof course?.category === 'object' ? (course.category as any)?.name : 'General',
+      instructorName: typeof course?.instructor === 'object' ? (course.instructor as any)?.name : (course?.instructor || 'ClassConnect Master'),
+      progressPercent,
+      isVerified: true
     };
   }
 
   static async verifyPublicCertificate(uniqueId: string) {
-    const progress = await ProgressModel.findOne({ certificateId: uniqueId });
+    const cleanId = uniqueId.trim().toUpperCase();
+    const progress = await ProgressModel.findOne({ 
+      certificateId: { $regex: new RegExp(`^${cleanId}$`, 'i') } 
+    });
+    
     if (!progress || !progress.certificateId) {
-      throw new Error('Invalid or unverified certificate ID.');
+      throw new Error('Invalid or unverified certificate Hash Code.');
     }
 
     const student = await UserModel.findById(progress.student);
     const course = await CourseModel.findById(progress.course);
 
+    let totalLectures = 0;
+    if (course && course.sections) {
+      course.sections.forEach((s) => (totalLectures += s.lectures.length));
+    }
+    const completedCount = progress.completedLectures?.length || 0;
+    const progressPercent = totalLectures > 0 ? Math.round((completedCount / totalLectures) * 100) : 100;
+
     return {
       certificateId: progress.certificateId,
       issuedAt: progress.certificateIssuedAt || progress.updatedAt,
-      studentName: student?.name || 'ClassConnect Scholar',
-      courseTitle: course?.title || 'Course Masterclass',
-      instructorName: course?.instructor?.name || 'ClassConnect Master',
-      isValid: true,
+      studentName: student?.name || 'Verified Student',
+      studentEmail: student?.email ? student.email.replace(/(?<=.{2}).(?=.*@)/g, '*') : 'Verified',
+      courseTitle: course?.title || 'ClassConnect Masterclass',
+      instructorName: typeof course?.instructor === 'object' ? (course.instructor as any)?.name : (course?.instructor || 'ClassConnect Faculty'),
+      progressPercent,
+      status: 'VALID_AND_VERIFIED',
+      verifiedAt: new Date()
     };
   }
 

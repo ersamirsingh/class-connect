@@ -7,6 +7,7 @@ import {
   PlayCircle, 
   Lock, 
   CheckCircle, 
+  CheckCircle2,
   ChevronDown, 
   ChevronUp, 
   AlertCircle, 
@@ -24,7 +25,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { courseApi } from '../../api/models/course.api';
 import { reviewApi } from '../../api/models/review.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
-import { SAMPLE_COURSES } from '../../data/sampleData';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
@@ -48,6 +48,7 @@ export function CourseDetailPage() {
   const [expandedUnits, setExpandedUnits] = useState({ 0: true });
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
 
+  const [completedLectures, setCompletedLectures] = useState([]);
   const isHindi = language === 'hi';
 
   useEffect(() => {
@@ -79,12 +80,23 @@ export function CourseDetailPage() {
             e.courseId === loadedCourse._id || e.course?._id === loadedCourse._id || e.course?.slug === loadedCourse.slug
           );
           setIsOwned(owned);
+
+          if (owned && isAuthenticated) {
+            try {
+              const unlockRes = await enrollmentApi.getUnlockStatus(loadedCourse._id || slug);
+              if (unlockRes?.data?.completedLectures) {
+                setCompletedLectures(unlockRes.data.completedLectures);
+              }
+            } catch (e) {
+              console.warn('Unlock status fetch failed:', e);
+            }
+          }
         } else {
-          throw new Error('Course not found');
+          setError('Course not found');
         }
       } catch (err) {
-        const foundSample = SAMPLE_COURSES.find(c => c.slug === slug || c._id === slug) || SAMPLE_COURSES[0];
-        setCourse(foundSample);
+        console.error('Error fetching course detail:', err);
+        setError('Course not found');
       } finally {
         setIsLoading(false);
       }
@@ -334,18 +346,41 @@ export function CourseDetailPage() {
 
                       {isExpanded && (
                         <div className="divide-y divide-[var(--border)] border-t border-[var(--border)] bg-[var(--canvas)] p-2">
-                          {unit.lectures?.map((lec, lIdx) => (
-                            <div key={lIdx} className="p-3.5 flex items-center justify-between text-sm">
-                              <div className="flex items-center gap-3">
-                                <PlayCircle className="w-4 h-4 text-[var(--primary)] shrink-0" />
-                                <span className="font-medium text-[var(--ink)]">{lec.title}</span>
+                          {unit.lectures?.map((lec, lIdx) => {
+                            const isDone = completedLectures.some(
+                              (id) => String(id) === String(lec._id) || String(id) === String(lec.id) || id === lec.title || lec.completed
+                            );
+                            return (
+                              <div key={lIdx} className={`p-3.5 flex items-center justify-between text-sm rounded-xl ${isDone ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold' : ''}`}>
+                                <div className="flex items-center gap-3">
+                                  {isDone ? (
+                                    <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                  ) : (
+                                    <PlayCircle className="w-4 h-4 text-[var(--primary)] shrink-0" />
+                                  )}
+                                  <span className={isDone ? 'font-extrabold text-emerald-900 dark:text-emerald-200' : 'font-medium text-[var(--ink)]'}>
+                                    {lec.title}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-[var(--ink-muted)]">
+                                  {isDone ? (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-[10px]">
+                                      Completed ✓
+                                    </span>
+                                  ) : isOwned ? (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-bold text-[10px]">
+                                      Unlocked
+                                    </span>
+                                  ) : (
+                                    <>
+                                      <span>Locked</span>
+                                      <Lock className="w-3.5 h-3.5 text-[var(--ink-muted)]" />
+                                    </>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-[var(--ink-muted)]">
-                                <span>Locked</span>
-                                <Lock className="w-3.5 h-3.5 text-[var(--ink-muted)]" />
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>

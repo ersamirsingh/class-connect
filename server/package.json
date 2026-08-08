@@ -8,7 +8,6 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "npx ts-node src/scripts/seed.ts",
-    "upload-videos": "npx ts-node src/scripts/uploadCourseVideos.ts",
     "test": "jest --detectOpenHandles --forceExit --runInBand"
   },
   "dependencies": {

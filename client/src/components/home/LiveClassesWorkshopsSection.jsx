@@ -1,45 +1,70 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Radio, Users, Calendar, ArrowRight, Video } from 'lucide-react';
-
-const liveSessions = [
-  {
-    id: 'live-1',
-    status: 'LIVE NOW',
-    isLiveNow: true,
-    registered: '340 registered',
-    title: 'Advanced React 19 & Server Components Masterclass',
-    host: 'Rohan Sharma',
-    type: 'Interactive Session',
-    actionText: 'Join Room',
-    actionLink: '/courses/react-19-masterclass',
-  },
-  {
-    id: 'live-2',
-    status: 'Tomorrow • 6:00 PM IST',
-    isLiveNow: false,
-    registered: '215 registered',
-    title: 'Full-Stack Architecture & Microservices Q&A',
-    host: 'Sneha Gupta',
-    type: 'Interactive Session',
-    actionText: 'Reserve Spot',
-    actionLink: '/courses/fullstack-architecture',
-  },
-  {
-    id: 'live-3',
-    status: 'Aug 4 • 8:00 PM IST',
-    isLiveNow: false,
-    registered: '490 registered',
-    title: 'AI Engineering & LLM Integration Live Workshop',
-    host: 'Vikram Mehta',
-    type: 'Interactive Session',
-    actionText: 'Reserve Spot',
-    actionLink: '/courses/ai-engineering-workshop',
-  },
-];
+import { courseApi } from '../../api/models/course.api';
 
 export function LiveClassesWorkshopsSection() {
+  const [liveSessions, setLiveSessions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLiveSessions = async () => {
+      try {
+        const response = await courseApi.getCourses();
+        const courses = Array.isArray(response?.data)
+          ? response.data
+          : (response?.data?.courses || (Array.isArray(response) ? response : []));
+
+        // Filter courses with live or hybrid types or liveSchedule
+        const liveOnly = courses.filter(c => c.type === 'live' || c.type === 'hybrid' || c.liveSchedule);
+
+        const formatted = liveOnly.map(c => {
+          const schedule = c.liveSchedule || {};
+          const isLiveNow = schedule.status === 'live';
+          
+          let statusText = 'Scheduled Session';
+          if (schedule.status === 'live') {
+            statusText = 'LIVE NOW';
+          } else if (schedule.status === 'ended') {
+            statusText = 'Completed • Recording Available';
+          } else if (schedule.startTime) {
+            statusText = new Date(schedule.startTime).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+            });
+          }
+
+          return {
+            id: c._id || c.slug,
+            status: statusText,
+            isLiveNow,
+            registered: `${c.ratingCount ? c.ratingCount * 3 + 120 : 150} registered`,
+            title: c.title,
+            host: c.instructor?.name || 'ClassConnect Master',
+            type: c.type === 'live' ? 'Live Workshop' : 'Hybrid Masterclass',
+            actionText: isLiveNow ? 'Join Room' : 'View Course',
+            actionLink: `/courses/${c.slug || c._id}`,
+          };
+        });
+
+        setLiveSessions(formatted.slice(0, 3));
+      } catch (err) {
+        console.warn('Failed to load live sessions from DB:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLiveSessions();
+  }, []);
+
+  if (!isLoading && liveSessions.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)] border-t border-[var(--border)] relative overflow-hidden">
       {/* Background Subtle Aura Glow */}
@@ -60,12 +85,12 @@ export function LiveClassesWorkshopsSection() {
             </h2>
 
             <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-red-500/15 text-red-600 border border-red-500/25 uppercase tracking-wide">
-              LIVE NOW
+              LIVE & UPCOMING
             </span>
           </div>
 
           <Link
-            to="/courses?filter=live"
+            to="/courses"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--primary)] hover:text-[var(--primary-deep)] transition-colors"
           >
             View Schedule <ArrowRight className="w-4 h-4" />
@@ -136,3 +161,4 @@ export function LiveClassesWorkshopsSection() {
     </section>
   );
 }
+

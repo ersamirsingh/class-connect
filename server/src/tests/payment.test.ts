@@ -41,7 +41,7 @@ describe('5. Payment System Module (Razorpay + Stripe)', () => {
       slug: 'payment-test-course',
       description: 'Course for payment gateway testing',
       category: category._id,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
+      thumbnail: 'https://cdn.example.com/thumb.jpg',
       price: 1999,
       discountPrice: 1499,
     });
@@ -105,7 +105,7 @@ describe('5. Payment System Module (Razorpay + Stripe)', () => {
       slug: 'cheap-trial-course',
       description: 'Trial',
       category: category!._id,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
+      thumbnail: 'https://cdn.example.com/thumb.jpg',
       price: 1,
     });
 

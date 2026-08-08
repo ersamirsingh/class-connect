@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { courseApi } from '../../api/models/course.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
-import { CheckCircle2, Circle, ChevronLeft, Menu, X, PlayCircle, BookOpen } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronLeft, Menu, X, PlayCircle, BookOpen, Sparkles, Award } from 'lucide-react';
 import { CustomVideoPlayer } from '../../components/video/CustomVideoPlayer';
 import { LiveChatPanel } from '../../components/live/LiveChatPanel';
 import { AdminLiveParticipantPanel } from '../../components/live/AdminLiveParticipantPanel';
@@ -27,19 +27,30 @@ export function VideoPlayerPage() {
       try {
         const [res, unlockRes] = await Promise.all([
           courseApi.getCourseByIdOrSlug(courseId),
-          enrollmentApi.getUnlockStatus(courseId).catch(() => ({ data: { unlockedSections: [0] } })),
+          enrollmentApi.getUnlockStatus(courseId).catch(() => ({ data: { unlockedSections: [0], completedLectures: [] } })),
         ]);
         const loadedCourse = res?.data;
-        setCourse(loadedCourse);
-        if (unlockRes && unlockRes.data) {
-          setUnlockStatus(unlockRes.data);
-        }
+        const unlockData = unlockRes?.data || { unlockedSections: [0], completedLectures: [] };
+        setUnlockStatus(unlockData);
 
-        // Find first lecture across sections or lectures array
+        const completedSet = new Set(unlockData.completedLectures || []);
+
         if (loadedCourse) {
-          const allLectures = loadedCourse.sections && loadedCourse.sections.length > 0
-            ? loadedCourse.sections.flatMap(s => s.lectures || [])
-            : (loadedCourse.lectures || []);
+          const updatedSections = (loadedCourse.sections || []).map(section => ({
+            ...section,
+            lectures: (section.lectures || []).map(lec => {
+              const lecKey = lec._id || lec.id || lec.title;
+              const isComp = completedSet.has(String(lecKey)) || completedSet.has(lec.title);
+              return { ...lec, completed: isComp };
+            })
+          }));
+
+          const updatedCourse = { ...loadedCourse, sections: updatedSections };
+          setCourse(updatedCourse);
+
+          const allLectures = updatedSections.length > 0
+            ? updatedSections.flatMap(s => s.lectures || [])
+            : (updatedCourse.lectures || []);
 
           if (allLectures.length > 0) {
             setCurrentLecture(allLectures[0]);
@@ -58,22 +69,33 @@ export function VideoPlayerPage() {
     if (!currentLecture || !course) return;
     const lectureId = currentLecture._id || currentLecture.id || currentLecture.title;
     try {
-      await enrollmentApi.markComplete(courseId, lectureId);
+      await enrollmentApi.markComplete(course._id || courseId, lectureId);
       
-      // Update local state to reflect completion
+      // Re-fetch unlock status to update section locks and progress
+      try {
+        const unlockRes = await enrollmentApi.getUnlockStatus(course._id || courseId);
+        if (unlockRes?.data) {
+          setUnlockStatus(unlockRes.data);
+        }
+      } catch (e) {
+        console.warn('Could not refresh unlock status:', e);
+      }
+
+      // Update local state to reflect completion on course & currentLecture
       setCourse(prev => {
         if (!prev) return prev;
         const updatedSections = (prev.sections || []).map(section => ({
           ...section,
           lectures: (section.lectures || []).map(l => 
-            (l._id || l.id || l.title) === lectureId ? { ...l, completed: true } : l
+            ((l._id || l.id || l.title) === lectureId || l.title === currentLecture.title) ? { ...l, completed: true } : l
           )
         }));
         return { ...prev, sections: updatedSections };
       });
+
       setCurrentLecture(prev => prev ? { ...prev, completed: true } : prev);
     } catch (err) {
-      console.error(err);
+      console.error('Error marking lecture complete:', err);
     }
   };
 
@@ -99,9 +121,14 @@ export function VideoPlayerPage() {
     );
   }
 
-  const allLecturesList = course.sections && course.sections.length > 0
+  const allLecturesList = course?.sections && course.sections.length > 0
     ? course.sections.flatMap(s => s.lectures || [])
-    : (course.lectures || []);
+    : (course?.lectures || []);
+
+  const totalLecturesCount = allLecturesList.length || 1;
+  const completedCount = allLecturesList.filter(l => l.completed).length;
+  const courseProgressPercent = Math.min(100, Math.round((completedCount / totalLecturesCount) * 100));
+  const isCourseCompleted = courseProgressPercent >= 90 || (unlockStatus && unlockStatus.certificateUnlocked);
 
   const liveSessionId = course._id || courseId;
 
@@ -137,13 +164,14 @@ export function VideoPlayerPage() {
         {/* Video Player & Info Area */}
         <div className="flex-1 p-4 md:p-6 flex flex-col max-w-4xl mx-auto w-full space-y-6">
           
-          {/* CUSTOM VIDEO PLAYER */}
+          {/* CUSTOM VIDEO PLAYER WITH AUTOMATIC 90%+ COMPLETION DETECTION */}
           <div className="w-full max-w-4xl mx-auto shadow-xl rounded-2xl overflow-hidden border border-[var(--border)]">
             <CustomVideoPlayer 
               src={currentLecture?.videoUrl} 
               title={currentLecture?.title || course.title}
               poster={course.thumbnail}
               onEnded={handleMarkComplete}
+              onAuto90PercentComplete={handleMarkComplete}
             />
           </div>
 
@@ -158,17 +186,43 @@ export function VideoPlayerPage() {
               </h2>
             </div>
             
-            <button 
-              onClick={handleMarkComplete}
-              className={`px-6 py-2.5 min-h-[44px] rounded-full font-extrabold text-xs transition-all flex items-center gap-2 shadow-sm cursor-pointer ${
-                currentLecture?.completed 
-                  ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' 
-                  : 'bg-[var(--primary)] text-white hover:bg-[var(--deep-anchor,#24216F)]'
-              }`}
-            >
-              <CheckCircle2 className="w-4.5 h-4.5" />
-              <span>{currentLecture?.completed ? 'Completed ✓' : (t('mark_complete') || 'Mark Complete')}</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Individual Lesson Completion Badge / Action */}
+              {currentLecture?.completed ? (
+                <span className="px-3.5 py-2 bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-300 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-full flex items-center gap-1.5 shadow-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Lesson Completed ✓</span>
+                </span>
+              ) : (
+                <button
+                  onClick={handleMarkComplete}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                  <span>Mark Lesson Done</span>
+                </button>
+              )}
+
+              {/* Overall Course Completion & Certificate Badge */}
+              {isCourseCompleted ? (
+                <button
+                  onClick={() => navigate(`/certificate/${course._id}`)}
+                  className="px-4 py-2 bg-gradient-to-r from-amber-500 to-emerald-600 text-white text-xs font-extrabold rounded-full shadow-md hover:opacity-90 flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Award className="w-4 h-4" />
+                  <span>Course Completed (Certificate Unlocked 🎉)</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => alert(`Certificate requires 90%+ Course Progress. Current Course Progress: ${courseProgressPercent}%. (${completedCount}/${totalLecturesCount} lectures completed)`)}
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-full flex items-center gap-1.5 cursor-pointer hover:bg-slate-200"
+                  title="Certificate unlocks at 90% Course Progress"
+                >
+                  <Award className="w-4 h-4 text-amber-500" />
+                  <span>Course Progress: {courseProgressPercent}% (Cert at 90%)</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* REAL-TIME LIVE CLASS CHAT & ADMIN MODERATION PANEL (RESTRICTED TO LIVE SESSIONS ONLY) */}

@@ -42,7 +42,6 @@ import { CompareOptionsSection } from '../../components/home/CompareOptionsSecti
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { contentApi } from '../../api/models/content.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 import { FeaturedCourseCard } from '../../components/courses/FeaturedCourseCard';
 
 // --- Placeholder Translations (Fallback if keys missing) ---
@@ -79,9 +78,12 @@ export function HomePage() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const isHindi = language === 'hi';
-  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
-  const [featuredCourses, setFeaturedCourses] = useState(SAMPLE_COURSES);
+  const [categories, setCategories] = useState([]);
+  const [featuredCourses, setFeaturedCourses] = useState([]);
   const [studentResultsCms, setStudentResultsCms] = useState(null);
+  const [liveClassesCms, setLiveClassesCms] = useState(null);
+  const [testimonialsCms, setTestimonialsCms] = useState(null);
+  const [faqsCms, setFaqsCms] = useState(null);
   const [isLoadingCats, setIsLoadingCats] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
@@ -90,24 +92,26 @@ export function HomePage() {
     const fetchCategories = async () => {
       try {
         const response = await categoryApi.getCategories();
-        const apiCats = response.data?.categories || [];
-        if (apiCats.length > 0) {
-          setCategories(apiCats);
-        }
+        const apiCats = Array.isArray(response?.data) 
+          ? response.data 
+          : (response?.data?.categories || (Array.isArray(response) ? response : []));
+        setCategories(apiCats);
       } catch (error) {
-        console.warn('Using sample categories fallback:', error.message);
+        console.warn('Failed to load live categories:', error.message);
+        setCategories([]);
       }
     };
 
     const fetchCourses = async () => {
       try {
         const response = await courseApi.getCourses();
-        const apiCourses = response.data?.courses || [];
-        if (apiCourses.length > 0) {
-          setFeaturedCourses(apiCourses.slice(0, 6));
-        }
+        const apiCourses = Array.isArray(response?.data) 
+          ? response.data 
+          : (response?.data?.courses || (Array.isArray(response) ? response : []));
+        setFeaturedCourses(apiCourses.slice(0, 8));
       } catch (error) {
-        console.warn('Using sample courses fallback:', error.message);
+        console.warn('Failed to load live courses:', error.message);
+        setFeaturedCourses([]);
       }
     };
 
@@ -118,9 +122,39 @@ export function HomePage() {
           ? response.data 
           : (response?.data?.blocks || []);
         
+        // 1. Featured Courses CMS Block
+        const featBlock = blocks.find(b => b.section === 'featured_courses' && b.isActive);
+        if (featBlock?.data?.courseIds && featBlock.data.courseIds.length > 0) {
+          const allRes = await courseApi.getCourses();
+          const allList = allRes.data?.courses || [];
+          const matched = featBlock.data.courseIds.map(id => allList.find(c => (c._id || c.id) === id)).filter(Boolean);
+          if (matched.length > 0) {
+            setFeaturedCourses(matched);
+          }
+        }
+
+        // 2. Batch Zero Student Results CMS Block
         const resultsBlock = blocks.find(b => b.section === 'student-results' && b.isActive);
         if (resultsBlock?.data) {
           setStudentResultsCms(resultsBlock.data);
+        }
+
+        // 3. Live Classes & Workshops CMS Block
+        const liveBlock = blocks.find(b => (b.section === 'live_classes_workshops' || b.section === 'live-workshops') && b.isActive);
+        if (liveBlock?.data) {
+          setLiveClassesCms(liveBlock.data);
+        }
+
+        // 4. Specific Student Ratings / Testimonials CMS Block
+        const testBlock = blocks.find(b => (b.section === 'testimonials' || b.section === 'student_ratings') && b.isActive);
+        if (testBlock?.data) {
+          setTestimonialsCms(testBlock.data);
+        }
+
+        // 5. FAQ CMS Block
+        const faqBlock = blocks.find(b => b.section === 'faqs' && b.isActive);
+        if (faqBlock?.data?.faqs) {
+          setFaqsCms(faqBlock.data.faqs);
         }
       } catch (error) {
         console.warn('Using sample CMS results fallback:', error.message);

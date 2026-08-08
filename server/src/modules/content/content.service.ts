@@ -60,13 +60,7 @@ const DEFAULT_CONTENT_BLOCKS = [
 
 export class ContentService {
   static async getPublicContent(page = 'home'): Promise<any[]> {
-    let blocks = await ContentBlockModel.find({ page, isActive: true }).sort({ order: 1 });
-    
-    // Seed defaults if database is empty for this page
-    if (blocks.length === 0 && page === 'home') {
-      await ContentBlockModel.insertMany(DEFAULT_CONTENT_BLOCKS);
-      blocks = await ContentBlockModel.find({ page, isActive: true }).sort({ order: 1 });
-    }
+    const blocks = await ContentBlockModel.find({ page, isActive: true }).sort({ order: 1 });
 
     const plainBlocks = await Promise.all(
       blocks.map(async (block) => {

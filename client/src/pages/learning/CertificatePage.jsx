@@ -14,22 +14,19 @@ export function CertificatePage() {
   const [certificate, setCertificate] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [errorMsg, setErrorMsg] = useState(null);
+
   useEffect(() => {
     async function loadCert() {
       try {
+        setLoading(true);
+        setErrorMsg(null);
         const res = await enrollmentApi.getCertificate(courseId);
         const certData = res?.data || res;
         setCertificate(certData);
       } catch (err) {
-        console.warn('Falling back to course completion cert:', err);
-        // Fallback demo certificate
-        setCertificate({
-          certificateId: `CERT-${Date.now().toString().substring(5)}-8821`,
-          issuedAt: new Date().toISOString(),
-          studentName: user?.name || 'ClassConnect Scholar',
-          courseTitle: 'Applied Mathematics & Mastery Class',
-          instructorName: 'Dr. Samir Singh',
-        });
+        const msg = err.response?.data?.message || err.message || 'Certificate unavailable.';
+        setErrorMsg(msg);
       } finally {
         setLoading(false);
       }
@@ -47,6 +44,34 @@ export function CertificatePage() {
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
           <span className="font-bold text-sm">Generating Official Certificate...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="min-h-screen bg-[var(--canvas)] p-6 md:p-12 flex flex-col items-center justify-center font-sans text-[var(--ink)]">
+        <div className="max-w-md w-full bg-[var(--surface)] p-8 rounded-3xl border border-[var(--border)] shadow-xl text-center space-y-5">
+          <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+            <Award className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-extrabold font-manrope">90%+ Completion Required</h2>
+          <p className="text-xs font-bold text-[var(--ink-muted)] leading-relaxed">{errorMsg}</p>
+          <div className="pt-4 flex flex-col gap-2">
+            <button 
+              onClick={() => navigate(`/learning/${courseId}`)} 
+              className="w-full py-3 bg-[var(--primary)] text-white text-xs font-extrabold rounded-2xl hover:bg-[var(--deep-anchor,#24216F)] transition-colors"
+            >
+              Continue Course Lectures
+            </button>
+            <button 
+              onClick={() => navigate('/dashboard')} 
+              className="w-full py-3 bg-[var(--canvas)] border border-[var(--border)] text-xs font-extrabold rounded-2xl hover:bg-slate-100"
+            >
+              Return to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -133,11 +158,19 @@ export function CertificatePage() {
               <ShieldCheck className="w-4 h-4" /> Verifiable Credential
             </div>
             <p className="text-[11px] font-mono text-slate-500 font-bold">
-              ID: {certificate?.certificateId || `CERT-${Date.now()}`}
+              ID / Hash: {certificate?.certificateId || `CC-CERT-${Date.now()}`}
             </p>
             <p className="text-[11px] font-semibold text-slate-400">
               Issued: {certificate?.issuedAt ? new Date(certificate.issuedAt).toLocaleDateString() : new Date().toLocaleDateString()}
             </p>
+            <a 
+              href={`/verify-certificate/${certificate?.certificateId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[10px] font-bold text-indigo-600 hover:underline block pt-1 print:hidden"
+            >
+              🔗 Public Verification Link: /verify-certificate/{certificate?.certificateId}
+            </a>
           </div>
 
           <div className="text-center sm:text-right">

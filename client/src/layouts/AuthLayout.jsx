@@ -77,7 +77,7 @@ export function AuthLayout() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-white">Live & Recorded Masterclasses</h4>
-                    <p className="text-[11px] text-indigo-200">HD Cloudinary streaming with adaptive player.</p>
+                    <p className="text-[11px] text-indigo-200">HD streaming with adaptive player.</p>
                   </div>
                 </div>
 

@@ -182,7 +182,7 @@ async function buildDocument() {
           heading2('4.1 Account & Profile'),
           bulletItem('Public Auth:', 'Signup, login, JWT token authentication, and single active session enforcement (logging in from a new IP/device invalidates older sessions).'),
           bulletItem('Password Recovery:', 'Forgot/reset password flow via email with cryptographically random reset tokens.'),
-          bulletItem('Profile Management:', 'View/update profile photo via Cloudinary upload, phone number, and password.'),
+          bulletItem('Profile Management:', 'View/update profile photo, phone number, and password.'),
 
           heading2('4.2 Course Discovery & Preview'),
           bulletItem('Discovery:', 'Category filtering, keyword search, suggested course recommendations.'),
@@ -252,7 +252,7 @@ async function buildDocument() {
 
           // Section 7
           heading1('7. Video Delivery & Content Security'),
-          bulletItem('Private Cloudinary Assets:', 'Paid course videos are stored as private/authenticated Cloudinary assets accessible only via short-lived signed URLs generated post-enrollment check.'),
+          bulletItem('Private CDN Assets:', 'Paid course videos are stored as private CDN assets accessible only via authenticated endpoints post-enrollment check.'),
           bulletItem('Public Preview Isolation:', 'Public preview videos use distinct paths and enforce view-count rate limits.'),
 
           // Section 8

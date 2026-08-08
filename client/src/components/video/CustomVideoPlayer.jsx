@@ -24,6 +24,7 @@ export function CustomVideoPlayer({
   src, 
   title = 'Course Video Lesson',
   onEnded,
+  onAuto90PercentComplete,
   poster = ''
 }) {
   const videoRef = useRef(null);
@@ -93,11 +94,19 @@ export function CustomVideoPlayer({
   const handleNativePlay = () => setIsPlaying(true);
   const handleNativePause = () => setIsPlaying(false);
 
-  // Time Updates
+  // Time Updates & Automatic 90%+ Video Completion Detection
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-      setDuration(videoRef.current.duration || 0);
+      const curr = videoRef.current.currentTime;
+      const dur = videoRef.current.duration || 0;
+      setCurrentTime(curr);
+      setDuration(dur);
+
+      if (dur > 0 && (curr / dur) >= 0.90) {
+        if (onAuto90PercentComplete) {
+          onAuto90PercentComplete();
+        }
+      }
     }
   };
 

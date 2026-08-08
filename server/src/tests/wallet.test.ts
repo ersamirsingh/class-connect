@@ -71,7 +71,7 @@ describe('9. Referral, Wallet & Payout Module', () => {
     await DocumentVerificationModel.create({
       student: referrerId,
       aadhaarNumber: '123456789012',
-      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
+      aadhaarImageUrl: 'https://cdn.example.com/aadhaar.jpg',
       status: 'verified',
     });
 
@@ -140,7 +140,7 @@ describe('9. Referral, Wallet & Payout Module', () => {
     await DocumentVerificationModel.create({
       student: referrerId,
       aadhaarNumber: '123456789012',
-      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
+      aadhaarImageUrl: 'https://cdn.example.com/aadhaar.jpg',
       status: 'pending',
     });
 
@@ -162,7 +162,7 @@ describe('9. Referral, Wallet & Payout Module', () => {
     await DocumentVerificationModel.create({
       student: referrerId,
       aadhaarNumber: '123456789012',
-      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
+      aadhaarImageUrl: 'https://cdn.example.com/aadhaar.jpg',
       status: 'verified',
     });
 
@@ -202,7 +202,7 @@ describe('9. Referral, Wallet & Payout Module', () => {
     await DocumentVerificationModel.create({
       student: referrerId,
       aadhaarNumber: '123456789012',
-      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
+      aadhaarImageUrl: 'https://cdn.example.com/aadhaar.jpg',
       status: 'verified',
     });
 

@@ -27,6 +27,13 @@ async function runMasterSeed() {
     await mongoose.connect(config.mongoUri);
     console.log('✅ Connected to MongoDB successfully.\n');
 
+    // DROP DATABASE FIRST as requested
+    console.log('💥 Dropping existing database for a clean state...');
+    if (mongoose.connection.db) {
+      await mongoose.connection.db.dropDatabase();
+      console.log('✅ Database dropped successfully.\n');
+    }
+
     // Execution sequence (respecting foreign key dependencies)
     await seedUsers();
     await seedCategories();

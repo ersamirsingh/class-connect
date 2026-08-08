@@ -62,6 +62,7 @@ export const AppRouter = () => {
       <Route path="/course/:idOrSlug" element={<CourseDetailPage />} />
       <Route path="/report" element={<ReportProblemPage />} />
       <Route path="/report-problem" element={<ReportProblemPage />} />
+      <Route path="/verify-certificate" element={<VerifyCertificatePage />} />
       <Route path="/verify-certificate/:uniqueId" element={<VerifyCertificatePage />} />
 
       {/* Public Auth Routes */}

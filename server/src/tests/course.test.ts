@@ -43,7 +43,7 @@ describe('4. Category & Course Management Module', () => {
       title: 'Fullstack React & Node.js',
       description: 'Master MERN stack development',
       category: categoryId,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
+      thumbnail: 'https://cdn.example.com/thumb.jpg',
       price: 2999,
       discountPrice: 1999,
       sections: [
@@ -53,7 +53,7 @@ describe('4. Category & Course Management Module', () => {
           lectures: [
             {
               title: 'Welcome',
-              videoUrl: 'https://cloudinary.com/video1.mp4',
+              videoUrl: 'https://cdn.example.com/video1.mp4',
               duration: '5 mins',
               isPreview: true,
             },
@@ -92,7 +92,7 @@ describe('4. Category & Course Management Module', () => {
       slug: 'active-enrolled-course',
       description: 'Test description',
       category: categoryId,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
+      thumbnail: 'https://cdn.example.com/thumb.jpg',
       price: 999,
       isPublished: true,
     });
@@ -129,7 +129,7 @@ describe('4. Category & Course Management Module', () => {
         title: longTitle,
         description: longDesc,
         category: categoryId,
-        thumbnail: 'https://cloudinary.com/thumb.jpg',
+        thumbnail: 'https://cdn.example.com/thumb.jpg',
         price: 999,
       });
 
@@ -147,7 +147,7 @@ describe('4. Category & Course Management Module', () => {
         title: xssTitle,
         description: xssDesc,
         category: categoryId,
-        thumbnail: 'https://cloudinary.com/thumb.jpg',
+        thumbnail: 'https://cdn.example.com/thumb.jpg',
         price: 499,
       });
 

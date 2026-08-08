@@ -5,7 +5,7 @@ export interface ICategory extends Document {
   slug: string;
   icon: string; // Lucide icon name or image URL
   color: string; // Hex color code (e.g. #3730E0)
-  coverImage?: string; // Cloudinary cover image URL
+  coverImage?: string; // Cover image URL
   description?: string;
   isActive: boolean;
   createdAt: Date;
