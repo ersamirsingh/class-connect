@@ -164,6 +164,36 @@ export function VideoPlayerPage() {
         {/* Video Player & Info Area */}
         <div className="flex-1 p-4 md:p-6 flex flex-col max-w-4xl mx-auto w-full space-y-6">
           
+          {/* LIVE BROADCAST ACTIVE BANNER */}
+          {course.liveSchedule?.status === 'live' && (
+            <div className="w-full p-4 md:p-6 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-indigo-700 text-white shadow-xl border border-red-400 flex flex-col md:flex-row items-center justify-between gap-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                  <Radio className="w-5 h-5 text-white animate-spin" />
+                </div>
+                <div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white text-red-600 text-[10px] font-black uppercase tracking-wider">
+                    🔴 Live Broadcast Active
+                  </span>
+                  <h3 className="text-base font-extrabold font-manrope text-white mt-1">
+                    Instructor is Broadcasting Live Right Now!
+                  </h3>
+                  <p className="text-xs text-white/90 font-medium">Join the live interactive room for real-time video, audio, and live chat Q&A.</p>
+                </div>
+              </div>
+
+              <a
+                href={course.liveSchedule?.meetingUrl || `https://meet.jit.si/class-connect-live-${course._id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-white text-red-600 hover:bg-slate-100 text-xs font-black rounded-full shadow-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+              >
+                <Video className="w-4 h-4 text-red-600" />
+                <span>JOIN LIVE CLASS ROOM NOW</span>
+              </a>
+            </div>
+          )}
+
           {/* CUSTOM VIDEO PLAYER WITH AUTOMATIC 90%+ COMPLETION DETECTION */}
           <div className="w-full max-w-4xl mx-auto shadow-xl rounded-2xl overflow-hidden border border-[var(--border)]">
             <CustomVideoPlayer 

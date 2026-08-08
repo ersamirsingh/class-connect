@@ -39,11 +39,11 @@ export class EnrollmentService {
         // Determine if live class is currently active
         const now = new Date();
         const isLiveNow =
-          course.type === 'live' &&
-          course.liveSchedule?.startTime &&
-          new Date(course.liveSchedule.startTime) <= now &&
-          course.liveSchedule?.endTime &&
-          new Date(course.liveSchedule.endTime) >= now;
+          course.liveSchedule?.status === 'live' ||
+          (course.type === 'live' &&
+            course.liveSchedule?.startTime &&
+            new Date(course.liveSchedule.startTime) <= now &&
+            (!course.liveSchedule?.endTime || new Date(course.liveSchedule.endTime) >= now));
 
         return {
           enrollmentId: e._id,

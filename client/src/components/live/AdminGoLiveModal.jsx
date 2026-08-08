@@ -59,8 +59,9 @@ export function AdminGoLiveModal({ course, isOpen, onClose }) {
   const handleStartBroadcast = async () => {
     setIsLiveActive(true);
     let notifText = '';
+    const liveStreamUrl = course.liveSchedule?.meetingUrl || `https://meet.jit.si/class-connect-live-${course._id}`;
     try {
-      await courseApi.updateLiveStatus(course._id, 'live');
+      await courseApi.updateLiveStatus(course._id, 'live', liveStreamUrl);
     } catch (e) {
       console.warn('Failed to update live status in DB:', e);
     }
