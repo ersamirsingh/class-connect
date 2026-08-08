@@ -13,13 +13,15 @@ import {
   Layers, 
   Sparkles,
   ChevronDown,
-  Wallet
+  Wallet,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { ThemeToggle } from '../shared/ThemeToggle';
 import { NotificationBell } from '../shared/NotificationBell';
+import { UniversalSearchModal } from '../shared/UniversalSearchModal';
 
 const mainNavItems = [
   { key: 'nav.categories', label: 'Categories', path: '/categories', icon: Layers },
@@ -31,11 +33,24 @@ export function FloatingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [barMenuOpen, setBarMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const barMenuRef = useRef(null);
+
+  // Global Ctrl+K / Cmd+K search shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -114,6 +129,14 @@ export function FloatingNav() {
 
             {/* Right Action Icons & Bar Menu Button */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="w-9 h-9 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--ink-muted)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-all duration-200 flex items-center justify-center cursor-pointer shadow-xs"
+                aria-label="Universal Search"
+                title="Search courses & categories (Ctrl+K)"
+              >
+                <Search className="w-4 h-4 text-[var(--primary)]" />
+              </button>
               {isAuthenticated && <NotificationBell />}
               <LanguageSwitcher variant="compact" />
               <ThemeToggle />
@@ -298,8 +321,8 @@ export function FloatingNav() {
         )}
       </AnimatePresence>
 
-      {/* Top Floating Navbar Spacer to prevent overlapping page content */}
-      <div className="h-20" />
+      {/* Universal Search Modal */}
+      <UniversalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }

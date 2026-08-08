@@ -35,8 +35,13 @@ import { GravityTestimonialsSection } from '../../components/home/GravityTestimo
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { SquigglyText } from '../../components/motion/SquigglyText';
 import { LiveClassesWorkshopsSection } from '../../components/home/LiveClassesWorkshopsSection';
+import { StudentBatchResultsShowcase } from '../../components/home/StudentBatchResultsShowcase';
+import { StudentVideoTestimonialsSection } from '../../components/home/StudentVideoTestimonialsSection';
+import { MergedTestimonialsFaqSection } from '../../components/home/MergedTestimonialsFaqSection';
+import { CompareOptionsSection } from '../../components/home/CompareOptionsSection';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
+import { contentApi } from '../../api/models/content.api';
 import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 
 // --- Placeholder Translations (Fallback if keys missing) ---
@@ -75,6 +80,7 @@ export function HomePage() {
   const isHindi = language === 'hi';
   const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
   const [featuredCourses, setFeaturedCourses] = useState(SAMPLE_COURSES);
+  const [studentResultsCms, setStudentResultsCms] = useState(null);
   const [isLoadingCats, setIsLoadingCats] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
@@ -104,8 +110,25 @@ export function HomePage() {
       }
     };
 
+    const fetchCmsBlocks = async () => {
+      try {
+        const response = await contentApi.getContentByPage('home');
+        const blocks = Array.isArray(response?.data) 
+          ? response.data 
+          : (response?.data?.blocks || []);
+        
+        const resultsBlock = blocks.find(b => b.section === 'student-results' && b.isActive);
+        if (resultsBlock?.data) {
+          setStudentResultsCms(resultsBlock.data);
+        }
+      } catch (error) {
+        console.warn('Using sample CMS results fallback:', error.message);
+      }
+    };
+
     fetchCategories();
     fetchCourses();
+    fetchCmsBlocks();
   }, []);
 
   const toggleFaq = (index) => {
@@ -116,23 +139,29 @@ export function HomePage() {
     <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden selection:bg-[var(--primary-soft)] selection:text-[var(--primary-deep)]">
       <FloatingNav />
 
-      {/* 1. Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-6 lg:px-[var(--space-page)] overflow-hidden">
-        {/* Subtle Background Aura Gradients */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 -left-10 w-96 h-96 rounded-full bg-[var(--aura-violet)] filter blur-[100px] opacity-60 animate-pulse" />
-          <div className="absolute top-1/3 -right-10 w-96 h-96 rounded-full bg-[var(--aura-blue)] filter blur-[100px] opacity-50" />
-          <div className="absolute -bottom-10 left-1/3 w-96 h-96 rounded-full bg-[var(--aura-peach)] filter blur-[120px] opacity-40" />
+      {/* 1. Full-Screen Hero Section (100% Viewport Edge-to-Edge with 0px Right Padding) */}
+      <section className="relative min-h-screen w-full flex items-center pt-28 pb-16 overflow-hidden">
+        
+        {/* Full-Screen Background Image Layer (Spans 100% Width & Height Edge-to-Edge) */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden m-0 p-0">
+          <img 
+            src="/assets/hero_students_hq.jpg" 
+            alt="ClassConnect Indian Students Workspace" 
+            className="w-full h-full object-cover object-right antialiased block m-0 p-0 border-none"
+            style={{ imageRendering: 'high-quality' }}
+          />
         </div>
 
-        <div className="max-w-[var(--max-width)] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-          {/* Left Column: Text Content */}
-          <div className="flex flex-col items-start text-left">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] mb-6 pt-4">
+        {/* Content Layer Shifted Farther to the Left Edge */}
+        <div className="w-full relative z-10 px-6 sm:px-10 lg:px-16 flex items-center min-h-[72vh]">
+          
+          <div className="flex flex-col items-start text-left max-w-xl lg:max-w-2xl pt-4">
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-extrabold font-manrope tracking-tight leading-[1.12] text-slate-900 mb-5">
               {isHindi ? (
                 <span>
                   ऐसी{' '}
-                  <span className="font-extrabold italic text-[var(--accent)] bg-clip-text text-transparent bg-gradient-to-r from-[#FF6B35] via-[#FF8040] to-[#E85A24] inline-block px-1">
+                  <span className="font-extrabold italic text-[#FF6B35]">
                     स्किल्स
                   </span>{' '}
                   सीखें जो <SquigglyText>आगे ले जाएं</SquigglyText>
@@ -140,7 +169,7 @@ export function HomePage() {
               ) : (
                 <span>
                   Learn{' '}
-                  <span className="font-extrabold italic text-[var(--accent)] bg-clip-text text-transparent bg-gradient-to-r from-[#FF6B35] via-[#FF8040] to-[#E85A24] inline-block px-1">
+                  <span className="font-extrabold italic text-[#FF6B35]">
                     skills
                   </span>{' '}
                   that <SquigglyText>move you forward</SquigglyText>
@@ -148,7 +177,8 @@ export function HomePage() {
               )}
             </h1>
 
-            <p className="text-lg sm:text-xl text-[var(--ink-muted)] mb-8 max-w-xl font-normal leading-relaxed">
+            {/* Subtitle */}
+            <p className="text-base sm:text-lg text-slate-700 mb-8 max-w-lg font-medium leading-relaxed">
               {getTranslation(
                 t,
                 'hero.subtitle',
@@ -156,16 +186,17 @@ export function HomePage() {
               )}
             </p>
 
+            {/* Action Buttons */}
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
               className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
               <Link to="/courses">
-                <ShimmerButton className="w-full sm:w-auto px-8 py-4 text-base font-semibold shadow-[var(--shadow-md)]">
+                <button className="w-full sm:w-auto px-8 py-3.5 text-base font-bold rounded-full bg-[#3B82F6] hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 transition-all cursor-pointer">
                   Explore Courses
-                </ShimmerButton>
+                </button>
               </Link>
               <button 
                 onClick={() => {
@@ -176,56 +207,26 @@ export function HomePage() {
                     window.location.href = '/courses';
                   }
                 }}
-                className="w-full sm:w-auto px-8 py-4 rounded-[var(--radius-pill)] border-2 border-[var(--border)] bg-transparent text-[var(--ink)] font-semibold hover:bg-[var(--surface)] hover:border-[var(--primary)]/30 transition-all duration-300 min-h-[44px] cursor-pointer"
+                className="w-full sm:w-auto px-8 py-3.5 text-base font-bold rounded-full border border-slate-300/80 bg-white/80 backdrop-blur-md text-slate-800 hover:bg-slate-100 transition-all cursor-pointer"
               >
                 {isHindi ? 'सीखना शुरू करें' : 'Start Learning'}
               </button>
             </motion.div>
           </div>
 
-          {/* Hero Visual */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ delay: 0.3, duration: 0.8, type: "spring" }}
-            className="hidden lg:block relative z-10"
-          >
-            <div className="relative rounded-[24px] overflow-hidden shadow-[var(--shadow-lg)] aspect-[4/3] bg-[var(--surface)] border border-[var(--border)] p-2">
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-peach)] opacity-30"></div>
-              
-              <div className="w-full h-full rounded-[16px] overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-[var(--primary)] via-purple-500 to-[var(--accent)] mix-blend-overlay opacity-80 group-hover:scale-105 transition-transform duration-700"></div>
-                <img 
-                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
-                  alt="Students learning" 
-                  className="w-full h-full object-cover mix-blend-multiply opacity-80"
-                />
-                
-                {/* Floating UI Element */}
-                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl text-white">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[var(--primary)] flex items-center justify-center">
-                      <Play className="w-5 h-5 fill-white text-white ml-1" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-lg">Full-Stack Development</div>
-                      <div className="text-white/80 text-sm">Next lesson starting now</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </section>
 
       {/* 2. Connected Constellation Section (Reference Image Format with SVG Curve Lines & Animated Nodes) */}
       <ConnectedConstellationSection />
 
-      {/* 3. Category Crafts Deck (Find Your Path - Auto-scrolling Interface Crafts style) */}
+      {/* 3. Student Batch Zero Results & Flip Cards Carousel (Just after Hero & Graph) */}
+      <StudentBatchResultsShowcase cmsData={studentResultsCms} />
+
+      {/* 4. Category Crafts Deck (Find Your Path - Auto-scrolling Interface Crafts style) */}
       <CategoryCraftDeck categories={categories} />
 
-      {/* 4. Featured Courses Section */}
+      {/* 5. Featured Courses Section */}
       <section id="featured-courses" className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
         <div className="max-w-[var(--max-width)] mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
@@ -314,87 +315,23 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 5. Live Classes & Workshops Section (Directly Below Featured Courses) */}
+      {/* 6. Live Classes & Workshops Section (Directly Below Featured Courses) */}
       <LiveClassesWorkshopsSection />
 
-      {/* 6. How It Works Section */}
+      {/* 7. How It Works Section */}
       <HowItWorksFlowSection />
 
-      {/* 7. Arc Orbit Stats & Merged CTA Section */}
+      {/* 8. Arc Orbit Stats & Merged CTA Section */}
       <ArcOrbitStatsCtaSection />
 
-      {/* 8. Student Loved Stories (Aceternity Gravity Testimonials Grid) */}
-      <GravityTestimonialsSection />
+      {/* 9. Compare Your Options Comparison Chart */}
+      <CompareOptionsSection />
 
-      {/* 9. Small Creative Animated Borderless FAQ Cards Section */}
-      <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--canvas)] relative overflow-hidden">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="inline-block px-3 py-1 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] font-bold text-xs uppercase tracking-widest mb-3">
-              Help Center
-            </span>
-            <h2 className="text-3xl md:text-4xl font-manrope font-extrabold mb-3">
-              <TextEffect preset="slide">Frequently Asked Questions</TextEffect>
-            </h2>
-            <p className="text-[var(--ink-muted)] text-sm md:text-base max-w-md mx-auto">
-              Quick answers to common questions about courses, access, and support.
-            </p>
-          </div>
+      {/* 10. Merged Side-by-Side Section: Student Loved Stories (Left) + FAQs (Right) */}
+      <MergedTestimonialsFaqSection />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <InView key={idx} delay={idx * 0.05}>
-                  <motion.div
-                    whileHover={{ scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className={`rounded-2xl p-5 cursor-pointer transition-all duration-300 ${
-                      isOpen
-                        ? 'bg-[var(--surface)] shadow-lg shadow-[var(--primary-soft)]/20'
-                        : 'bg-[var(--surface)]/60 hover:bg-[var(--surface)] hover:shadow-md'
-                    }`}
-                    onClick={() => toggleFaq(idx)}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-bold text-base font-manrope text-[var(--ink)] leading-snug pr-2">
-                        {faq.question}
-                      </h3>
-                      <motion.div
-                        animate={{ rotate: isOpen ? 180 : 0, scale: isOpen ? 1.1 : 1 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                        className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                          isOpen
-                            ? 'bg-[var(--primary)] text-white'
-                            : 'bg-[var(--primary-soft)] text-[var(--primary)]'
-                        }`}
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </motion.div>
-                    </div>
-
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                          animate={{ height: 'auto', opacity: 1, marginTop: 12 }}
-                          exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                          className="overflow-hidden"
-                        >
-                          <p className="text-xs md:text-sm text-[var(--ink-muted)] leading-relaxed pt-2 border-t border-[var(--border)]/50">
-                            {faq.answer}
-                          </p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                </InView>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* 11. Student Video Testimonials Showcase */}
+      <StudentVideoTestimonialsSection />
 
       <Footer />
     </div>
