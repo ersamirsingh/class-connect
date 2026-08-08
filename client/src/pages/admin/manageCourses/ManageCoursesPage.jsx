@@ -882,7 +882,7 @@ export function ManageCoursesPage() {
                       <button
                         onClick={() => {
                           setGoLiveCourse(course);
-                          setIsGoLiveOpen(true);
+                          setIsGoLiveModalOpen(true);
                         }}
                         className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 min-h-[38px] shadow-xs cursor-pointer shrink-0"
                         title="Go Live Studio & Moderate Room"

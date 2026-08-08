@@ -73,15 +73,11 @@ const FAQS = [
 ];
 
 export function MergedTestimonialsFaqSection({ cmsData, faqCmsData }) {
-  const testimonialsList = (cmsData?.data?.items && cmsData.data.items.length > 0)
-    ? cmsData.data.items
-    : TESTIMONIALS;
+  const testimonialsList = cmsData?.data?.items || [];
+  const faqList = faqCmsData?.data?.items || cmsData?.data?.faqs || [];
 
-  const faqList = (faqCmsData?.data?.items && faqCmsData.data.items.length > 0)
-    ? faqCmsData.data.items
-    : (cmsData?.data?.faqs && cmsData.data.faqs.length > 0)
-      ? cmsData.data.faqs
-      : FAQS;
+  if ((!cmsData || !cmsData.isActive) && (!faqCmsData || !faqCmsData.isActive)) return null;
+  if (testimonialsList.length === 0 && faqList.length === 0) return null;
 
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 

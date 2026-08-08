@@ -43,11 +43,9 @@ const liveSessions = [
 ];
 
 export function LiveClassesWorkshopsSection({ cmsData }) {
-  const sessions = (cmsData?.data?.items && cmsData.data.items.length > 0)
-    ? cmsData.data.items
-    : liveSessions;
-
-  const sectionTitle = cmsData?.title || 'Live Classes & Workshops';
+  const sessions = cmsData?.data?.items || [];
+  if (!cmsData || !cmsData.isActive || sessions.length === 0) return null;
+  const sectionTitle = cmsData.title;
 
   return (
     <section className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)] relative overflow-hidden">

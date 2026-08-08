@@ -69,9 +69,8 @@ const VIDEO_TESTIMONIALS = [
 ];
 
 export function StudentVideoTestimonialsSection({ cmsData }) {
-  const testimonialsList = (cmsData?.data?.items && cmsData.data.items.length > 0)
-    ? cmsData.data.items
-    : VIDEO_TESTIMONIALS;
+  const testimonialsList = cmsData?.data?.items || [];
+  if (!cmsData || !cmsData.isActive || testimonialsList.length === 0) return null;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);

@@ -49,29 +49,7 @@ const getTranslation = (t, key, fallback) => {
   return val === key ? fallback : val;
 };
 
-// --- FAQ Data ---
-const faqs = [
-  {
-    question: "Do I get full lifetime access?",
-    answer: "Yes, once you enroll in a course, you get lifetime access to all its content, including future updates."
-  },
-  {
-    question: "Are the courses in Hindi or English?",
-    answer: "Our courses are available in bilingual options (Hinglish/English) with dual-language subtitles."
-  },
-  {
-    question: "Will I get a certificate upon completion?",
-    answer: "Absolutely! You will receive a verifiable certificate of completion that you can add to your resume or LinkedIn profile."
-  },
-  {
-    question: "Can I access the courses on my mobile phone?",
-    answer: "Yes, the platform is fully responsive and optimized for mobile devices, so you can learn anytime, anywhere."
-  },
-  {
-    question: "What is your refund policy?",
-    answer: "We offer a 7-day money-back guarantee. If you're not satisfied with the course, you can request a full refund within the first 7 days of purchase."
-  }
-];
+
 
 export function HomePage() {
   const { t, language } = useLanguage();

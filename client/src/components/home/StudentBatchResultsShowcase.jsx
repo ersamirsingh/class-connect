@@ -11,104 +11,6 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const DEFAULT_BATCH_DATA = {
-  title: 'Real Results from Batch Zero',
-  headlineMetric: '100% of graduates* secured paid industry opportunities.',
-  opportunitiesText: 'Full-time jobs | Paid internships | Freelance clients',
-  ctcStat: '₹16.2 LPA Combined CTC',
-  footnote: '*Out of all the students who completed the program and actively pursued paid opportunities from ClassConnect',
-  students: [
-    {
-      id: 'student-1',
-      name: 'Abhishek',
-      role: 'Video Editor & Media Tech Lead',
-      company: 'ATZA Digital',
-      companyLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹18.5 LPA Package',
-      avatarUrl: '/assets/students/abhishek.jpg',
-      rating: 5,
-      review: 'ClassConnect transformed my career. The live masterclasses and microservices project portfolio got me selected at a top tech company with a dream package! Mentors gave constant feedback on code quality.',
-      skills: ['React 19', 'Node.js', 'System Design', 'Video Processing'],
-      batch: 'Batch Zero 2026',
-    },
-    {
-      id: 'student-2',
-      name: 'Yes Patel',
-      role: 'Social Media Executive & Brand Tech',
-      company: 'Arron Insurance',
-      companyLogo: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹16.8 LPA Package',
-      avatarUrl: '/assets/students/yes_patel.jpg',
-      rating: 5,
-      review: 'The hands-on architecture training gave me the confidence to crack tough technical interviews. Highly recommended for ambitious developers looking for real-world projects!',
-      skills: ['Go', 'Microservices', 'Redis', 'Tailwind CSS'],
-      batch: 'Batch Zero 2026',
-    },
-    {
-      id: 'student-3',
-      name: 'Bhoomika',
-      role: 'Full-Stack Software Engineer',
-      company: 'CloudNative Labs',
-      companyLogo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹21.0 LPA Package',
-      avatarUrl: '/assets/students/bhoomika.jpg',
-      rating: 5,
-      review: 'Batch Zero was an incredible journey. Mentors provided real-world code reviews that directly translated into my new lead engineering role. Loved the bilingual explanations!',
-      skills: ['Next.js', 'LLM Integration', 'Docker', 'PostgreSQL'],
-      batch: 'Batch Zero 2026',
-    },
-    {
-      id: 'student-4',
-      name: 'Divye Ratan',
-      role: 'Product Engineer & Core Dev',
-      company: 'SaaS Scaleup',
-      companyLogo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹15.2 LPA Package',
-      avatarUrl: '/assets/students/divye_ratan.jpg',
-      rating: 5,
-      review: 'The bilingual learning environment made complex data structures crystal clear. Secured my dream offer within 3 weeks of graduation thanks to the career assistance module!',
-      skills: ['TypeScript', 'GraphQL', 'AWS', 'Prisma'],
-      batch: 'Batch Zero 2026',
-    },
-    {
-      id: 'student-5',
-      name: 'Karan Malhotra',
-      role: 'Frontend Architect',
-      company: 'Stripe India',
-      companyLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹24.0 LPA Package',
-      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
-      rating: 5,
-      review: 'Mastering advanced frontend patterns and performance tuning helped me stand out in senior tech interviews at international product firms!',
-      skills: ['React 19', 'Performance', 'Vite', 'State Machine'],
-      batch: 'Batch Zero 2026',
-    },
-    {
-      id: 'student-6',
-      name: 'Riya Sen',
-      role: 'DevOps & Cloud Lead',
-      company: 'Razorpay',
-      companyLogo: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹19.5 LPA Package',
-      avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
-      rating: 5,
-      review: 'ClassConnect guided me from basic deployments to production Kubernetes clusters. Best investment for my career growth!',
-      skills: ['Kubernetes', 'CI/CD', 'Terraform', 'Prometheus'],
-      batch: 'Batch Zero 2026',
-    },
-    {
-      id: 'student-7',
-      name: 'Aarav Sharma',
-      role: 'Cloud Architect',
-      company: 'AWS India',
-      companyLogo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹22.5 LPA Package',
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-      rating: 5,
-      review: 'The system design masterclasses gave me deep architectural understanding that impressed my interview panel!',
-      skills: ['AWS', 'Serverless', 'DynamoDB', 'Node.js'],
-      batch: 'Batch Zero 2026',
-    },
     {
       id: 'student-8',
       name: 'Meera Nair',
@@ -266,9 +168,13 @@ function StudentCardItem({ student }) {
 }
 
 export function StudentBatchResultsShowcase({ cmsData }) {
-  const data = cmsData || DEFAULT_BATCH_DATA;
-  const students = (data.students && data.students.length > 0) ? data.students : DEFAULT_BATCH_DATA.students;
+  const data = cmsData?.data || {};
+  const students = data.students || [];
   const scrollContainerRef = useRef(null);
+
+  if (!cmsData || !cmsData.isActive || students.length === 0) {
+    return null;
+  }
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
