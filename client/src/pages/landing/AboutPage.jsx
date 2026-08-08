@@ -253,72 +253,9 @@ export function AboutPage() {
             </a>
           </motion.div>
         </div>
-
-        {/* Hero Cinematic Art-Directed Visual Composition */}
-        <motion.div 
-          style={{ y: heroY, scale: heroScale }}
-          className="mt-14 md:mt-20 relative max-w-6xl mx-auto"
-        >
-          <div className="relative rounded-[28px] sm:rounded-[40px] overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-2xl p-2 sm:p-4">
-            <div className="relative rounded-[22px] sm:rounded-[32px] overflow-hidden aspect-[16/9] bg-slate-900 group">
-              <img 
-                src="/assets/hero_students.jpg"
-                onError={(e) => { e.target.src = '/hero_showcase.jpg'; }}
-                alt="Students learning on ClassConnect"
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-              {/* Floating Badges over Media */}
-              <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 md:right-10 flex flex-wrap items-end justify-between gap-4">
-                <div className="bg-black/40 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-white max-w-sm">
-                  <div className="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase tracking-widest mb-1">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Visual Learning OS</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-white/90 font-medium leading-snug">
-                    {isTelugu 
-                      ? 'उच्च गुणवत्ता वाली पाठ्य सामग्री, हिंदी और अंग्रेजी दोनों में।'
-                      : 'High-definition video courses with practical project outcomes.'}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-5 py-3 rounded-full border border-white/30 text-[var(--ink)] shadow-xl">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs sm:text-sm font-bold font-manrope">
-                    10K+ Active Learners
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </section>
 
-      {/* ==================================================
-          2. EDITORIAL STATEMENT SECTION (Quiet Typography)
-      ================================================== */}
-      <section className="py-24 md:py-36 bg-[var(--surface)] relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <InView threshold={0.3}>
-            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-[var(--primary)] mb-6">
-              {isTelugu ? 'हमारा विचार' : 'THE ESSENCE'}
-            </p>
-            <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-manrope tracking-tight leading-[1.1] uppercase text-[var(--ink)] max-w-5xl mx-auto">
-              EDUCATION SHOULDN'T FEEL <br className="hidden sm:block" />
-              <span className="text-[var(--ink-muted)] opacity-60">OUT OF REACH.</span>
-            </h2>
-          </InView>
 
-          <InView delay={0.2} threshold={0.3}>
-            <div className="mt-8 md:mt-12">
-              <span className="inline-block text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-manrope tracking-tight leading-[1.1] uppercase bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] via-purple-600 to-[var(--accent)]">
-                IT SHOULD FEEL POSSIBLE.
-              </span>
-            </div>
-          </InView>
-        </div>
-      </section>
 
       {/* ==================================================
           3. "WHY CLASSCONNECT EXISTS"
