@@ -156,11 +156,7 @@ export function HomePage() {
         <div className="w-full relative z-10 px-6 sm:px-10 lg:px-16 flex items-center min-h-screen pt-24 pb-16">
           
           <div className="flex flex-col items-start text-left max-w-xl lg:max-w-2xl pt-6">
-            {/* Top Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-indigo-200/80 text-indigo-700 text-xs font-extrabold mb-5 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>🚀 100% Practical • High-CTC Tech Outcomes</span>
-            </div>
+
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[60px] font-extrabold font-manrope tracking-tight leading-[1.10] text-slate-900 mb-5">
