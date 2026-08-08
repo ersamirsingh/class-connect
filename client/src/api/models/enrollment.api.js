@@ -15,4 +15,14 @@ export const enrollmentApi = {
     const response = await api.get(`/enrollments/certificate/${courseId}`);
     return response.data;
   },
+
+  getUnlockStatus: async (courseId) => {
+    const response = await api.get(`/enrollments/unlock-status/${courseId}`);
+    return response.data;
+  },
+
+  getLecturePlayback: async (courseId, lectureId) => {
+    const response = await api.get(`/enrollments/playback/${courseId}/${lectureId}`);
+    return response.data;
+  },
 };

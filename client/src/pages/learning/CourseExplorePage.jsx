@@ -35,13 +35,16 @@ export const CourseExplorePage = () => {
 
   const [orderId, setOrderId] = useState(null);
 
+  const [unlockStatus, setUnlockStatus] = useState({ unlockedSections: [0] });
+
   useEffect(() => {
     const fetchExploreContent = async () => {
       try {
         setLoading(true);
-        const [courseRes, enrollRes] = await Promise.all([
+        const [courseRes, enrollRes, unlockRes] = await Promise.all([
           courseApi.getCourseByIdOrSlug(courseId),
           enrollmentApi.getMyEnrollments(),
+          enrollmentApi.getUnlockStatus(courseId).catch(() => ({ data: { unlockedSections: [0] } })),
         ]);
 
         if (courseRes.success && courseRes.data) {
@@ -49,6 +52,10 @@ export const CourseExplorePage = () => {
           if (courseRes.data.type === 'live') {
             setActiveTab('live');
           }
+        }
+
+        if (unlockRes && unlockRes.data) {
+          setUnlockStatus(unlockRes.data);
         }
 
         if (enrollRes.success && enrollRes.data) {
@@ -242,24 +249,41 @@ export const CourseExplorePage = () => {
                   const unitCompleted = unit.lectures.filter((l) => completedLectures.includes(l._id)).length;
                   const unitTotal = unit.lectures.length || 1;
                   const isExpanded = expandedUnitIndex === uIdx;
+                  const isUnlocked = course.type === 'live' || uIdx === 0 || (unlockStatus.unlockedSections && unlockStatus.unlockedSections.includes(uIdx));
+                  const prevUnitTitle = course.sections[uIdx - 1]?.title || `Unit ${uIdx}`;
 
                   return (
                     <div
                       key={unit._id || uIdx}
-                      className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm"
+                      className={`rounded-3xl border overflow-hidden shadow-sm transition-all ${
+                        isUnlocked 
+                          ? 'bg-white dark:bg-[#111827] border-slate-200/80 dark:border-slate-800' 
+                          : 'bg-slate-100/70 dark:bg-slate-900/50 border-slate-300/60 opacity-80'
+                      }`}
                     >
                       <button
                         onClick={() => setExpandedUnitIndex(isExpanded ? null : uIdx)}
                         className="w-full p-5 flex items-center justify-between font-extrabold text-sm text-[#2B2B38] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-2xl bg-[#5B54E8] text-white flex items-center justify-center text-xs font-black">
+                          <span className={`w-8 h-8 rounded-2xl flex items-center justify-center text-xs font-black ${
+                            isUnlocked ? 'bg-[#5B54E8] text-white' : 'bg-slate-400 text-white'
+                          }`}>
                             U{uIdx + 1}
                           </span>
                           <div className="text-left">
-                            <h3 className="text-sm font-black">{unit.title}</h3>
-                            <span className="text-[11px] text-[#5B54E8] font-bold">
-                              {unitCompleted} / {unitTotal} lectures complete
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-sm font-black">{unit.title}</h3>
+                              {!isUnlocked && (
+                                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black flex items-center gap-1">
+                                  🔒 Locked
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-slate-500 font-bold">
+                              {isUnlocked 
+                                ? `${unitCompleted} / ${unitTotal} lectures complete` 
+                                : `Complete "${prevUnitTitle}" to unlock`}
                             </span>
                           </div>
                         </div>
@@ -279,20 +303,26 @@ export const CourseExplorePage = () => {
                                   {isDone ? (
                                     <CheckCircle2 className="w-4 h-4 text-[#2FA876] shrink-0" />
                                   ) : (
-                                    <PlayCircle className="w-4 h-4 text-[#5B54E8] shrink-0" />
+                                    <PlayCircle className={`w-4 h-4 shrink-0 ${isUnlocked ? 'text-[#5B54E8]' : 'text-slate-400'}`} />
                                   )}
-                                  <span className={isDone ? 'line-through text-slate-400 font-medium' : 'text-[#2B2B38] dark:text-white font-bold'}>
+                                  <span className={isDone ? 'line-through text-slate-400 font-medium' : isUnlocked ? 'text-[#2B2B38] dark:text-white font-bold' : 'text-slate-400 font-medium'}>
                                     {lec.title}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <span className="text-[10px] text-slate-400 font-bold">{lec.duration}</span>
-                                  <Link
-                                    to={`/learning/${course._id}`}
-                                    className="px-3 py-1 rounded-xl bg-[#5B54E8]/10 text-[#5B54E8] font-black text-[10px] hover:bg-[#5B54E8]/20 transition-colors"
-                                  >
-                                    Play
-                                  </Link>
+                                  {isUnlocked ? (
+                                    <Link
+                                      to={`/learning/${course._id}`}
+                                      className="px-3 py-1 rounded-xl bg-[#5B54E8]/10 text-[#5B54E8] font-black text-[10px] hover:bg-[#5B54E8]/20 transition-colors"
+                                    >
+                                      Play
+                                    </Link>
+                                  ) : (
+                                    <span className="px-2.5 py-1 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed">
+                                      Locked 🔒
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             );
