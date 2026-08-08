@@ -27,7 +27,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { courseApi } from '../../api/models/course.api';
 import { reviewApi } from '../../api/models/review.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
-import { SAMPLE_COURSES } from '../../data/sampleData';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
@@ -82,8 +81,7 @@ export function CourseDetailPage() {
           throw new Error('Course not found');
         }
       } catch (err) {
-        const foundSample = SAMPLE_COURSES.find(c => c.slug === slug || c._id === slug) || SAMPLE_COURSES[0];
-        setCourse(foundSample);
+        setError(err.message || 'Course not found');
       } finally {
         setIsLoading(false);
       }

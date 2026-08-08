@@ -14,12 +14,11 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 
 export function UniversalSearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
-  const [courses, setCourses] = useState(SAMPLE_COURSES);
-  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
+  const [courses, setCourses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 

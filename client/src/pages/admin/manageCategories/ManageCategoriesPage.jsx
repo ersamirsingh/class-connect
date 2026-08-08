@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../../context/LanguageContext';
 import { categoryApi } from '../../../api/models/category.api';
 import { courseApi } from '../../../api/models/course.api';
+import { uploadApi } from '../../../api/models/upload.api';
 import { 
   Plus, 
   Edit, 
@@ -17,7 +18,8 @@ import {
   Save,
   Loader2,
   Tag,
-  BookOpen
+  BookOpen,
+  UploadCloud
 } from 'lucide-react';
 
 export function ManageCategoriesPage() {
@@ -30,7 +32,34 @@ export function ManageCategoriesPage() {
   // Category Modal states (Add / Edit)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [formData, setFormData] = useState({ name: '', slug: '', color: '#5B54E8', description: '' });
+  const [formData, setFormData] = useState({ name: '', slug: '', color: '#5B54E8', description: '', coverImage: '' });
+
+  // Image upload state for category thumbnail
+  const [catImageUploading, setCatImageUploading] = useState(false);
+  const [catImageUploadError, setCatImageUploadError] = useState('');
+  const catImageInputRef = useRef(null);
+
+  const handleCatImageUpload = async (file) => {
+    if (!file) return;
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setCatImageUploadError('Please select a valid image file (JPEG, PNG, WEBP, SVG, GIF).');
+      return;
+    }
+    setCatImageUploading(true);
+    setCatImageUploadError('');
+    try {
+      const res = await uploadApi.uploadFile(file, 'class-connect/categories');
+      const uploadedUrl = res.url || res.data?.url;
+      if (!uploadedUrl) throw new Error('Upload succeeded but no URL was returned.');
+      setFormData(prev => ({ ...prev, coverImage: uploadedUrl }));
+    } catch (err) {
+      console.error('Category image upload error:', err);
+      setCatImageUploadError(err.message || 'Failed to upload image.');
+    } finally {
+      setCatImageUploading(false);
+    }
+  };
 
   // Attach Courses Modal states
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
@@ -99,11 +128,12 @@ export function ManageCategoriesPage() {
         name: category.name || '', 
         slug: category.slug || '',
         color: category.color || '#5B54E8',
-        description: category.description || ''
+        description: category.description || '',
+        coverImage: category.coverImage || ''
       });
     } else {
       setEditingCategory(null);
-      setFormData({ name: '', slug: '', color: '#5B54E8', description: '' });
+      setFormData({ name: '', slug: '', color: '#5B54E8', description: '', coverImage: '' });
     }
     setIsModalOpen(true);
   };

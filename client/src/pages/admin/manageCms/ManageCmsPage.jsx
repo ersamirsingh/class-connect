@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { contentApi } from '../../../api/models/content.api';
 import { courseApi } from '../../../api/models/course.api';
+import { uploadApi } from '../../../api/models/upload.api';
 import { 
   Layout, 
   Plus, 
@@ -21,13 +22,45 @@ import {
   ArrowUp,
   ArrowDown,
   BookOpen,
-  Check
+  Check,
+  UploadCloud,
+  Trash2 as TrashIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ManageCmsPage = () => {
   const [blocks, setBlocks] = useState([]);
   const [courses, setCourses] = useState([]);
+
+  // Image upload state for CMS blocks
+  const [cmsImageUploading, setCmsImageUploading] = useState(false);
+  const [cmsImageUploadError, setCmsImageUploadError] = useState('');
+  const cmsImageInputRef = useRef(null);
+
+  const handleCmsImageUpload = async (file) => {
+    if (!file) return;
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setCmsImageUploadError('Please select a valid image file (JPEG, PNG, WEBP, SVG, GIF).');
+      return;
+    }
+    setCmsImageUploading(true);
+    setCmsImageUploadError('');
+    try {
+      const res = await uploadApi.uploadFile(file, 'class-connect/cms');
+      const uploadedUrl = res.url || res.data?.url;
+      if (!uploadedUrl) throw new Error('Upload succeeded but no URL was returned.');
+      setEditingBlock(prev => ({
+        ...prev,
+        data: { ...prev.data, imageUrl: uploadedUrl },
+      }));
+    } catch (err) {
+      console.error('CMS image upload error:', err);
+      setCmsImageUploadError(err.message || 'Failed to upload image.');
+    } finally {
+      setCmsImageUploading(false);
+    }
+  };
   const [loading, setLoading] = useState(true);
   const [editingBlock, setEditingBlock] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -619,19 +652,69 @@ export const ManageCmsPage = () => {
                 ) : (
                   <>
                     <div>
-                      <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase mb-1">Image URL</label>
+                      <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase mb-2">Block Image</label>
+                      {editingBlock.data?.imageUrl ? (
+                        <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--canvas)]">
+                          <img
+                            src={editingBlock.data.imageUrl}
+                            alt="CMS block"
+                            className="w-full h-40 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => cmsImageInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-white/90 text-xs font-bold rounded-lg hover:bg-white transition-colors cursor-pointer"
+                            >
+                              Replace
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingBlock({ ...editingBlock, data: { ...editingBlock.data, imageUrl: '' } })}
+                              className="px-3 py-1.5 bg-red-500/90 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/80 bg-black/50 px-2 py-0.5 rounded truncate max-w-[80%]">{editingBlock.data.imageUrl}</span>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => !cmsImageUploading && cmsImageInputRef.current?.click()}
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          onDrop={(e) => { e.preventDefault(); e.stopPropagation(); const f = e.dataTransfer.files?.[0]; if (f) handleCmsImageUpload(f); }}
+                          className={`w-full h-36 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${
+                            cmsImageUploading
+                              ? 'border-amber-400 bg-amber-50/50'
+                              : 'border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]'
+                          }`}
+                        >
+                          {cmsImageUploading ? (
+                            <>
+                              <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+                              <span className="text-xs font-bold text-amber-600">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <UploadCloud className="w-7 h-7 text-[var(--ink-muted)]" />
+                              <span className="text-xs font-bold text-[var(--ink-muted)]">Click or drag image here</span>
+                              <span className="text-[10px] text-[var(--ink-muted)]/60">JPEG, PNG, WEBP, SVG, GIF</span>
+                            </>
+                          )}
+                        </div>
+                      )}
                       <input
-                        type="text"
-                        value={editingBlock.data?.imageUrl || ''}
-                        onChange={(e) =>
-                          setEditingBlock({
-                            ...editingBlock,
-                            data: { ...editingBlock.data, imageUrl: e.target.value },
-                          })
-                        }
-                        placeholder="https://images.unsplash.com/photo-..."
-                        className="w-full p-3 bg-[var(--canvas)] border border-[var(--border)] rounded-xl text-xs font-semibold focus:outline-none focus:border-[var(--primary)]"
+                        ref={cmsImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCmsImageUpload(f); e.target.value = ''; }}
                       />
+                      {cmsImageUploadError && (
+                        <p className="text-xs text-red-500 font-semibold mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" /> {cmsImageUploadError}
+                        </p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

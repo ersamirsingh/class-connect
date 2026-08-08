@@ -42,7 +42,6 @@ import { CompareOptionsSection } from '../../components/home/CompareOptionsSecti
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { contentApi } from '../../api/models/content.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 
 // --- Placeholder Translations (Fallback if keys missing) ---
 const getTranslation = (t, key, fallback) => {
@@ -58,10 +57,10 @@ const faqs = [
   },
   {
     question: "Are the courses in Hindi or English?",
-    answer: "Our courses are taught in a mix of Hindi and English to ensure maximum clarity and understanding for our diverse student base."
+    answer: "Our courses are available in bilingual options (Hinglish/English) with dual-language subtitles."
   },
   {
-    question: "Do you provide certificates upon completion?",
+    question: "Will I get a certificate upon completion?",
     answer: "Absolutely! You will receive a verifiable certificate of completion that you can add to your resume or LinkedIn profile."
   },
   {
@@ -78,8 +77,8 @@ export function HomePage() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const isTelugu = language === 'te';
-  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
-  const [featuredCourses, setFeaturedCourses] = useState(SAMPLE_COURSES);
+  const [categories, setCategories] = useState([]);
+  const [featuredCourses, setFeaturedCourses] = useState([]);
   const [studentResultsCms, setStudentResultsCms] = useState(null);
   const [isLoadingCats, setIsLoadingCats] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);

@@ -5,7 +5,6 @@ import { Layers, ArrowRight, Compass, Filter, Star, Radio, PlayCircle, DollarSig
 import { useLanguage } from '../../context/LanguageContext';
 import { categoryApi } from '../../api/models/category.api';
 import { courseApi } from '../../api/models/course.api';
-import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 import { SpotlightCard } from '../../components/motion/SpotlightCard';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
@@ -15,8 +14,8 @@ import { Footer } from '../../components/guest/Footer';
 export function CategoryListPage() {
   const { id } = useParams();
   const { language } = useLanguage();
-  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
-  const [categoryCourses, setCategoryCourses] = useState(SAMPLE_COURSES);
+  const [categories, setCategories] = useState([]);
+  const [categoryCourses, setCategoryCourses] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,7 +33,7 @@ export function CategoryListPage() {
         const catRes = await categoryApi.getCategories();
         const rawCats = Array.isArray(catRes.data)
           ? catRes.data
-          : (catRes.data?.categories || (Array.isArray(catRes) ? catRes : SAMPLE_CATEGORIES));
+          : (catRes.data?.categories || (Array.isArray(catRes) ? catRes : []));
         
         // Filter out legacy categories, ensuring only the 6 actual categories are displayed
         const validSlugs = ['web-development', 'app-development', 'ui-ux-design', 'ai-data-science', 'digital-marketing', 'cyber-security-cloud'];
