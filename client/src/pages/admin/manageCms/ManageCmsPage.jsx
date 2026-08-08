@@ -195,62 +195,10 @@ export const ManageCmsPage = () => {
                 isActive: true,
               })
             }
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 text-white rounded-full text-xs font-extrabold hover:bg-emerald-700 transition-all min-h-[40px] shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-full text-xs font-extrabold hover:bg-emerald-700 transition-all min-h-[44px] shadow-sm cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Batch Results</span>
-          </button>
-
-          <button
-            onClick={() =>
-              setEditingBlock({
-                page: 'home',
-                section: 'live_classes_workshops',
-                title: 'Live Interactive Masterclasses & Workshops',
-                subtitle: 'Join live sessions with industry veterans this week',
-                data: {
-                  workshops: [
-                    {
-                      id: 'ws-1',
-                      title: 'Build Microservices Architecture with Node.js & Docker',
-                      date: 'Tomorrow, 7:00 PM IST',
-                      mentor: 'Dr. Samir Singh',
-                      topic: 'Backend Engineering',
-                      link: '/courses'
-                    }
-                  ]
-                },
-                order: blocks.length + 1,
-                isActive: true,
-              })
-            }
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 text-white rounded-full text-xs font-extrabold hover:bg-rose-700 transition-all min-h-[40px] shadow-sm cursor-pointer"
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Live Workshops</span>
-          </button>
-
-          <button
-            onClick={() =>
-              setEditingBlock({
-                page: 'home',
-                section: 'faqs',
-                title: 'Frequently Asked Questions',
-                subtitle: 'Everything you need to know about our courses and certification',
-                data: {
-                  faqs: [
-                    { question: 'Do I get lifetime access?', answer: 'Yes, full lifetime access including future updates.' },
-                    { question: 'Is certificate verifiable?', answer: 'Yes, every certificate has a unique 90%+ completion hash code.' }
-                  ]
-                },
-                order: blocks.length + 1,
-                isActive: true,
-              })
-            }
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 text-white rounded-full text-xs font-extrabold hover:bg-amber-700 transition-all min-h-[40px] shadow-sm cursor-pointer"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>FAQs Block</span>
+            <Sparkles className="w-4 h-4" />
+            <span>Add Batch Results Block</span>
           </button>
 
           <button
@@ -258,17 +206,17 @@ export const ManageCmsPage = () => {
               setEditingBlock({
                 page: 'home',
                 section: 'banner',
-                title: 'New Content Section',
-                subtitle: 'Custom block subtitle',
+                title: 'New Visual Banner',
+                subtitle: 'Short descriptive subtitle',
                 data: { imageUrl: '', ctaText: 'Explore Courses', ctaLink: '/courses' },
                 order: blocks.length + 1,
                 isActive: true,
               })
             }
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white rounded-full text-xs font-extrabold hover:bg-[var(--deep-anchor,#24216F)] transition-all min-h-[40px] shadow-sm cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--primary)] text-white rounded-full text-xs font-extrabold hover:bg-[var(--deep-anchor,#24216F)] transition-all min-h-[44px] shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Block</span>
+            <span>Add Content Block</span>
           </button>
         </div>
       </div>

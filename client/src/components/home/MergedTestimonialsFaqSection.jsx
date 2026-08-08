@@ -80,7 +80,7 @@ export function MergedTestimonialsFaqSection() {
   };
 
   return (
-    <section className="py-20 px-6 lg:px-[var(--space-page)] bg-[var(--canvas)] relative overflow-hidden">
+    <section className="py-20 px-6 lg:px-[var(--space-page)] bg-[var(--surface)] relative overflow-hidden">
       
       {/* Background Soft Aura Gradients */}
       <div className="pointer-events-none absolute top-1/4 left-10 w-96 h-96 rounded-full bg-[var(--aura-violet)] filter blur-[120px] opacity-40" />

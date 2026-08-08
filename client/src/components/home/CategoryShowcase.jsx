@@ -1,9 +1,58 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
-import { categoryApi } from '../../api/models/category.api';
-import { courseApi } from '../../api/models/course.api';
+
+const CATEGORIES = [
+  {
+    name: 'Web Development',
+    slug: 'web-development',
+    courses: 5,
+    image: '/assets/categories/web-development.jpg',
+    color: '#EF4444',
+    tagline: 'HTML, CSS, React, Node.js & Next.js',
+  },
+  {
+    name: 'App Development',
+    slug: 'app-development',
+    courses: 5,
+    image: '/assets/categories/app-development.jpg',
+    color: '#10B981',
+    tagline: 'Flutter, React Native & Swift',
+  },
+  {
+    name: 'UI/UX Design',
+    slug: 'ui-ux-design',
+    courses: 5,
+    image: '/assets/categories/ui-ux-design.jpg',
+    color: '#8B5CF6',
+    tagline: 'Figma, Design Systems & Prototyping',
+  },
+  {
+    name: 'AI & Data Science',
+    slug: 'ai-data-science',
+    courses: 5,
+    image: '/assets/categories/ai-data-science.jpg',
+    color: '#3B82F6',
+    tagline: 'Python, ML, OpenAI & Data Analytics',
+  },
+  {
+    name: 'Digital Marketing',
+    slug: 'digital-marketing',
+    courses: 5,
+    image: '/assets/categories/digital-marketing.jpg',
+    color: '#F97316',
+    tagline: 'SEO, Google Ads, Meta Ads & Content',
+  },
+  {
+    name: 'Cyber Security & Cloud',
+    slug: 'cyber-security-cloud',
+    courses: 5,
+    image: '/assets/categories/cyber-security-cloud.jpg',
+    color: '#14B8A6',
+    tagline: 'AWS, Azure, Ethical Hacking & DevOps',
+  },
+];
 
 // Individual fanning card component
 function CategoryFanCard({ category, index, totalCards, hoveredIndex, setHoveredIndex }) {
@@ -82,7 +131,7 @@ function CategoryFanCard({ category, index, totalCards, hoveredIndex, setHovered
             <h3 className="text-lg sm:text-xl font-extrabold text-white leading-tight mb-1 font-manrope drop-shadow-md">
               {category.name}
             </h3>
-            <p className="text-[11px] sm:text-xs text-white/80 font-medium leading-snug mb-3 line-clamp-2">
+            <p className="text-[11px] sm:text-xs text-white/80 font-medium leading-snug mb-3">
               {category.tagline}
             </p>
 
@@ -104,7 +153,7 @@ function CategoryFanCard({ category, index, totalCards, hoveredIndex, setHovered
 }
 
 // Horizontal Slider Version (Mobile + Tablet)
-function CategorySlider({ categories = [] }) {
+function CategorySlider() {
   const scrollRef = useRef(null);
 
   const scrollDirection = (dir) => {
@@ -138,9 +187,9 @@ function CategorySlider({ categories = [] }) {
         className="flex gap-5 overflow-x-auto scrollbar-hide px-6 pb-4 snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {categories.map((cat, i) => (
+        {CATEGORIES.map((cat, i) => (
           <Link
-            key={cat.slug || i}
+            key={cat.slug}
             to={`/courses?category=${cat.slug}`}
             className="flex-shrink-0 w-[240px] snap-center block group"
           >
@@ -178,7 +227,7 @@ function CategorySlider({ categories = [] }) {
                 <h3 className="text-lg font-extrabold text-white leading-tight mb-1 font-manrope drop-shadow-md">
                   {cat.name}
                 </h3>
-                <p className="text-[11px] text-white/80 font-medium leading-snug mb-2 line-clamp-2">
+                <p className="text-[11px] text-white/80 font-medium leading-snug mb-2">
                   {cat.tagline}
                 </p>
                 <div className="flex items-center gap-1.5 text-white/90 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -195,52 +244,10 @@ function CategorySlider({ categories = [] }) {
 }
 
 export function CategoryShowcase() {
-  const [categories, setCategories] = useState([]);
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
-  useEffect(() => {
-    const fetchDynamicCategories = async () => {
-      try {
-        const [catRes, courseRes] = await Promise.all([
-          categoryApi.getCategories(),
-          courseApi.getCourses()
-        ]);
-
-        const catList = Array.isArray(catRes?.data)
-          ? catRes.data
-          : (catRes?.data?.categories || (Array.isArray(catRes) ? catRes : []));
-        const courseList = Array.isArray(courseRes?.data)
-          ? courseRes.data
-          : (courseRes?.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
-
-        const formatted = catList.map((cat) => {
-          const matchingCount = courseList.filter(c => {
-            const catId = typeof c.category === 'object' ? c.category?._id : c.category;
-            const catSlug = typeof c.category === 'object' ? c.category?.slug : '';
-            return catId === cat._id || catSlug === cat.slug;
-          }).length;
-
-          return {
-            name: cat.name,
-            slug: cat.slug,
-            courses: matchingCount,
-            image: cat.coverImage || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600',
-            color: cat.color || '#5B54E8',
-            tagline: cat.description || `Master ${cat.name} with expert-led courses.`,
-          };
-        });
-
-        setCategories(formatted);
-      } catch (err) {
-        console.warn('Failed to load dynamic categories in CategoryShowcase:', err);
-      }
-    };
-
-    fetchDynamicCategories();
-  }, []);
-
   return (
-    <section className="relative py-20 sm:py-28 bg-[var(--canvas)] overflow-hidden">
+    <section className="relative py-20 sm:py-28 bg-[var(--surface)] overflow-hidden">
       {/* Section Header */}
       <div className="text-center mb-6 sm:mb-10 px-6">
         <motion.div
@@ -249,16 +256,15 @@ export function CategoryShowcase() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-[11px] font-extrabold mb-4 tracking-wide uppercase">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-100/80 text-indigo-700 text-[11px] font-extrabold mb-4 tracking-wide uppercase">
             <Sparkles className="w-3.5 h-3.5" />
-            Explore Categories
+            🔥 High-Income Career Tracks
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-tight">
-            The Ultimate <br />
-            <span className="text-[var(--primary)]">Collections</span>
+            Explore <span className="font-cursive font-normal text-indigo-600 text-4xl sm:text-5xl lg:text-6xl">Curated Skill</span> Collections
           </h2>
           <p className="text-sm sm:text-base text-[var(--ink-muted)] mt-3 max-w-md mx-auto font-medium leading-relaxed">
-            Curated learning paths designed to take you from beginner to industry-ready professional.
+            Industry-crafted roadmaps to fast-track your journey from beginner to ₹12+ LPA tech professional.
           </p>
         </motion.div>
       </div>
@@ -266,12 +272,12 @@ export function CategoryShowcase() {
       {/* Desktop Fan-out Cards (Hidden on mobile/tablet) */}
       <div className="hidden lg:flex justify-center items-end relative" style={{ minHeight: '560px' }}>
         <div className="relative flex items-end justify-center" style={{ width: '100%', maxWidth: '1100px' }}>
-          {categories.map((cat, i) => (
+          {CATEGORIES.map((cat, i) => (
             <CategoryFanCard
-              key={cat.slug || i}
+              key={cat.slug}
               category={cat}
               index={i}
-              totalCards={categories.length}
+              totalCards={CATEGORIES.length}
               hoveredIndex={hoveredIndex}
               setHoveredIndex={setHoveredIndex}
             />
@@ -281,7 +287,7 @@ export function CategoryShowcase() {
 
       {/* Mobile / Tablet Horizontal Slider (Hidden on desktop) */}
       <div className="lg:hidden">
-        <CategorySlider categories={categories} />
+        <CategorySlider />
       </div>
 
       {/* Bottom CTA */}
@@ -293,7 +299,7 @@ export function CategoryShowcase() {
         className="text-center mt-12 sm:mt-16"
       >
         <Link
-          to="/courses"
+          to="/categories"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--ink)] text-sm font-bold hover:border-[var(--primary)]/40 hover:text-[var(--primary)] transition-all shadow-sm"
         >
           Explore More
@@ -303,6 +309,3 @@ export function CategoryShowcase() {
     </section>
   );
 }
-
-export default CategoryShowcase;
-

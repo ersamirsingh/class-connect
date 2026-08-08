@@ -14,10 +14,12 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
+import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
+
 export function UniversalSearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
-  const [courses, setCourses] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [courses, setCourses] = useState(SAMPLE_COURSES);
+  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -33,17 +35,13 @@ export function UniversalSearchModal({ isOpen, onClose }) {
     const fetchData = async () => {
       try {
         const [cRes, catRes] = await Promise.all([
-          courseApi.getCourses().catch(() => ({ data: [] })),
-          categoryApi.getCategories().catch(() => ({ data: [] }))
+          courseApi.getCourses(),
+          categoryApi.getCategories()
         ]);
-        const loadedCourses = Array.isArray(cRes?.data) ? cRes.data : (cRes?.data?.courses || (Array.isArray(cRes) ? cRes : []));
-        const loadedCats = Array.isArray(catRes?.data) ? catRes.data : (catRes?.data?.categories || (Array.isArray(catRes) ? catRes : []));
-        setCourses(loadedCourses);
-        setCategories(loadedCats);
+        if (cRes.data?.courses?.length) setCourses(cRes.data.courses);
+        if (catRes.data?.categories?.length) setCategories(catRes.data.categories);
       } catch (err) {
-        console.warn('Search data fetch error:', err.message);
-        setCourses([]);
-        setCategories([]);
+        console.warn('Search data fallback active:', err.message);
       }
     };
     fetchData();
@@ -200,9 +198,13 @@ export function UniversalSearchModal({ isOpen, onClose }) {
                         >
                           <div className="flex items-center gap-3">
                             <img
-                              src={c.thumbnail || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=120&q=80'}
+                              src={c.thumbnail || '/assets/about_hero_lead.jpg'}
                               alt={c.title}
                               className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = '/assets/about_hero_lead.jpg';
+                              }}
                             />
                             <div>
                               <div className="flex items-center gap-2 mb-0.5">

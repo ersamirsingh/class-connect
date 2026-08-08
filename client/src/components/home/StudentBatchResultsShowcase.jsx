@@ -283,7 +283,7 @@ export function StudentBatchResultsShowcase({ cmsData }) {
   };
 
   return (
-    <section className="py-16 px-6 lg:px-[var(--space-page)] bg-white text-slate-900 border-t border-slate-200 relative overflow-hidden">
+    <section className="py-16 px-6 lg:px-[var(--space-page)] bg-white text-slate-900 relative overflow-hidden">
       
       {/* Background Soft Aura Glows */}
       <div className="pointer-events-none absolute top-1/3 left-0 w-[500px] h-[500px] bg-red-500/5 rounded-full blur-[160px] -translate-y-1/2" />

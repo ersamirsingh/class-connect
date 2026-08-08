@@ -5,19 +5,19 @@ import { Search, Star, BookOpen, Sparkles, X, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
+import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
-import { FeaturedCourseCard } from '../../components/courses/FeaturedCourseCard';
 
 export function CourseListPage() {
   const { language } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  const [allCourses, setAllCourses] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [allCourses, setAllCourses] = useState(SAMPLE_COURSES);
+  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
   const [isLoading, setIsLoading] = useState(false);
   
   const categoryParam = searchParams.get('category') || '';
@@ -33,27 +33,41 @@ export function CourseListPage() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        setIsLoading(true);
         const [categoriesRes, coursesRes] = await Promise.all([
           categoryApi.getCategories(),
           courseApi.getCourses()
         ]);
         
-        const apiCats = Array.isArray(categoriesRes?.data)
+        const rawCats = Array.isArray(categoriesRes.data)
           ? categoriesRes.data
-          : (categoriesRes?.data?.categories || (Array.isArray(categoriesRes) ? categoriesRes : []));
-        const apiCourses = Array.isArray(coursesRes?.data)
-          ? coursesRes.data
-          : (coursesRes?.data?.courses || (Array.isArray(coursesRes) ? coursesRes : []));
+          : (categoriesRes.data?.categories || (Array.isArray(categoriesRes) ? categoriesRes : []));
 
-        setCategories(apiCats);
-        setAllCourses(apiCourses);
+        const validSlugs = ['web-development', 'app-development', 'ui-ux-design', 'ai-data-science', 'digital-marketing', 'cyber-security-cloud'];
+        const validApiCats = rawCats.filter(c => {
+          const s = c.slug || c.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          return validSlugs.includes(s);
+        });
+
+        const apiCourses = Array.isArray(coursesRes.data)
+          ? coursesRes.data
+          : (coursesRes.data?.courses || (Array.isArray(coursesRes) ? coursesRes : []));
+
+        if (validApiCats.length > 0) {
+          setCategories(validApiCats);
+        } else {
+          setCategories(SAMPLE_CATEGORIES);
+        }
+
+        // Merge API courses with sample courses so every category always has courses
+        const combinedCourses = Array.isArray(apiCourses) && apiCourses.length > 0
+          ? [...apiCourses, ...SAMPLE_COURSES.filter(sc => !apiCourses.some(ac => ac.slug === sc.slug || ac._id === sc._id))]
+          : SAMPLE_COURSES;
+
+        setAllCourses(combinedCourses);
       } catch (error) {
-        console.warn('Failed to load live courses:', error.message);
-        setCategories([]);
-        setAllCourses([]);
-      } finally {
-        setIsLoading(false);
+        console.warn('Using sample courses fallback for CourseListPage:', error.message);
+        setCategories(SAMPLE_CATEGORIES);
+        setAllCourses(SAMPLE_COURSES);
       }
     };
     
@@ -66,14 +80,17 @@ export function CourseListPage() {
       // 1. Category Filter
       if (categoryParam) {
         const paramClean = categoryParam.toLowerCase().trim();
+        const normalizedParam = paramClean.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
         const courseCatSlug = (typeof course.category === 'object' ? course.category?.slug : '').toLowerCase();
         const courseCatName = (typeof course.category === 'object' ? course.category?.name : String(course.category || '')).toLowerCase();
         const courseCatId = (typeof course.category === 'object' ? course.category?._id : String(course.category || ''));
 
         const normalizedCatName = courseCatName.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const normalizedCatSlug = courseCatSlug.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-        const matchesSlug = courseCatSlug === paramClean;
-        const matchesName = courseCatName === paramClean || normalizedCatName === paramClean;
+        const matchesSlug = courseCatSlug === paramClean || normalizedCatSlug === normalizedParam;
+        const matchesName = courseCatName === paramClean || normalizedCatName === paramClean || normalizedCatName === normalizedParam;
         const matchesId = courseCatId === categoryParam;
 
         if (!matchesSlug && !matchesName && !matchesId) {
@@ -144,15 +161,17 @@ export function CourseListPage() {
           {/* Hero Section */}
           <div className="text-center mb-12">
             <InView>
-              <TextEffect 
-                className="text-4xl md:text-5xl font-extrabold text-[var(--ink)] mb-4 tracking-tight"
-              >
-                {isHindi ? "कोर्स खोजें" : "Explore Courses"}
-              </TextEffect>
-              <p className="text-lg text-[var(--ink-muted)] max-w-2xl mx-auto">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[var(--ink)] mb-4 tracking-tight font-manrope">
+                {isHindi ? (
+                  <span>కోర్సులు <span className="font-cursive font-normal text-indigo-600 text-5xl md:text-6xl">అన్వేషించండి</span></span>
+                ) : (
+                  <span>Explore <span className="font-cursive font-normal text-indigo-600 text-5xl md:text-6xl">High-Income</span> Masterclasses</span>
+                )}
+              </h1>
+              <p className="text-base sm:text-lg text-[var(--ink-muted)] max-w-2xl mx-auto font-medium">
                 {isHindi 
-                  ? "अपनी पसंद के विषयों में महारत हासिल करें और अपने करियर को नई ऊंचाइयों पर ले जाएं।"
-                  : "Master new skills and take your career to new heights with our premium courses."}
+                  ? "మీ కేరిర్‌ను వేగవంతం చేసే పరిశ్రమ-ఆధారిత నైపుణ్యాలను నేర్చుకోండి."
+                  : "Master industry-proven skills, build portfolio-ready projects, and land high-paying roles with top mentor guidance."}
               </p>
             </InView>
           </div>
@@ -226,7 +245,71 @@ export function CourseListPage() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3, delay: index * 0.04 }}
                   >
-                    <FeaturedCourseCard course={course} />
+                    <Link to={`/courses/${course.slug}`} className="block h-full group">
+                      {/* Edge Glowing Effect Wrapper */}
+                      <GlowingEffect
+                        glowColor="rgba(67, 56, 242, 0.45)"
+                        accentGlow="rgba(255, 107, 53, 0.4)"
+                        containerClassName="h-full"
+                      >
+                        <div className="h-full flex flex-col bg-[var(--surface)] rounded-[15px] overflow-hidden relative">
+                          {/* Thumbnail */}
+                          <div className="relative aspect-video w-full overflow-hidden bg-[var(--canvas)]">
+                            {course.thumbnail ? (
+                              <img 
+                                src={course.thumbnail} 
+                                alt={course.title} 
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = '/assets/about_hero_lead.jpg';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--accent-soft)] flex items-center justify-center">
+                                <BookOpen className="w-12 h-12 text-[var(--primary)] opacity-50" />
+                              </div>
+                            )}
+                            <div className="absolute top-3 left-3 bg-[var(--surface)]/90 backdrop-blur-sm px-3 py-1 rounded-[var(--radius-pill)] text-xs font-semibold text-[var(--ink)] shadow-sm">
+                              {typeof course.category === 'object' ? course.category?.name : course.category || "General"}
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="p-6 flex flex-col flex-grow">
+                            <h3 className="text-lg font-bold text-[var(--ink)] mb-2 line-clamp-2 leading-snug group-hover:text-[var(--primary)] transition-colors"
+                              style={{ fontFamily: 'Manrope, sans-serif' }}>
+                              {course.title}
+                            </h3>
+                            
+                            <p className="text-xs font-medium text-[var(--ink-muted)] mb-4">
+                              By {typeof course.instructor === 'object' ? course.instructor?.name : course.instructor || "Samir Singh"}
+                            </p>
+                            
+                            <div className="mt-auto">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-1.5 bg-[var(--canvas)] px-2.5 py-1 rounded-[var(--radius-pill)]">
+                                  <Star className="w-3.5 h-3.5 fill-[var(--accent)] text-[var(--accent)]" />
+                                  <span className="text-xs font-bold text-[var(--ink)]">{course.rating?.toFixed(1) || "4.9"}</span>
+                                  <span className="text-[11px] text-[var(--ink-faint)]">({course.totalReviews || 120})</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center justify-between border-t border-[var(--border)] pt-4 mt-2">
+                                <div className="text-lg font-extrabold text-[var(--primary)]"
+                                  style={{ fontFamily: 'Manrope, sans-serif' }}>
+                                  {course.price === 0 ? "Free" : `₹${course.price?.toLocaleString('en-IN')}`}
+                                </div>
+                                <div className="text-xs font-bold text-[var(--ink-muted)] flex items-center gap-1 group-hover:text-[var(--primary)] transition-colors">
+                                  {isHindi ? "विवरण देखें" : "View Course"}
+                                  <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[var(--primary)]" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </GlowingEffect>
+                    </Link>
                   </motion.div>
                 ))}
               </AnimatePresence>

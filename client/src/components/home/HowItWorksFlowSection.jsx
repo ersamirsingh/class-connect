@@ -47,11 +47,10 @@ export function HowItWorksFlowSection() {
   ];
 
   return (
-    <section className="py-16 sm:py-24 px-4 sm:px-8 bg-[var(--canvas)] relative overflow-hidden">
+    <section className="py-16 sm:py-24 px-4 sm:px-8 bg-[var(--surface)] relative overflow-hidden">
       <div className="max-w-5xl mx-auto text-center">
-        {/* Title */}
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold font-manrope text-[var(--ink)] tracking-tight mb-12 sm:mb-20">
-          {isHindi ? 'यह कैसे काम करता है?' : 'How it works?'}
+          3 Steps To <span className="font-cursive font-normal text-purple-600 text-4xl sm:text-5xl md:text-6xl">Master High-Income</span> Skills
         </h2>
 
         {/* 3 Step Nodes Container */}

@@ -17,7 +17,7 @@ export function ArcOrbitStatsCtaSection() {
   return (
     <section 
       ref={sectionRef} 
-      className="relative py-28 px-4 sm:px-8 bg-[var(--canvas)] overflow-hidden min-h-[580px] flex flex-col justify-center"
+      className="relative py-28 px-4 sm:px-8 bg-[var(--surface)] overflow-hidden min-h-[580px] flex flex-col justify-center"
     >
       {/* Concentric Arc SVG Orbit Lines (Clean Sweeping Arcs Above Text) */}
       <svg 
@@ -123,17 +123,11 @@ export function ArcOrbitStatsCtaSection() {
         >
           {isHindi ? (
             <span>
-              सीखना शुरू करने के लिए{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4338F2] via-[#7C3AED] to-[#FF6B35]">
-                तैयार हैं?
-              </span>
+              మీ కేరిర్‌ను <span className="font-cursive font-normal text-indigo-600 text-4xl sm:text-5xl lg:text-6xl">10x గ్రోత్</span> వైపు తీసుకెళ్లడానికి సిద్ధమా?
             </span>
           ) : (
             <span>
-              Ready to start{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4338F2] via-[#7C3AED] to-[#FF6B35]">
-                learning?
-              </span>
+              Ready To <span className="font-cursive font-normal text-indigo-600 text-4xl sm:text-5xl lg:text-6xl">10x Your Tech</span> Salary?
             </span>
           )}
         </motion.h2>
@@ -142,11 +136,11 @@ export function ArcOrbitStatsCtaSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, delay: 0.5 }}
-          className="text-base sm:text-lg lg:text-xl text-[var(--ink-muted)] font-normal leading-relaxed max-w-2xl mx-auto mb-10"
+          className="text-base sm:text-lg lg:text-xl text-[var(--ink-muted)] font-medium leading-relaxed max-w-2xl mx-auto mb-10"
         >
           {isHindi 
-            ? 'आज ही हमारे कम्युनिटी से जुड़ें और अपने लक्ष्यों को प्राप्त करने की दिशा में पहला कदम बढ़ाएं।'
-            : 'Join our community of learners today and take the first step towards achieving your goals.'}
+            ? '10,000+ విద్యార్థులతో చేరండి. ఇండస్ట్రీ-ఆధారిత ప్రాజెక్ట్‌లను నిర్మించి మీ డ్రీమ్ ఉద్యోగాన్ని సాధించండి.'
+            : 'Join 10,000+ ambitious skill builders. Master production-grade skills, build real projects, and land high-paying tech roles.'}
         </motion.p>
 
         {/* CTA Buttons */}

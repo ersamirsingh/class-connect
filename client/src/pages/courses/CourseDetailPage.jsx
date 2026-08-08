@@ -7,7 +7,6 @@ import {
   PlayCircle, 
   Lock, 
   CheckCircle, 
-  CheckCircle2,
   ChevronDown, 
   ChevronUp, 
   AlertCircle, 
@@ -18,20 +17,21 @@ import {
   Radio,
   FileText,
   Compass,
-  ArrowRight
+  ArrowRight,
+  Share2,
+  BookOpen,
+  Users
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { courseApi } from '../../api/models/course.api';
 import { reviewApi } from '../../api/models/review.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
+import { SAMPLE_COURSES } from '../../data/sampleData';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
-import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
-import { CourseRatingModal } from '../../components/courses/CourseRatingModal';
-import { Share2 } from 'lucide-react';
 
 export function CourseDetailPage() {
   const { idOrSlug, slug: paramSlug } = useParams();
@@ -46,9 +46,7 @@ export function CourseDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedUnits, setExpandedUnits] = useState({ 0: true });
-  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
 
-  const [completedLectures, setCompletedLectures] = useState([]);
   const isHindi = language === 'hi';
 
   useEffect(() => {
@@ -80,23 +78,12 @@ export function CourseDetailPage() {
             e.courseId === loadedCourse._id || e.course?._id === loadedCourse._id || e.course?.slug === loadedCourse.slug
           );
           setIsOwned(owned);
-
-          if (owned && isAuthenticated) {
-            try {
-              const unlockRes = await enrollmentApi.getUnlockStatus(loadedCourse._id || slug);
-              if (unlockRes?.data?.completedLectures) {
-                setCompletedLectures(unlockRes.data.completedLectures);
-              }
-            } catch (e) {
-              console.warn('Unlock status fetch failed:', e);
-            }
-          }
         } else {
-          setError('Course not found');
+          throw new Error('Course not found');
         }
       } catch (err) {
-        console.error('Error fetching course detail:', err);
-        setError('Course not found');
+        const foundSample = SAMPLE_COURSES.find(c => c.slug === slug || c._id === slug) || SAMPLE_COURSES[0];
+        setCourse(foundSample);
       } finally {
         setIsLoading(false);
       }
@@ -212,12 +199,6 @@ export function CourseDetailPage() {
                   <Star className="w-5 h-5 fill-[var(--accent)] text-[var(--accent)]" />
                   <span className="font-bold">{course.rating?.toFixed(1) || "4.8"}</span>
                   <span className="text-sm text-[var(--ink-muted)]">({course.totalReviews || 120} reviews)</span>
-                  <button
-                    onClick={() => setIsRatingModalOpen(true)}
-                    className="ml-2 px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 text-xs font-black rounded-full border border-amber-500/30 transition-all cursor-pointer"
-                  >
-                    ⭐ Rate Course
-                  </button>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-[var(--ink-muted)]">
                   <div className="w-8 h-8 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold">
@@ -232,12 +213,21 @@ export function CourseDetailPage() {
             <div className="hidden lg:block w-full max-w-md shrink-0">
               <div className="bg-[var(--canvas)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] overflow-hidden sticky top-32">
                 <div className="aspect-video bg-black relative group">
-                  <ImageWithFallback 
-                    src={course.thumbnail} 
-                    alt={course.title} 
-                    fallbackType="course" 
-                    className="w-full h-full object-cover" 
-                  />
+                  {course.thumbnail ? (
+                    <img 
+                      src={course.thumbnail} 
+                      alt={course.title} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/assets/about_hero_lead.jpg';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)]">
+                      <PlayCircle className="w-16 h-16 text-[var(--primary)]" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-8 space-y-6">
@@ -346,41 +336,18 @@ export function CourseDetailPage() {
 
                       {isExpanded && (
                         <div className="divide-y divide-[var(--border)] border-t border-[var(--border)] bg-[var(--canvas)] p-2">
-                          {unit.lectures?.map((lec, lIdx) => {
-                            const isDone = completedLectures.some(
-                              (id) => String(id) === String(lec._id) || String(id) === String(lec.id) || id === lec.title || lec.completed
-                            );
-                            return (
-                              <div key={lIdx} className={`p-3.5 flex items-center justify-between text-sm rounded-xl ${isDone ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold' : ''}`}>
-                                <div className="flex items-center gap-3">
-                                  {isDone ? (
-                                    <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                  ) : (
-                                    <PlayCircle className="w-4 h-4 text-[var(--primary)] shrink-0" />
-                                  )}
-                                  <span className={isDone ? 'font-extrabold text-emerald-900 dark:text-emerald-200' : 'font-medium text-[var(--ink)]'}>
-                                    {lec.title}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-[var(--ink-muted)]">
-                                  {isDone ? (
-                                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-[10px]">
-                                      Completed ✓
-                                    </span>
-                                  ) : isOwned ? (
-                                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-bold text-[10px]">
-                                      Unlocked
-                                    </span>
-                                  ) : (
-                                    <>
-                                      <span>Locked</span>
-                                      <Lock className="w-3.5 h-3.5 text-[var(--ink-muted)]" />
-                                    </>
-                                  )}
-                                </div>
+                          {unit.lectures?.map((lec, lIdx) => (
+                            <div key={lIdx} className="p-3.5 flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-3">
+                                <PlayCircle className="w-4 h-4 text-[var(--primary)] shrink-0" />
+                                <span className="font-medium text-[var(--ink)]">{lec.title}</span>
                               </div>
-                            );
-                          })}
+                              <div className="flex items-center gap-2 text-xs text-[var(--ink-muted)]">
+                                <span>Locked</span>
+                                <Lock className="w-3.5 h-3.5 text-[var(--ink-muted)]" />
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -487,13 +454,6 @@ export function CourseDetailPage() {
       <div className="hidden lg:block">
         <Footer />
       </div>
-
-      <CourseRatingModal
-        isOpen={isRatingModalOpen}
-        course={course}
-        onClose={() => setIsRatingModalOpen(false)}
-        onRatingSubmitted={(newRating) => setCourse(prev => ({ ...prev, rating: newRating }))}
-      />
     </div>
   );
 }

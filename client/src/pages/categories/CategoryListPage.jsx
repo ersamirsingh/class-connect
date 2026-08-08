@@ -5,6 +5,7 @@ import { Layers, ArrowRight, Compass, Filter, Star, Radio, PlayCircle, DollarSig
 import { useLanguage } from '../../context/LanguageContext';
 import { categoryApi } from '../../api/models/category.api';
 import { courseApi } from '../../api/models/course.api';
+import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
 import { SpotlightCard } from '../../components/motion/SpotlightCard';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
@@ -14,8 +15,8 @@ import { Footer } from '../../components/guest/Footer';
 export function CategoryListPage() {
   const { id } = useParams();
   const { language } = useLanguage();
-  const [categories, setCategories] = useState([]);
-  const [categoryCourses, setCategoryCourses] = useState([]);
+  const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
+  const [categoryCourses, setCategoryCourses] = useState(SAMPLE_COURSES);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,10 +32,19 @@ export function CategoryListPage() {
       setIsLoading(true);
       try {
         const catRes = await categoryApi.getCategories();
-        const loadedCats = Array.isArray(catRes?.data)
+        const rawCats = Array.isArray(catRes.data)
           ? catRes.data
-          : (catRes?.data?.categories || (Array.isArray(catRes) ? catRes : []));
-        setCategories(loadedCats);
+          : (catRes.data?.categories || (Array.isArray(catRes) ? catRes : SAMPLE_CATEGORIES));
+        
+        // Filter out legacy categories, ensuring only the 6 actual categories are displayed
+        const validSlugs = ['web-development', 'app-development', 'ui-ux-design', 'ai-data-science', 'digital-marketing', 'cyber-security-cloud'];
+        const loadedCats = rawCats.filter(c => {
+          const s = c.slug || c.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          return validSlugs.includes(s);
+        });
+
+        const finalCats = loadedCats.length > 0 ? loadedCats : SAMPLE_CATEGORIES;
+        setCategories(finalCats);
 
         if (id) {
           const match = loadedCats.find(c => c._id === id || c.slug === id || c.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()) || {
@@ -47,26 +57,32 @@ export function CategoryListPage() {
 
           try {
             const courseRes = await courseApi.getCourses({ category: match._id || match.slug });
-            const loadedCourses = Array.isArray(courseRes?.data)
+            const loadedCourses = Array.isArray(courseRes.data)
               ? courseRes.data
-              : (courseRes?.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
-            setCategoryCourses(loadedCourses);
-          } catch (courseErr) {
-            console.warn('Failed to load courses for category:', courseErr);
-            setCategoryCourses([]);
+              : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
+            
+            if (loadedCourses.length > 0) {
+              setCategoryCourses(loadedCourses);
+            } else {
+              // Fallback filter from SAMPLE_COURSES
+              const matchedSample = SAMPLE_COURSES.filter(c => {
+                const cCatSlug = typeof c.category === 'object' ? c.category?.slug : '';
+                const cCatName = typeof c.category === 'object' ? c.category?.name : String(c.category || '');
+                return cCatSlug.toLowerCase() === match.slug.toLowerCase() || cCatName.toLowerCase() === match.name.toLowerCase();
+              });
+              setCategoryCourses(matchedSample.length > 0 ? matchedSample : SAMPLE_COURSES);
+            }
+          } catch (err) {
+            setCategoryCourses(SAMPLE_COURSES);
           }
-        } else {
-          // Load overall courses if no category ID filter
-          const courseRes = await courseApi.getCourses();
-          const loadedCourses = Array.isArray(courseRes?.data)
-            ? courseRes.data
-            : (courseRes?.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
-          setCategoryCourses(loadedCourses);
         }
-      } catch (err) {
-        console.warn('Failed to load live categories:', err);
-        setCategories([]);
-        setCategoryCourses([]);
+      } catch (error) {
+        console.warn('Fallback to sample data for category:', error);
+        if (id) {
+          const match = SAMPLE_CATEGORIES.find(c => c._id === id || c.slug === id) || SAMPLE_CATEGORIES[0];
+          setSelectedCategory(match);
+          setCategoryCourses(SAMPLE_COURSES);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -253,81 +269,107 @@ export function CategoryListPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   <AnimatePresence>
                     {categories.map((category, index) => {
-                      // Map category slug/name to its thumbnail image
-                      const CATEGORY_IMAGES = {
-                        'web-development': '/assets/categories/web-development.jpg',
-                        'app-development': '/assets/categories/app-development.jpg',
-                        'ui-ux-design': '/assets/categories/ui-ux-design.jpg',
-                        'ai-data-science': '/assets/categories/ai-data-science.jpg',
-                        'digital-marketing': '/assets/categories/digital-marketing.jpg',
-                        'cyber-security-cloud': '/assets/categories/cyber-security-cloud.jpg',
-                      };
-                      const CATEGORY_COLORS = {
-                        'web-development': '#EF4444',
-                        'app-development': '#10B981',
-                        'ui-ux-design': '#8B5CF6',
-                        'ai-data-science': '#3B82F6',
-                        'digital-marketing': '#F97316',
-                        'cyber-security-cloud': '#14B8A6',
+                      const CATEGORY_META = {
+                        'web-development': {
+                          tag: 'FULLSTACK',
+                          image: '/assets/categories/web-development.jpg',
+                          count: '12 Courses',
+                          desc: 'Master HTML, CSS, React 19, Node.js, Next.js & fullstack architecture.',
+                        },
+                        'app-development': {
+                          tag: 'MOBILE',
+                          image: '/assets/categories/app-development.jpg',
+                          count: '8 Courses',
+                          desc: 'Build Android & iOS apps with React Native, Flutter, Swift & Mobile APIs.',
+                        },
+                        'ui-ux-design': {
+                          tag: 'CREATIVE',
+                          image: '/assets/categories/ui-ux-design.jpg',
+                          count: '6 Courses',
+                          desc: 'Figma UI/UX, Motion Graphics, Premiere Pro & visual design systems.',
+                        },
+                        'ai-data-science': {
+                          tag: 'FUTURE TECH',
+                          image: '/assets/about_hero_lead.jpg',
+                          count: '10 Courses',
+                          desc: 'Python, Machine Learning, OpenAI APIs, LLM Agents & Data Analytics.',
+                        },
+                        'digital-marketing': {
+                          tag: 'GROWTH',
+                          image: '/assets/categories/digital-marketing.jpg',
+                          count: '5 Courses',
+                          desc: 'SEO, performance marketing ads, social media growth & brand funnel strategy.',
+                        },
+                        'cyber-security-cloud': {
+                          tag: 'SECURITY',
+                          image: '/assets/categories/cyber-security-cloud.jpg',
+                          count: '5 Courses',
+                          desc: 'AWS, Azure, Ethical Hacking, Network Security & DevOps infrastructure.',
+                        },
                       };
 
                       const slug = category.slug || category.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                      const imageUrl = CATEGORY_IMAGES[slug] || null;
-                      const accentColor = CATEGORY_COLORS[slug] || '#4338F2';
+                      const meta = CATEGORY_META[slug] || {
+                        tag: 'PROGRAM',
+                        image: '/assets/about_hero_lead.jpg',
+                        count: '5 Courses',
+                        desc: category.description || 'Master industry-relevant skills with senior experts.',
+                      };
                       
                       return (
                         <motion.div
-                          key={category._id}
+                          key={category._id || slug}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.4, delay: index * 0.05 }}
                         >
                           <Link to={`/courses?category=${slug}`} className="block h-full group">
-                            <div className="h-full bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden">
+                            {/* Magazine Card Container matching About Page */}
+                            <div className="h-full bg-white rounded-3xl border border-slate-200/80 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between">
                               
-                              {/* Category Thumbnail Image */}
-                              <div className="relative w-full h-44 overflow-hidden">
-                                {imageUrl ? (
-                                  <img
-                                    src={imageUrl}
-                                    alt={category.name}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center">
-                                    <Layers className="w-12 h-12 text-indigo-400" />
-                                  </div>
-                                )}
-                                {/* Gradient overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                                {/* Course count badge */}
-                                <div className="absolute top-3 left-3">
-                                  <span
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold text-white backdrop-blur-md"
-                                    style={{ backgroundColor: `${accentColor}CC` }}
-                                  >
-                                    <Sparkles className="w-3 h-3" />
-                                    {`${category.courseCount || 0} Courses`}
+                              {/* Top Header Image + Glass Badge */}
+                              <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
+                                <img
+                                  src={meta.image}
+                                  alt={category.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = '/assets/about_hero_lead.jpg';
+                                  }}
+                                />
+                                {/* Bottom Fade Gradient into White */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
+                                
+                                {/* Top Left Glass Tag Badge */}
+                                <div className="absolute top-4 left-4 z-10">
+                                  <span className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-extrabold uppercase tracking-widest border border-white/20 shadow-sm">
+                                    {meta.tag}
                                   </span>
                                 </div>
                               </div>
 
-                              {/* Card Content */}
-                              <div className="p-5 flex items-center justify-between">
-                                <div>
-                                  <h3 className="text-lg font-extrabold text-[var(--ink)] mb-1 group-hover:text-[var(--primary)] transition-colors font-manrope">
-                                    {category.name}
-                                  </h3>
-                                  <p className="text-xs text-[var(--ink-muted)] font-medium">
-                                    Explore courses
-                                  </p>
+                              {/* Card Body */}
+                              <div className="p-6 space-y-2 flex-grow bg-white">
+                                <div className="text-xs font-extrabold text-indigo-600 tracking-wide uppercase">
+                                  {meta.count}
                                 </div>
-                                <div className="w-9 h-9 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--canvas)] text-[var(--ink-muted)] group-hover:bg-[var(--primary)] group-hover:text-white group-hover:border-[var(--primary)] transition-colors duration-300 shrink-0">
-                                  <ArrowRight className="w-4 h-4" />
-                                </div>
+                                <h3 className="text-xl font-black font-manrope text-slate-900 uppercase tracking-tight group-hover:text-indigo-600 transition-colors">
+                                  {category.name}
+                                </h3>
+                                <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2">
+                                  {meta.desc}
+                                </p>
                               </div>
 
+                              {/* Footer Action Strip */}
+                              <div className="px-6 py-4 border-t border-slate-100 bg-white flex items-center justify-between">
+                                <span className="text-xs font-extrabold tracking-wider uppercase text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                  EXPLORE PROGRAM
+                                </span>
+                                <ArrowRight className="w-4 h-4 text-slate-900 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                              </div>
                             </div>
                           </Link>
                         </motion.div>
