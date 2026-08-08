@@ -60,9 +60,18 @@ export function CourseListPage() {
     return allCourses.filter((course) => {
       // 1. Category Filter
       if (categoryParam) {
-        const courseCatSlug = typeof course.category === 'object' ? course.category?.slug : '';
-        const courseCatName = typeof course.category === 'object' ? course.category?.name : String(course.category || '');
-        if (courseCatSlug !== categoryParam && courseCatName.toLowerCase() !== categoryParam.toLowerCase()) {
+        const paramClean = categoryParam.toLowerCase().trim();
+        const courseCatSlug = (typeof course.category === 'object' ? course.category?.slug : '').toLowerCase();
+        const courseCatName = (typeof course.category === 'object' ? course.category?.name : String(course.category || '')).toLowerCase();
+        const courseCatId = (typeof course.category === 'object' ? course.category?._id : String(course.category || ''));
+
+        const normalizedCatName = courseCatName.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+        const matchesSlug = courseCatSlug === paramClean;
+        const matchesName = courseCatName === paramClean || normalizedCatName === paramClean;
+        const matchesId = courseCatId === categoryParam;
+
+        if (!matchesSlug && !matchesName && !matchesId) {
           return false;
         }
       }

@@ -321,6 +321,9 @@ export function FloatingNav() {
         )}
       </AnimatePresence>
 
+      {/* Top Floating Navbar Spacer to prevent overlapping page content */}
+      <div className="h-20" />
+
       {/* Universal Search Modal */}
       <UniversalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>

@@ -27,7 +27,7 @@ import { SpotlightCard } from '../../components/motion/SpotlightCard';
 import { ShimmerButton } from '../../components/motion/ShimmerButton';
 import { Marquee } from '../../components/motion/Marquee';
 import { NumberTicker } from '../../components/motion/NumberTicker';
-import { CategoryCraftDeck } from '../../components/home/CategoryCraftDeck';
+import { CategoryShowcase } from '../../components/home/CategoryShowcase';
 import { ConnectedConstellationSection } from '../../components/home/ConnectedConstellationSection';
 import { HowItWorksFlowSection } from '../../components/home/HowItWorksFlowSection';
 import { ArcOrbitStatsCtaSection } from '../../components/home/ArcOrbitStatsCtaSection';
@@ -224,7 +224,7 @@ export function HomePage() {
       <StudentBatchResultsShowcase cmsData={studentResultsCms} />
 
       {/* 4. Category Crafts Deck (Find Your Path - Auto-scrolling Interface Crafts style) */}
-      <CategoryCraftDeck categories={categories} />
+      <CategoryShowcase />
 
       {/* 5. Featured Courses Section */}
       <section id="featured-courses" className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
