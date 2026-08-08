@@ -171,17 +171,19 @@ export function VideoPlayerPage() {
             </button>
           </div>
 
-          {/* REAL-TIME LIVE CLASS CHAT & ADMIN MODERATION PANEL */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div className="md:col-span-7">
-              <LiveChatPanel liveSessionId={liveSessionId} />
-            </div>
-            {isAdmin && (
-              <div className="md:col-span-5">
-                <AdminLiveParticipantPanel liveSessionId={liveSessionId} />
+          {/* REAL-TIME LIVE CLASS CHAT & ADMIN MODERATION PANEL (RESTRICTED TO LIVE SESSIONS ONLY) */}
+          {course.type === 'live' && (
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="md:col-span-7">
+                <LiveChatPanel liveSessionId={liveSessionId} />
               </div>
-            )}
-          </div>
+              {isAdmin && (
+                <div className="md:col-span-5">
+                  <AdminLiveParticipantPanel liveSessionId={liveSessionId} />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Description & Resources */}
           <div className="prose max-w-none text-sm text-[var(--ink-muted)] leading-relaxed space-y-3 pb-10">
