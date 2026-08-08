@@ -1,276 +1,1053 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Users, BookOpen, Heart, Target, Sparkles, ArrowRight, Globe, Star } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { 
+  ArrowRight, CheckCircle2, Sparkles, Globe, Award, ShieldCheck, Play, 
+  Code, Trophy, Layers, ChevronRight, Star, Heart, Target, Users, BookOpen, 
+  Check, FileText, Zap, ExternalLink, ArrowUpRight, CheckCircle
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
-import { SplitText } from '../../components/motion/SplitText';
 import { InView } from '../../components/motion/InView';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { useLanguage } from '../../context/LanguageContext';
 import { ContactSupportSection } from '../../components/about/ContactSupportSection';
 
-const jumpLinks = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'stats', label: 'Impact' },
-  { id: 'values', label: 'Our Values' },
-  { id: 'career', label: 'Career Banner' },
-  { id: 'contact', label: 'Contact Support' },
+// Category Magazine Tiles Data (linking directly to /courses)
+const CATEGORY_TILES = [
+  {
+    id: 'ai',
+    title: 'AI & PROMPT TOOLS',
+    titleHi: 'एआई और प्रॉम्प्ट टूल्स',
+    count: '10 Courses',
+    desc: 'Master ChatGPT, Claude, Midjourney & AI Workflows for real productivity.',
+    image: '/assets/students/video_poster_1.jpg',
+    accent: 'from-purple-600 to-indigo-600',
+    tag: 'FUTURE TECH',
+  },
+  {
+    id: 'design',
+    title: 'DESIGN & VIDEO',
+    titleHi: 'डिजाइन और वीडियो',
+    count: '6 Courses',
+    desc: 'Figma UI/UX, Motion Graphics, Premiere Pro & visual design systems.',
+    image: '/assets/students/abhishek.jpg',
+    accent: 'from-pink-600 to-rose-600',
+    tag: 'CREATIVE',
+  },
+  {
+    id: 'marketing',
+    title: 'DIGITAL MARKETING',
+    titleHi: 'डिजिटल मार्केटिंग',
+    count: '5 Courses',
+    desc: 'SEO, performance ads, social media growth & brand funnel strategy.',
+    image: '/assets/students/bhoomika.jpg',
+    accent: 'from-amber-500 to-orange-600',
+    tag: 'GROWTH',
+  },
+  {
+    id: 'excel',
+    title: 'MS EXCEL & DATA',
+    titleHi: 'एमएस एक्सेल और डेटा',
+    count: '4 Courses',
+    desc: 'Advanced formulas, Power Query, dashboards & business analytics.',
+    image: '/assets/students/video_poster_2.jpg',
+    accent: 'from-emerald-600 to-teal-600',
+    tag: 'BUSINESS',
+  },
+  {
+    id: 'communication',
+    title: 'COMMUNICATION',
+    titleHi: 'कम्युनिकेशन और स्पीकिंग',
+    count: '7 Courses',
+    desc: 'Professional English speaking, public speaking & interview confidence.',
+    image: '/assets/students/divye_ratan.jpg',
+    accent: 'from-blue-600 to-cyan-600',
+    tag: 'ESSENTIAL',
+  },
+  {
+    id: 'freelancing',
+    title: 'FREELANCING & WORK',
+    titleHi: 'फ्रीलांसिंग और क्लाइंट वर्क',
+    count: '8 Courses',
+    desc: 'Upwork, Fiverr, portfolio crafting & acquiring international clients.',
+    image: '/assets/students/yes_patel.jpg',
+    accent: 'from-violet-600 to-purple-600',
+    tag: 'CAREER',
+  },
+  {
+    id: 'career',
+    title: 'CAREER SKILLS',
+    titleHi: 'करियर स्किल्स',
+    count: '12 Courses',
+    desc: 'Resume building, LinkedIn optimization & salary negotiation.',
+    image: '/assets/students/video_poster_3.jpg',
+    accent: 'from-blue-700 to-indigo-800',
+    tag: 'OPPORTUNITY',
+  },
 ];
 
-const values = [
+// Approach 4-stage data
+const APPROACH_STAGES = [
   {
-    icon: Target,
-    title: 'Practical Skills',
-    desc: 'Every course is designed around real-world projects and outcomes, not just theory.',
-    gradient: 'from-indigo-500/10 to-purple-500/10',
+    id: 'learn',
+    word: 'LEARN',
+    wordHi: 'सीखें',
+    subtitle: 'Understand concepts through visual, structured lessons.',
+    desc: 'Bilingual bite-sized video modules designed for clarity without confusing jargon.',
+    icon: BookOpen,
+    badge: 'STAGE 01',
+    color: 'from-blue-500 to-indigo-600',
+    details: ['Structured Video Lessons', 'Dual Audio (Hindi & English)', 'Lifetime Access'],
   },
   {
-    icon: Users,
-    title: 'Expert Instructors',
-    desc: 'Learn from industry professionals who bring years of hands-on experience.',
-    gradient: 'from-blue-500/10 to-cyan-500/10',
+    id: 'practice',
+    word: 'PRACTICE',
+    wordHi: 'अभ्यास करें',
+    subtitle: 'Build practical skills through projects and exercises.',
+    desc: 'Interactive exercises, downloadable code starter files, and real-world assignments.',
+    icon: Code,
+    badge: 'STAGE 02',
+    color: 'from-purple-500 to-pink-600',
+    details: ['Real Project Handouts', 'Interactive Exercises', 'Source Code Access'],
   },
   {
-    icon: Heart,
-    title: 'Bilingual Learning',
-    desc: 'All courses available in Hindi and English, so language is never a barrier.',
-    gradient: 'from-orange-500/10 to-amber-500/10',
+    id: 'prove',
+    word: 'PROVE',
+    wordHi: 'प्रमाणित करें',
+    subtitle: 'Earn certificates that demonstrate what you have completed.',
+    desc: 'Verify your completion with shareable digital certificates and unique validation IDs.',
+    icon: Award,
+    badge: 'STAGE 03',
+    color: 'from-amber-500 to-orange-600',
+    details: ['Shareable Verified Badges', 'Unique Certificate ID', 'LinkedIn Ready'],
   },
   {
-    icon: Sparkles,
-    title: 'Affordable Pricing',
-    desc: 'Premium quality education at prices that respect your budget.',
-    gradient: 'from-emerald-500/10 to-teal-500/10',
+    id: 'grow',
+    word: 'GROW',
+    wordHi: 'आगे बढ़ें',
+    subtitle: 'Use your skills to move toward better opportunities.',
+    desc: 'Apply your new knowledge directly to freelance gigs, jobs, or personal projects.',
+    icon: Trophy,
+    badge: 'STAGE 04',
+    color: 'from-emerald-500 to-teal-600',
+    details: ['Portfolio Ready Output', 'Career Guidance', 'Skill Advancement'],
+  },
+];
+
+// Why ClassConnect Exists interactive tabs
+const WHY_TABS = [
+  {
+    id: 'video',
+    title: 'Visual Lessons',
+    desc: 'HD video lessons designed around real screen captures, clear diagrams, and zero fluff.',
+    image: '/assets/students/video_poster_1.jpg',
+  },
+  {
+    id: 'notes',
+    title: 'Structured Notes',
+    desc: 'Downloadable summary cheat-sheets and step-by-step guides for quick revision.',
+    image: '/assets/students/video_poster_2.jpg',
+  },
+  {
+    id: 'project',
+    title: 'Practical Project',
+    desc: 'Build real portfolio pieces instead of taking passive multiple-choice quizzes.',
+    image: '/assets/students/video_poster_3.jpg',
+  },
+  {
+    id: 'certificate',
+    title: 'Milestone Certificate',
+    desc: 'Receive a digital completion credential that honors your dedication and effort.',
+    image: '/hero_showcase.jpg',
   },
 ];
 
 export function AboutPage() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const isHindi = language === 'hi';
-  const [activeTab, setActiveTab] = useState('overview');
 
-  const scrollToSection = (id) => {
-    setActiveTab(id);
-    const element = document.getElementById(id);
-    if (element) {
-      const yOffset = -120; 
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-  };
+  // Active states
+  const [activeApproach, setActiveApproach] = useState('learn');
+  const [activeWhyTab, setActiveWhyTab] = useState('video');
+  const [langToggle, setLangToggle] = useState('hi'); // 'hi' or 'en'
+  const [verifiedPreview, setVerifiedPreview] = useState(false);
+
+  // Hero parallax scroll
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
 
   return (
-    <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden selection:bg-purple-500 selection:text-white">
       <FloatingNav />
 
-      {/* Hero Overview */}
-      <section id="overview" className="pt-20 pb-16 px-6 max-w-5xl mx-auto text-center relative">
-        {/* Subtle Background Glow Aura */}
-        <div className="pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 w-96 h-96 rounded-full bg-gradient-to-tr from-[var(--aura-violet)] to-[var(--aura-peach)] filter blur-[120px] opacity-60 -z-10" />
+      {/* ==================================================
+          1. HERO — "EDUCATION THAT MOVES WITH YOU"
+      ================================================== */}
+      <section ref={heroRef} className="relative pt-24 pb-20 md:pt-36 md:pb-28 px-4 sm:px-6 max-w-7xl mx-auto overflow-hidden">
+        {/* Subtle Ambient Background Aura */}
+        <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[var(--primary)]/15 via-purple-500/10 to-[var(--accent)]/15 blur-[140px] -z-10" />
 
-        {/* Animated Title */}
-        <div className="mb-6">
-          <h1 
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-manrope tracking-tight leading-[1.15] text-[var(--ink)] max-w-4xl mx-auto text-center"
-            style={{ textWrap: 'balance' }}
+        <div className="text-center max-w-5xl mx-auto">
+          {/* Subtle Editorial Top Tag */}
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] shadow-xs mb-8 text-xs sm:text-sm font-semibold tracking-wide text-[var(--ink-muted)]"
+          >
+            <Sparkles className="w-4 h-4 text-[var(--primary)]" />
+            <span>CLASSCONNECT EDITORIAL ABOUT STORY</span>
+          </motion.div>
+
+          {/* Main Headline */}
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-manrope tracking-tight leading-[1.05] text-[var(--ink)] uppercase"
           >
             {isHindi ? (
-              <SplitText text="ज्ञान जो आपको आगे बढ़ाए" />
+              <>
+                सीखना आपको <br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] via-purple-600 to-[var(--accent)]">
+                  आगे बढ़ाना
+                </span>{' '}
+                चाहिए।
+              </>
             ) : (
-              <span>
-                Making quality education{' '}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] via-purple-600 to-[var(--accent)] inline-block">
-                  accessible to everyone
-                </span>
-              </span>
+              <>
+                LEARNING SHOULD <br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] via-purple-600 to-[var(--accent)]">
+                  MOVE YOU
+                </span>{' '}
+                FORWARD.
+              </>
             )}
-          </h1>
+          </motion.h1>
+
+          {/* Small Editorial Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="mt-8 max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-[var(--ink-muted)] font-normal leading-relaxed text-center"
+          >
+            {isHindi
+              ? 'क्लासकनेक्ट एक विजुअल लर्निंग प्लेटफॉर्म है जो उन छात्रों के लिए बनाया गया है जो व्यावहारिक कौशल, बेहतर अवसर और अपनी जीवन शैली के अनुकूल सीखना चाहते हैं।'
+              : 'ClassConnect is a visual learning platform built for students who want practical skills, better opportunities, and learning that actually fits the way they live.'}
+          </motion.p>
+
+          {/* CTA Buttons in Hero */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="mt-10 flex flex-wrap justify-center items-center gap-4"
+          >
+            <Link
+              to="/courses"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--primary)] text-white font-extrabold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300 group"
+            >
+              <span>{isHindi ? 'सभी कोर्स देखें' : 'Explore All Courses'}</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <a
+              href="#approach"
+              className="inline-flex items-center gap-2 px-7 py-4 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--ink)] font-bold text-sm hover:bg-[var(--canvas)] transition-colors"
+            >
+              <span>{isHindi ? 'हमारा तरीका' : 'Our Approach'}</span>
+            </a>
+          </motion.div>
         </div>
 
-        {/* Subtitle */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-2xl mx-auto"
+        {/* Hero Cinematic Art-Directed Visual Composition */}
+        <motion.div 
+          style={{ y: heroY, scale: heroScale }}
+          className="mt-14 md:mt-20 relative max-w-6xl mx-auto"
         >
-          <p className="text-base sm:text-lg text-[var(--ink-muted)] font-normal leading-relaxed text-center">
-            {isHindi
-              ? 'क्लासकनेक्ट भारत का सबसे विजुअल और इंटरएक्टिव लर्निंग प्लेटफॉर्म है। हम व्यावहारिक और जॉब-रेडी स्किल्स सिखाते हैं।'
-              : "ClassConnect is India's premier visual learning OS. We believe great education should be affordable, bilingual in Hindi & English, and built around real skills."}
-          </p>
+          <div className="relative rounded-[28px] sm:rounded-[40px] overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-2xl p-2 sm:p-4">
+            <div className="relative rounded-[22px] sm:rounded-[32px] overflow-hidden aspect-[16/9] bg-slate-900 group">
+              <img 
+                src="/assets/hero_students.jpg"
+                onError={(e) => { e.target.src = '/hero_showcase.jpg'; }}
+                alt="Students learning on ClassConnect"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+              {/* Floating Badges over Media */}
+              <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 md:right-10 flex flex-wrap items-end justify-between gap-4">
+                <div className="bg-black/40 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-white max-w-sm">
+                  <div className="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase tracking-widest mb-1">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Visual Learning OS</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-white/90 font-medium leading-snug">
+                    {isHindi 
+                      ? 'उच्च गुणवत्ता वाली पाठ्य सामग्री, हिंदी और अंग्रेजी दोनों में।'
+                      : 'High-definition video courses with practical project outcomes.'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-5 py-3 rounded-full border border-white/30 text-[var(--ink)] shadow-xl">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs sm:text-sm font-bold font-manrope">
+                    10K+ Active Learners
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </section>
 
-      {/* Premium Tactile Numbers Impact Cards (Smaller & Deeper Look) */}
-      <section id="stats" className="py-16 bg-[var(--surface)] border-y border-[var(--border)] relative">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Stat Card 1 */}
-            <InView delay={0.05}>
-              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[var(--primary-soft)] to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
-                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)] mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                  <Users className="w-4.5 h-4.5" />
-                </div>
-                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
-                  <NumberTicker value={10} suffix="k+" />
-                </div>
-                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
-                  Global active learners
-                </p>
-              </div>
-            </InView>
+      {/* ==================================================
+          2. EDITORIAL STATEMENT SECTION (Quiet Typography)
+      ================================================== */}
+      <section className="py-24 md:py-36 bg-[var(--surface)] border-y border-[var(--border)] relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <InView threshold={0.3}>
+            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-[var(--primary)] mb-6">
+              {isHindi ? 'हमारा विचार' : 'THE ESSENCE'}
+            </p>
+            <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-manrope tracking-tight leading-[1.1] uppercase text-[var(--ink)] max-w-5xl mx-auto">
+              EDUCATION SHOULDN'T FEEL <br className="hidden sm:block" />
+              <span className="text-[var(--ink-muted)] opacity-60">OUT OF REACH.</span>
+            </h2>
+          </InView>
 
-            {/* Stat Card 2 */}
-            <InView delay={0.1}>
-              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
-                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-blue-600 mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                  <BookOpen className="w-4.5 h-4.5" />
-                </div>
-                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
-                  <NumberTicker value={50} suffix="+" />
-                </div>
-                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
-                  Industry-ready courses
-                </p>
-              </div>
-            </InView>
+          <InView delay={0.2} threshold={0.3}>
+            <div className="mt-8 md:mt-12">
+              <span className="inline-block text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-manrope tracking-tight leading-[1.1] uppercase bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] via-purple-600 to-[var(--accent)]">
+                IT SHOULD FEEL POSSIBLE.
+              </span>
+            </div>
+          </InView>
+        </div>
+      </section>
 
-            {/* Stat Card 3 */}
-            <InView delay={0.15}>
-              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-orange-500/10 to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
-                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)] mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                  <Globe className="w-4.5 h-4.5" />
-                </div>
-                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
-                  <NumberTicker value={100} suffix="%" />
-                </div>
-                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
-                  Bilingual Hindi & English
-                </p>
-              </div>
-            </InView>
+      {/* ==================================================
+          3. "WHY CLASSCONNECT EXISTS"
+      ================================================== */}
+      <section className="py-24 md:py-36 max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          {/* Left Column */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-bold tracking-wider uppercase">
+              <span>OUR PURPOSE</span>
+            </div>
 
-            {/* Stat Card 4 */}
-            <InView delay={0.2}>
-              <div className="group relative rounded-2xl bg-[var(--canvas)] border border-[var(--border)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity" />
-                <div className="w-9 h-9 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-amber-500 mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                  <Star className="w-4.5 h-4.5 fill-current" />
-                </div>
-                <div className="text-3xl sm:text-4xl font-extrabold font-manrope text-[var(--ink)] mb-1 tracking-tight">
-                  <NumberTicker value={4} decimals={1} suffix="★" />
-                </div>
-                <p className="text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider">
-                  Average student rating
-                </p>
-              </div>
-            </InView>
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black font-manrope leading-[1.08] tracking-tight uppercase text-[var(--ink)]">
+              WE BUILT <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-purple-600">
+                CLASSCONNECT
+              </span> <br />
+              FOR THE NEXT GENERATION.
+            </h2>
 
+            <p className="text-base sm:text-lg text-[var(--ink-muted)] font-normal leading-relaxed pt-2">
+              Learning is changing. Students don't just need information anymore. They need skills they can apply, proof of what they know, and a clear path from learning to opportunity.
+            </p>
+
+            {/* Interactive Feature Switchers */}
+            <div className="pt-4 space-y-3">
+              {WHY_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveWhyTab(tab.id)}
+                  className={`w-full text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer flex items-start gap-4 ${
+                    activeWhyTab === tab.id
+                      ? 'bg-[var(--surface)] border-[var(--primary)] shadow-md'
+                      : 'bg-transparent border-[var(--border)] hover:bg-[var(--surface)]/50'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 ${
+                    activeWhyTab === tab.id
+                      ? 'bg-[var(--primary)] text-white'
+                      : 'bg-[var(--canvas)] text-[var(--ink-muted)] border border-[var(--border)]'
+                  }`}>
+                    {activeWhyTab === tab.id ? <Check className="w-4 h-4" /> : '•'}
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-[var(--ink)] font-manrope">
+                      {tab.title}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-[var(--ink-muted)] mt-0.5">
+                      {tab.desc}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column Visual Sequence */}
+          <div className="lg:col-span-6 relative">
+            <div className="relative rounded-[32px] overflow-hidden border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xl">
+              <AnimatePresence mode="wait">
+                {WHY_TABS.map((tab) => (
+                  tab.id === activeWhyTab && (
+                    <motion.div
+                      key={tab.id}
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ duration: 0.4 }}
+                      className="relative rounded-[24px] overflow-hidden aspect-[4/3] bg-slate-950"
+                    >
+                      <img
+                        src={tab.image}
+                        alt={tab.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-6 left-6 right-6 text-white">
+                        <span className="text-xs font-bold uppercase tracking-widest text-purple-300">
+                          FEATURED LEARNING EXPERIENCE
+                        </span>
+                        <h3 className="text-xl font-bold font-manrope text-white mt-1">
+                          {tab.title}
+                        </h3>
+                      </div>
+                    </motion.div>
+                  )
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Values */}
-      <section id="values" className="py-20 max-w-7xl mx-auto px-6">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-extrabold font-manrope mb-4">
-            {t('about.valuesHeading', 'What makes us different')}
+      {/* ==================================================
+          4. THE PROBLEM
+      ================================================== */}
+      <section className="py-24 md:py-36 bg-[#0B091A] text-white relative overflow-hidden">
+        {/* Ambient Dark Gradient Background */}
+        <div className="pointer-events-none absolute -bottom-36 -right-36 w-96 h-96 rounded-full bg-purple-600/20 blur-[130px]" />
+        <div className="pointer-events-none absolute -top-36 -left-36 w-96 h-96 rounded-full bg-indigo-600/20 blur-[130px]" />
+
+        <div className="max-w-6xl mx-auto px-6">
+          <InView>
+            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-purple-400 mb-4">
+              {isHindi ? 'समस्या' : 'THE REALITY'}
+            </p>
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-black font-manrope tracking-tight leading-[1.1] uppercase text-white max-w-4xl">
+              THE OLD WAY OF LEARNING IS BROKEN.
+            </h2>
+          </InView>
+
+          {/* 3 Dramatic Problems */}
+          <div className="mt-16 md:mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <InView delay={0.1}>
+              <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300">
+                <span className="text-sm font-extrabold font-mono text-purple-400">01</span>
+                <h3 className="text-2xl sm:text-3xl font-extrabold font-manrope text-white mt-4 mb-3">
+                  TOO EXPENSIVE.
+                </h3>
+                <p className="text-sm text-white/70 leading-relaxed">
+                  Traditional courses charge exorbitant fees for outdated materials that don't prepare students for modern work environments.
+                </p>
+              </div>
+            </InView>
+
+            <InView delay={0.2}>
+              <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300">
+                <span className="text-sm font-extrabold font-mono text-pink-400">02</span>
+                <h3 className="text-2xl sm:text-3xl font-extrabold font-manrope text-white mt-4 mb-3">
+                  TOO THEORETICAL.
+                </h3>
+                <p className="text-sm text-white/70 leading-relaxed">
+                  Endless passive video lectures without real coding, design projects, or practical problem solving create fake confidence.
+                </p>
+              </div>
+            </InView>
+
+            <InView delay={0.3}>
+              <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300">
+                <span className="text-sm font-extrabold font-mono text-amber-400">03</span>
+                <h3 className="text-2xl sm:text-3xl font-extrabold font-manrope text-white mt-4 mb-3">
+                  TOO FAR FROM REAL WORK.
+                </h3>
+                <p className="text-sm text-white/70 leading-relaxed">
+                  Degrees and certificates that lack proof of capability leave students unprepared for real-world job expectations.
+                </p>
+              </div>
+            </InView>
+          </div>
+
+          {/* Transition text */}
+          <InView delay={0.4}>
+            <div className="mt-16 md:mt-24 text-center pt-8 border-t border-white/10">
+              <span className="text-2xl sm:text-4xl md:text-5xl font-black font-manrope tracking-tight uppercase bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300">
+                SO WE BUILT SOMETHING DIFFERENT.
+              </span>
+            </div>
+          </InView>
+        </div>
+      </section>
+
+      {/* ==================================================
+          5. CLASSCONNECT APPROACH
+      ================================================== */}
+      <section id="approach" className="py-24 md:py-36 max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-4xl mx-auto mb-16">
+          <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-[var(--primary)] mb-3">
+            FOUR-STEP METHODOLOGY
+          </p>
+          <h2 className="text-4xl sm:text-6xl font-black font-manrope tracking-tight uppercase text-[var(--ink)]">
+            LEARN. PRACTICE. PROVE. GROW.
           </h2>
-          <p className="text-[var(--ink-muted)] text-base max-w-xl mx-auto">
-            We focus on outcome-oriented learning, visual clarity, and accessible instruction.
+          <p className="mt-4 text-base sm:text-lg text-[var(--ink-muted)]">
+            Our structured approach guarantees that every hour you spend on ClassConnect builds tangible capability.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {values.map((item, i) => {
-            const Icon = item.icon;
+        {/* 4 Interactive Stages Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {APPROACH_STAGES.map((stage) => {
+            const Icon = stage.icon;
+            const isActive = activeApproach === stage.id;
             return (
-              <InView key={i} delay={i * 0.1}>
-                <div className="card p-8 group hover:shadow-[var(--shadow-lg)] transition-all duration-300 rounded-3xl border border-[var(--border)] bg-[var(--surface)]">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-6 border border-[var(--border)] group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-7 h-7 text-[var(--primary)]" />
+              <div
+                key={stage.id}
+                onClick={() => setActiveApproach(stage.id)}
+                className={`p-8 rounded-3xl border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                  isActive
+                    ? 'bg-[var(--surface)] border-[var(--primary)] shadow-xl ring-2 ring-[var(--primary)]/20 -translate-y-1'
+                    : 'bg-[var(--canvas)] border-[var(--border)] hover:bg-[var(--surface)]'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-xs font-bold tracking-widest text-[var(--ink-muted)] uppercase">
+                      {stage.badge}
+                    </span>
+                    <div className={`w-10 h-10 rounded-2xl bg-gradient-to-r ${stage.color} flex items-center justify-center text-white shadow-md`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-[var(--ink)] mb-3 font-manrope">
-                    {item.title}
+
+                  <h3 className="text-2xl font-black font-manrope text-[var(--ink)] mb-2 uppercase">
+                    {isHindi ? stage.wordHi : stage.word}
                   </h3>
-                  <p className="text-sm text-[var(--ink-muted)] leading-relaxed">
-                    {item.desc}
+                  <p className="text-sm font-bold text-[var(--primary)] mb-4">
+                    "{stage.subtitle}"
+                  </p>
+                  <p className="text-xs text-[var(--ink-muted)] leading-relaxed mb-6">
+                    {stage.desc}
                   </p>
                 </div>
-              </InView>
+
+                <div className="pt-4 border-t border-[var(--border)] space-y-2">
+                  {stage.details.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs font-medium text-[var(--ink-muted)]">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             );
           })}
         </div>
       </section>
 
-      {/* Large Featured Deep Purple Career Banner Card */}
-      <section id="career" className="py-12 max-w-7xl mx-auto px-6 mb-16">
-        <InView>
-          <div className="relative rounded-[32px] md:rounded-[40px] overflow-hidden bg-[#2D1B69] text-white p-8 md:p-14 shadow-2xl">
-            {/* Ambient Background Gradient Accent */}
-            <div className="pointer-events-none absolute -right-20 -bottom-20 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl" />
-            <div className="pointer-events-none absolute left-0 top-0 w-80 h-80 rounded-full bg-purple-500/20 blur-3xl" />
+      {/* ==================================================
+          6. BILINGUAL LEARNING
+      ================================================== */}
+      <section className="py-24 md:py-36 bg-[var(--surface)] border-y border-[var(--border)] relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <InView>
+            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-[var(--primary)] mb-4">
+              ACCESSIBILITY FIRST
+            </p>
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-black font-manrope tracking-tight leading-[1.1] uppercase text-[var(--ink)] max-w-4xl mx-auto">
+              LEARN IN THE LANGUAGE THAT WORKS FOR YOU.
+            </h2>
+          </InView>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-              {/* Left Column Text */}
-              <div className="lg:col-span-7 space-y-6">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-manrope leading-[1.15] text-white tracking-tight">
-                  Ready for your next <br className="hidden sm:block" /> big career move?
-                </h2>
-                <p className="text-white/80 text-base md:text-lg max-w-xl font-normal leading-relaxed">
-                  Join an all-star learning platform where ambitious people come to do their best work. 
-                  If you're looking to build innovative technical skills and help yourself grow, you found it.
-                </p>
-                <div className="pt-4">
-                  <Link
-                    to="/courses"
-                    className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-white text-[#2D1B69] font-extrabold text-base hover:bg-gray-100 transition-all duration-300 shadow-lg group"
-                  >
-                    <span className="w-7 h-7 rounded-full bg-[#2D1B69] text-white flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                      <ArrowRight className="w-4 h-4" />
-                    </span>
-                    Explore All Courses
-                  </Link>
-                </div>
+          {/* Bilingual Oversized Interactive Toggle Showcase */}
+          <InView delay={0.2}>
+            <div className="mt-12 md:mt-16 inline-flex p-2 rounded-full bg-[var(--canvas)] border border-[var(--border)] shadow-inner">
+              <button
+                type="button"
+                onClick={() => setLangToggle('hi')}
+                className={`px-8 py-3.5 rounded-full font-black font-manrope text-base sm:text-xl transition-all duration-300 cursor-pointer ${
+                  langToggle === 'hi'
+                    ? 'bg-[var(--primary)] text-white shadow-lg'
+                    : 'text-[var(--ink-muted)] hover:text-[var(--ink)]'
+                }`}
+              >
+                हिंदी (HINDI)
+              </button>
+              <button
+                type="button"
+                onClick={() => setLangToggle('en')}
+                className={`px-8 py-3.5 rounded-full font-black font-manrope text-base sm:text-xl transition-all duration-300 cursor-pointer ${
+                  langToggle === 'en'
+                    ? 'bg-[var(--primary)] text-white shadow-lg'
+                    : 'text-[var(--ink-muted)] hover:text-[var(--ink)]'
+                }`}
+              >
+                ENGLISH
+              </button>
+            </div>
+
+            {/* Dynamic Card Displaying Sample Lesson Header in Selected Language */}
+            <div className="mt-10 max-w-2xl mx-auto p-8 rounded-3xl bg-[var(--canvas)] border border-[var(--border)] shadow-lg text-left">
+              <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-[var(--primary)] mb-3">
+                <Globe className="w-4 h-4" />
+                <span>{langToggle === 'hi' ? 'हिंदी माध्यम उपलब्ध' : 'English Medium Available'}</span>
+              </div>
+              <h4 className="text-xl sm:text-2xl font-bold font-manrope text-[var(--ink)] mb-2">
+                {langToggle === 'hi' 
+                  ? 'हर विषय को अपनी मातृभाषा में समझें' 
+                  : 'Master complex skills in your comfortable language'}
+              </h4>
+              <p className="text-sm text-[var(--ink-muted)] leading-relaxed">
+                {langToggle === 'hi'
+                  ? 'बिना किसी भाषा की रुकावट के कोडिंग, डिजाइन और डिजिटल स्किल्स में महारत हासिल करें।'
+                  : 'Clear explanations, practical examples, and zero language friction.'}
+              </p>
+            </div>
+
+            <p className="mt-8 text-sm sm:text-base text-[var(--ink-muted)] font-medium max-w-xl mx-auto">
+              "Because great education should not be limited by language."
+            </p>
+          </InView>
+        </div>
+      </section>
+
+      {/* ==================================================
+          7. COURSES AS THE CORE (Horizontal Magazine Gallery)
+      ================================================== */}
+      <section className="py-24 md:py-36 max-w-7xl mx-auto px-6 overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div>
+            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-[var(--primary)] mb-3">
+              CURATED DOMAINS
+            </p>
+            <h2 className="text-3xl sm:text-5xl font-black font-manrope tracking-tight uppercase text-[var(--ink)]">
+              SKILLS YOU CAN ACTUALLY USE.
+            </h2>
+          </div>
+          <Link
+            to="/courses"
+            className="inline-flex items-center gap-2 text-sm font-extrabold text-[var(--primary)] hover:underline shrink-0"
+          >
+            <span>View All Course Categories</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Horizontal Scroll / Grid of Magazine Tiles */}
+        <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory">
+          {CATEGORY_TILES.map((cat) => (
+            <Link
+              key={cat.id}
+              to="/courses"
+              className="min-w-[280px] sm:min-w-[340px] snap-start group relative rounded-3xl overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
+            >
+              <div className="relative h-48 overflow-hidden bg-slate-900">
+                <img 
+                  src={cat.image}
+                  alt={cat.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)] via-transparent to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-extrabold tracking-widest uppercase border border-white/20">
+                  {cat.tag}
+                </span>
               </div>
 
-              {/* Right Column Team / Student Visual */}
-              <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
-                <div className="relative w-full max-w-md aspect-[4/3] rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-indigo-900/50 group">
-                  <img
-                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80"
-                    alt="ClassConnect Instructors & Team"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  
-                  {/* Subtle Name Overlay */}
-                  <div className="absolute bottom-4 left-4 right-4 flex justify-between text-xs text-white/80 font-medium">
-                    <div>
-                      <div className="font-bold text-white">Samir Singh</div>
-                      <div className="text-[11px] text-white/70">Founder & Lead</div>
+              <div className="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="text-xs font-bold text-[var(--primary)] mb-1">
+                    {cat.count}
+                  </div>
+                  <h3 className="text-xl font-black font-manrope text-[var(--ink)] uppercase group-hover:text-[var(--primary)] transition-colors">
+                    {isHindi ? cat.titleHi : cat.title}
+                  </h3>
+                  <p className="text-xs text-[var(--ink-muted)] mt-2 leading-relaxed">
+                    {cat.desc}
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-[var(--border)] flex items-center justify-between text-xs font-bold text-[var(--ink)] group-hover:text-[var(--primary)]">
+                  <span>EXPLORE PROGRAM</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ==================================================
+          8. FROM COURSE TO CAREER (Visual Journey)
+      ================================================== */}
+      <section className="py-24 md:py-36 bg-[#0B091A] text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
+            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-purple-400 mb-3">
+              STUDENT ROADMAP
+            </p>
+            <h2 className="text-3xl sm:text-5xl font-black font-manrope tracking-tight uppercase text-white">
+              FROM LEARNING TO OPPORTUNITY.
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-white/70">
+              "Learning shouldn't end when the video ends. It should become something you can show."
+            </p>
+          </div>
+
+          {/* Timeline Process Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 relative">
+            {[
+              { step: '01', title: 'DISCOVER', desc: 'Browse practical courses' },
+              { step: '02', title: 'LEARN', desc: 'Watch HD bilingual lessons' },
+              { step: '03', title: 'PRACTICE', desc: 'Complete project tasks' },
+              { step: '04', title: 'COMPLETE', desc: 'Finish 100% of modules' },
+              { step: '05', title: 'CERTIFY', desc: 'Earn verified badge', highlight: true },
+              { step: '06', title: 'GROW', desc: 'Advance your career' },
+            ].map((item, index) => (
+              <div 
+                key={index}
+                className={`p-6 rounded-3xl border transition-all duration-300 relative ${
+                  item.highlight
+                    ? 'bg-gradient-to-b from-purple-900/60 to-indigo-900/60 border-purple-400 shadow-[0_0_30px_rgba(168,85,247,0.3)]'
+                    : 'bg-white/5 border-white/10'
+                }`}
+              >
+                <span className={`text-xs font-bold font-mono ${item.highlight ? 'text-purple-300' : 'text-white/40'}`}>
+                  {item.step}
+                </span>
+                <h4 className="text-lg font-black font-manrope text-white mt-2 mb-1">
+                  {item.title}
+                </h4>
+                <p className="text-xs text-white/60">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ==================================================
+          9. CERTIFICATES
+      ================================================== */}
+      <section className="py-24 md:py-36 max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left Description */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-xs font-bold tracking-wider uppercase">
+              <Award className="w-3.5 h-3.5" />
+              <span>PROOF OF COMPLETION</span>
+            </div>
+
+            <h2 className="text-4xl sm:text-6xl font-black font-manrope leading-[1.08] tracking-tight uppercase text-[var(--ink)]">
+              LEARN IT. <br />
+              COMPLETE IT. <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-orange-600 to-red-600">
+                PROVE IT.
+              </span>
+            </h2>
+
+            <p className="text-base sm:text-lg text-[var(--ink-muted)] leading-relaxed">
+              Every completed course can become a milestone you can carry forward. Share your certificate with clients, employers, or on your LinkedIn profile.
+            </p>
+
+            <div className="pt-2 space-y-3">
+              <div className="flex items-center gap-3 text-sm font-bold text-[var(--ink)]">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <span>Unique ClassConnect Verification ID</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-bold text-[var(--ink)]">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <span>Shareable digital credential format</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-bold text-[var(--ink)]">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <span>Downloadable high-resolution PDF</span>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="button"
+                onClick={() => setVerifiedPreview(!verifiedPreview)}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--ink)] font-bold text-xs shadow-sm hover:bg-[var(--canvas)] transition-all cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4 text-purple-600" />
+                <span>{verifiedPreview ? 'Hide Sample Validation' : 'Test Certificate Validation Preview'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Realistic Certificate Card Mockup */}
+          <div className="lg:col-span-6 relative">
+            <motion.div 
+              whileHover={{ rotate: 1, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="relative p-8 md:p-10 rounded-[32px] bg-gradient-to-br from-amber-500/10 via-purple-500/5 to-indigo-500/10 border-2 border-amber-500/30 shadow-2xl"
+            >
+              {/* Inner Certificate Frame */}
+              <div className="p-6 md:p-8 rounded-[20px] bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden shadow-inner">
+                {/* Certificate Watermark Ribbon */}
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center font-black text-xs">
+                      CC
                     </div>
-                    <div className="text-right">
-                      <div className="font-bold text-white">Priya & Rahul</div>
-                      <div className="text-[11px] text-white/70">Design & Mobile Leads</div>
-                    </div>
+                    <span className="font-black text-sm font-manrope text-[var(--ink)]">
+                      ClassConnect
+                    </span>
+                  </div>
+                  <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-500/20">
+                    VERIFIED CERTIFICATE
                   </div>
                 </div>
+
+                <div className="my-6">
+                  <span className="text-[10px] font-extrabold text-[var(--ink-muted)] uppercase tracking-[0.2em]">
+                    THIS CERTIFICATE IS PROUDLY PRESENTED TO
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-black font-manrope text-[var(--ink)] mt-2">
+                    Rahul Sharma
+                  </h3>
+                  <div className="w-24 h-0.5 bg-gradient-to-r from-amber-500 to-purple-600 mx-auto my-3" />
+                  <p className="text-xs text-[var(--ink-muted)]">
+                    FOR SUCCESSFULLY COMPLETING THE COURSE
+                  </p>
+                  <h4 className="text-lg font-bold text-[var(--primary)] mt-1">
+                    Fullstack Web Development Bootcamp 2026
+                  </h4>
+                </div>
+
+                <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center text-left">
+                  <div>
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase">ISSUED ON</span>
+                    <span className="text-xs font-bold text-[var(--ink)]">August 2026</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase">ID</span>
+                    <span className="text-xs font-mono font-bold text-[var(--ink)]">CC-2026-8942</span>
+                  </div>
+                </div>
+
+                {/* Validation Status Box Toggle */}
+                {verifiedPreview && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Certificate ID #CC-2026-8942 is Authentic & Verified on ClassConnect</span>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ==================================================
+          10. STUDENT IMPACT (Oversized Editorial Stats)
+      ================================================== */}
+      <section id="stats" className="py-20 md:py-32 bg-[var(--surface)] border-y border-[var(--border)]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            {/* Stat 1 */}
+            <InView delay={0.05}>
+              <div className="p-8 rounded-3xl bg-[var(--canvas)] border border-[var(--border)] shadow-sm hover:shadow-lg transition-all duration-300">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-[var(--ink-muted)]">
+                  ACTIVE LEARNERS
+                </span>
+                <div className="text-5xl sm:text-6xl font-black font-manrope text-[var(--ink)] my-3 tracking-tight">
+                  <NumberTicker value={10} suffix="K+" />
+                </div>
+                <p className="text-xs text-[var(--ink-muted)]">
+                  Learners already building their next skill on ClassConnect.
+                </p>
+              </div>
+            </InView>
+
+            {/* Stat 2 */}
+            <InView delay={0.1}>
+              <div className="p-8 rounded-3xl bg-[var(--canvas)] border border-[var(--border)] shadow-sm hover:shadow-lg transition-all duration-300">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-[var(--ink-muted)]">
+                  AVAILABLE COURSES
+                </span>
+                <div className="text-5xl sm:text-6xl font-black font-manrope text-[var(--ink)] my-3 tracking-tight">
+                  <NumberTicker value={50} suffix="+" />
+                </div>
+                <p className="text-xs text-[var(--ink-muted)]">
+                  Practical, job-oriented visual learning programs.
+                </p>
+              </div>
+            </InView>
+
+            {/* Stat 3 */}
+            <InView delay={0.15}>
+              <div className="p-8 rounded-3xl bg-[var(--canvas)] border border-[var(--border)] shadow-sm hover:shadow-lg transition-all duration-300">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-[var(--ink-muted)]">
+                  BILINGUAL CONTENT
+                </span>
+                <div className="text-5xl sm:text-6xl font-black font-manrope text-[var(--ink)] my-3 tracking-tight">
+                  <NumberTicker value={100} suffix="%" />
+                </div>
+                <p className="text-xs text-[var(--ink-muted)]">
+                  Available in both Hindi and English mediums.
+                </p>
+              </div>
+            </InView>
+
+            {/* Stat 4 */}
+            <InView delay={0.2}>
+              <div className="p-8 rounded-3xl bg-[var(--canvas)] border border-[var(--border)] shadow-sm hover:shadow-lg transition-all duration-300">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-[var(--ink-muted)]">
+                  STUDENT RATING
+                </span>
+                <div className="text-5xl sm:text-6xl font-black font-manrope text-[var(--ink)] my-3 tracking-tight">
+                  <NumberTicker value={4} decimals={1} suffix="★" />
+                </div>
+                <p className="text-xs text-[var(--ink-muted)]">
+                  Average student rating across all course modules.
+                </p>
+              </div>
+            </InView>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ==================================================
+          11. THE CLASSCONNECT EXPERIENCE (Magazine Collage)
+      ================================================== */}
+      <section className="py-24 md:py-36 max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-[var(--primary)] mb-3">
+            VISUAL SPREAD
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-black font-manrope tracking-tight uppercase text-[var(--ink)]">
+            THE CLASSCONNECT EXPERIENCE.
+          </h2>
+        </div>
+
+        {/* Asymmetric Magazine Collage Spread */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          <div className="md:col-span-7 relative rounded-3xl overflow-hidden aspect-[16/10] bg-slate-900 shadow-xl border border-[var(--border)] group">
+            <img 
+              src="/assets/students/video_poster_1.jpg"
+              alt="ClassConnect student interface"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            />
+            <span className="absolute top-4 left-4 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white font-extrabold text-[10px] tracking-widest uppercase">
+              WATCH & LEARN
+            </span>
+          </div>
+
+          <div className="md:col-span-5 space-y-6">
+            <div className="p-6 rounded-3xl bg-[var(--surface)] border border-[var(--border)] shadow-md flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+                <Play className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-base font-manrope text-[var(--ink)]">Bite-Sized HD Video</h4>
+                <p className="text-xs text-[var(--ink-muted)]">Focused lessons without fluff or long fill-ins.</p>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[var(--surface)] border border-[var(--border)] shadow-md flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                <Code className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-base font-manrope text-[var(--ink)]">Hands-on Exercises</h4>
+                <p className="text-xs text-[var(--ink-muted)]">Apply learning directly inside real projects.</p>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[var(--surface)] border border-[var(--border)] shadow-md flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <Trophy className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-base font-manrope text-[var(--ink)]">Milestone Credentials</h4>
+                <p className="text-xs text-[var(--ink-muted)]">Showcase your completed skills proudly.</p>
               </div>
             </div>
           </div>
-        </InView>
+        </div>
       </section>
 
-      {/* 5. Contact Support Section (Matching Uploaded Reference Design) */}
-      <ContactSupportSection />
+      {/* ==================================================
+          12. FUTURE VISION
+      ================================================== */}
+      <section className="py-24 md:py-36 bg-[#0B091A] text-white relative overflow-hidden text-center">
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
+          <InView>
+            <span className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.3em] text-purple-400">
+              FUTURE VISION
+            </span>
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-black font-manrope tracking-tight leading-[1.05] uppercase text-white mt-4 mb-8">
+              THE FUTURE <br />
+              OF LEARNING <br />
+              IS PERSONAL.
+            </h2>
+            <div className="space-y-2 text-base sm:text-xl text-white/80 font-normal max-w-xl mx-auto">
+              <p>More practical.</p>
+              <p>More accessible.</p>
+              <p>More bilingual.</p>
+              <p>More connected to real opportunity.</p>
+            </div>
+          </InView>
+        </div>
+      </section>
 
+      {/* ==================================================
+          13. FINAL CTA
+      ================================================== */}
+      <section className="py-24 md:py-36 max-w-7xl mx-auto px-6 text-center">
+        <div className="relative rounded-[36px] md:rounded-[48px] bg-gradient-to-br from-[#2D1B69] via-indigo-900 to-purple-950 text-white p-10 md:p-20 shadow-2xl overflow-hidden">
+          <div className="relative z-10 max-w-3xl mx-auto space-y-8">
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-black font-manrope tracking-tight leading-[1.05] uppercase text-white">
+              YOUR NEXT SKILL <br />
+              STARTS HERE.
+            </h2>
+            <p className="text-base sm:text-lg text-white/80 leading-relaxed font-normal">
+              Explore courses designed to help you learn something useful, complete something meaningful, and move one step closer to where you want to go.
+            </p>
+
+            <div className="pt-4 flex flex-wrap justify-center items-center gap-4">
+              <Link
+                to="/courses"
+                className="px-9 py-4.5 rounded-full bg-white text-[#2D1B69] font-extrabold text-base hover:bg-slate-100 transition-all duration-300 shadow-xl hover:scale-105 active:scale-95"
+              >
+                Explore Courses
+              </Link>
+              <Link
+                to="/courses"
+                className="px-9 py-4.5 rounded-full bg-white/10 border border-white/30 text-white font-extrabold text-base hover:bg-white/20 transition-all duration-300"
+              >
+                Start Learning
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 14. Support Section & Footer Preserved Exactly */}
+      <ContactSupportSection />
       <Footer />
     </div>
   );
