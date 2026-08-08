@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { courseApi } from '../../api/models/course.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
-import { Navbar } from '../../components/guest/Navbar';
+import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   Radio,
   PlayCircle,
@@ -29,6 +30,8 @@ export const CourseExplorePage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { language } = useLanguage();
+  const isTelugu = language === 'te';
 
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,13 +58,14 @@ export const CourseExplorePage = () => {
         setLoading(true);
         const [courseRes, enrollRes, unlockRes] = await Promise.all([
           courseApi.getCourseByIdOrSlug(courseId),
-          enrollmentApi.getMyEnrollments(),
+          enrollmentApi.getMyEnrollments().catch(() => ({ success: false, data: [] })),
           enrollmentApi.getUnlockStatus(courseId).catch(() => ({ data: { unlockedSections: [0] } })),
         ]);
 
-        if (courseRes.success && courseRes.data) {
-          setCourse(courseRes.data);
-          if (courseRes.data.type === 'live') {
+        const loadedCourse = courseRes.data?.course || courseRes.data || (courseRes._id ? courseRes : null);
+        if (loadedCourse) {
+          setCourse(loadedCourse);
+          if (loadedCourse.type === 'live') {
             setActiveTab('live');
           }
         }
@@ -71,7 +75,10 @@ export const CourseExplorePage = () => {
         }
 
         if (enrollRes.success && enrollRes.data) {
-          const myEnrollment = enrollRes.data.find(
+          const enrollmentsList = Array.isArray(enrollRes.data)
+            ? enrollRes.data
+            : (enrollRes.data?.enrollments || []);
+          const myEnrollment = enrollmentsList.find(
             (e) => (e.course?._id || e.course)?.toString() === courseId || e.course?.slug === courseId
           );
           if (myEnrollment) {
@@ -90,11 +97,11 @@ export const CourseExplorePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FBFAF7] dark:bg-[#090D16] flex flex-col justify-between">
-        <Navbar />
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-10 h-10 text-[#5B54E8] animate-spin mb-3" />
-          <span className="text-xs font-bold text-[#2B2B38] dark:text-slate-400">Loading learning workspace...</span>
+      <div className="min-h-screen bg-[var(--canvas)] flex flex-col justify-between font-sans">
+        <FloatingNav />
+        <div className="flex flex-col items-center justify-center py-32">
+          <Loader2 className="w-10 h-10 text-[var(--primary)] animate-spin mb-3" />
+          <span className="text-xs font-bold text-[var(--ink-muted)]">Loading learning workspace...</span>
         </div>
         <Footer />
       </div>
@@ -103,11 +110,12 @@ export const CourseExplorePage = () => {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-[#FBFAF7] dark:bg-[#090D16] flex flex-col justify-between">
-        <Navbar />
-        <div className="text-center py-20 space-y-4">
-          <h2 className="text-2xl font-bold text-[#2B2B38] dark:text-white">Course Not Found</h2>
-          <Link to="/courses" className="btn-visual bg-[#5B54E8] text-white text-xs inline-flex">
+      <div className="min-h-screen bg-[var(--canvas)] flex flex-col justify-between font-sans">
+        <FloatingNav />
+        <div className="text-center py-32 space-y-4 max-w-md mx-auto px-6">
+          <h2 className="text-2xl font-bold text-[var(--ink)] font-manrope">Course Not Found</h2>
+          <p className="text-xs font-medium text-[var(--ink-muted)]">The requested learning program could not be located.</p>
+          <Link to="/courses" className="px-6 py-3 rounded-full bg-[var(--primary)] text-white text-xs font-bold inline-flex items-center gap-2 shadow-md hover:opacity-90 transition-all">
             Back to Programs
           </Link>
         </div>
@@ -117,7 +125,7 @@ export const CourseExplorePage = () => {
   }
 
   // Calculate overall progress stats
-  const allLectures = course.sections?.flatMap((s) => s.lectures) || [];
+  const allLectures = course.sections?.flatMap((s) => s.lectures || []) || [];
   const totalLecturesCount = allLectures.length || 1;
   const completedCount = completedLectures.length;
   const progressPercent = Math.min(100, Math.round((completedCount / totalLecturesCount) * 100));
@@ -125,7 +133,7 @@ export const CourseExplorePage = () => {
   // Find next incomplete lecture for "Continue where you left off" jump card
   const nextIncompleteLecture = allLectures.find((l) => !completedLectures.includes(l._id));
 
-  // Mock or real Live sessions schedule array
+  // Live sessions schedule array
   const liveSessions = course.liveSchedule
     ? [
         {
@@ -157,26 +165,26 @@ export const CourseExplorePage = () => {
       ];
 
   return (
-    <div className="min-h-screen bg-[#FBFAF7] dark:bg-[#090D16] flex flex-col justify-between transition-colors duration-200 text-[#2B2B38] dark:text-slate-100">
-      <Navbar />
+    <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] flex flex-col justify-between font-sans">
+      <FloatingNav />
 
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 pt-28 pb-16 space-y-8">
         
         {/* HEADER & COURSE BRAND BANNER */}
-        <div className="bg-white dark:bg-[#111827] p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-md space-y-6">
+        <div className="bg-[var(--surface)] p-6 sm:p-8 rounded-3xl border border-[var(--border)] shadow-md space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#5B54E8]/10 text-[#5B54E8] text-xs font-black">
-                <Sparkles className="w-3.5 h-3.5" /> Learning Workspace (Post-Purchase Explore)
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5" /> Learning Workspace (Enrolled)
               </div>
-              <h1 className="text-2xl sm:text-4xl font-black text-[#2B2B38] dark:text-white">{course.title}</h1>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{course.subtitle || course.description}</p>
+              <h1 className="text-2xl sm:text-4xl font-black text-[var(--ink)] font-manrope">{course.title}</h1>
+              <p className="text-xs sm:text-sm font-medium text-[var(--ink-muted)] max-w-3xl">{course.subtitle || course.description}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               <button
                 onClick={handleShareClick}
-                className="btn-visual bg-[#5B54E8]/10 text-[#5B54E8] hover:bg-[#5B54E8]/20 text-xs font-black px-4 py-3 rounded-2xl border border-[#5B54E8]/30 flex items-center gap-2 cursor-pointer"
+                className="px-4 py-3 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary-glow)] text-xs font-bold border border-[var(--border)] flex items-center gap-2 cursor-pointer transition-all"
               >
                 <Share2 className="w-4 h-4" />
                 <span>{shareMsg ? 'Referral Link Copied! 📋' : 'Refer & Share'}</span>
@@ -184,15 +192,15 @@ export const CourseExplorePage = () => {
 
               <Link
                 to={orderId ? `/receipt/${orderId}` : '/payments'}
-                className="btn-visual bg-[#2FA876] hover:bg-[#25875e] text-white text-xs font-black px-4 py-3 rounded-2xl shadow-md flex items-center gap-2"
+                className="px-4 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all"
               >
                 <Award className="w-4 h-4" />
-                <span>Billing & Download Invoice</span>
+                <span>Billing & Invoice</span>
               </Link>
 
               <Link
                 to={`/learning/${course._id}`}
-                className="btn-visual bg-[#5B54E8] hover:bg-[#4740D2] text-white text-xs font-black px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2"
+                className="px-5 py-3 rounded-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-extrabold shadow-lg flex items-center gap-2 transition-all"
               >
                 <Play className="w-4 h-4 fill-white" />
                 <span>Open Player Room</span>
@@ -201,13 +209,13 @@ export const CourseExplorePage = () => {
           </div>
 
           {/* TOP TAB TOGGLE: LIVE VS RECORDED */}
-          <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3 pt-4 border-t border-[var(--border)]">
             <button
               onClick={() => setActiveTab('recorded')}
-              className={`flex-1 sm:flex-none px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 sm:flex-none px-6 py-3 rounded-full text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeTab === 'recorded'
-                  ? 'bg-[#5B54E8] text-white shadow-md'
-                  : 'bg-[#DCEFFB]/60 dark:bg-slate-800 text-[#2B2B38] dark:text-slate-300 hover:bg-[#DCEFFB]'
+                  ? 'bg-[var(--primary)] text-white shadow-md'
+                  : 'bg-[var(--canvas)] text-[var(--ink-muted)] hover:text-[var(--ink)] border border-[var(--border)]'
               }`}
             >
               <PlayCircle className="w-4 h-4" />
@@ -216,13 +224,13 @@ export const CourseExplorePage = () => {
 
             <button
               onClick={() => setActiveTab('live')}
-              className={`flex-1 sm:flex-none px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 sm:flex-none px-6 py-3 rounded-full text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeTab === 'live'
-                  ? 'bg-[#FF7A59] text-white shadow-md'
-                  : 'bg-[#FCE7D6]/60 dark:bg-slate-800 text-[#2B2B38] dark:text-slate-300 hover:bg-[#FCE7D6]'
+                  ? 'bg-rose-600 text-white shadow-md'
+                  : 'bg-[var(--canvas)] text-[var(--ink-muted)] hover:text-[var(--ink)] border border-[var(--border)]'
               }`}
             >
-              <Radio className="w-4 h-4 animate-pulse text-[#FF7A59]" />
+              <Radio className="w-4 h-4 animate-pulse text-rose-500" />
               <span>Live Sessions ({liveSessions.length})</span>
             </button>
           </div>
@@ -233,17 +241,17 @@ export const CourseExplorePage = () => {
           <div className="space-y-6">
             
             {/* PERSISTENT "CONTINUE WHERE YOU LEFT OFF" CARD */}
-            <div className="bg-[#E4E2FB] dark:bg-[#1E1B4B] p-6 rounded-3xl border border-[#5B54E8]/30 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-indigo-50/80 border border-indigo-200/80 p-6 rounded-3xl shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#5B54E8] text-white flex items-center justify-center font-black shadow-md shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--primary)] text-white flex items-center justify-center font-black shadow-md shrink-0">
                   <Play className="w-6 h-6 fill-white" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase text-[#5B54E8] dark:text-[#818cf8] tracking-wider">Quick Resume</span>
-                  <h3 className="text-base font-extrabold text-[#2B2B38] dark:text-white">
+                  <span className="text-[10px] font-extrabold uppercase text-[var(--primary)] tracking-wider">Quick Resume</span>
+                  <h3 className="text-base font-extrabold text-[var(--ink)] font-manrope">
                     {nextIncompleteLecture ? nextIncompleteLecture.title : 'All Lectures Completed! 🎉'}
                   </h3>
-                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
+                  <p className="text-xs font-medium text-[var(--ink-muted)] mt-0.5">
                     Progress: {completedCount} / {totalLecturesCount} Lectures ({progressPercent}%)
                   </p>
                 </div>
@@ -251,7 +259,7 @@ export const CourseExplorePage = () => {
 
               <Link
                 to={`/learning/${course._id}`}
-                className="btn-visual bg-[#5B54E8] hover:bg-[#4740D2] text-white text-xs font-black px-5 py-3 rounded-2xl shadow-md flex items-center gap-2 shrink-0"
+                className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-extrabold px-6 py-3 rounded-full shadow-md flex items-center gap-2 shrink-0 transition-all"
               >
                 <span>Continue Learning</span>
                 <ArrowRight className="w-4 h-4" />
@@ -260,14 +268,14 @@ export const CourseExplorePage = () => {
 
             {/* UNIT ACCORDION LIST */}
             <div className="space-y-4">
-              <h2 className="text-xl font-black text-[#2B2B38] dark:text-white flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#5B54E8]" /> Course Units & Curriculum
+              <h2 className="text-xl font-bold font-manrope text-[var(--ink)] flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-[var(--primary)]" /> Course Units & Curriculum
               </h2>
 
               {course.sections && course.sections.length > 0 ? (
                 course.sections.map((unit, uIdx) => {
-                  const unitCompleted = unit.lectures.filter((l) => completedLectures.includes(l._id)).length;
-                  const unitTotal = unit.lectures.length || 1;
+                  const unitCompleted = unit.lectures?.filter((l) => completedLectures.includes(l._id)).length || 0;
+                  const unitTotal = unit.lectures?.length || 1;
                   const isExpanded = expandedUnitIndex === uIdx;
                   const isUnlocked = course.type === 'live' || uIdx === 0 || (unlockStatus.unlockedSections && unlockStatus.unlockedSections.includes(uIdx));
                   const prevUnitTitle = course.sections[uIdx - 1]?.title || `Unit ${uIdx}`;
@@ -275,71 +283,71 @@ export const CourseExplorePage = () => {
                   return (
                     <div
                       key={unit._id || uIdx}
-                      className={`rounded-3xl border overflow-hidden shadow-sm transition-all ${
+                      className={`rounded-3xl border overflow-hidden shadow-xs transition-all ${
                         isUnlocked 
-                          ? 'bg-white dark:bg-[#111827] border-slate-200/80 dark:border-slate-800' 
-                          : 'bg-slate-100/70 dark:bg-slate-900/50 border-slate-300/60 opacity-80'
+                          ? 'bg-[var(--surface)] border-[var(--border)]' 
+                          : 'bg-[var(--canvas)] border-[var(--border)] opacity-80'
                       }`}
                     >
                       <button
                         onClick={() => setExpandedUnitIndex(isExpanded ? null : uIdx)}
-                        className="w-full p-5 flex items-center justify-between font-extrabold text-sm text-[#2B2B38] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                        className="w-full p-5 flex items-center justify-between font-extrabold text-sm text-[var(--ink)] hover:bg-[var(--canvas)] transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
-                          <span className={`w-8 h-8 rounded-2xl flex items-center justify-center text-xs font-black ${
-                            isUnlocked ? 'bg-[#5B54E8] text-white' : 'bg-slate-400 text-white'
+                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                            isUnlocked ? 'bg-[var(--primary)] text-white' : 'bg-slate-400 text-white'
                           }`}>
                             U{uIdx + 1}
                           </span>
                           <div className="text-left">
                             <div className="flex items-center gap-2">
-                              <h3 className="text-sm font-black">{unit.title}</h3>
+                              <h3 className="text-sm font-bold font-manrope">{unit.title}</h3>
                               {!isUnlocked && (
-                                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold flex items-center gap-1">
                                   🔒 Locked
                                 </span>
                               )}
                             </div>
-                            <span className="text-[11px] text-slate-500 font-bold">
+                            <span className="text-[11px] text-[var(--ink-muted)] font-medium">
                               {isUnlocked 
                                 ? `${unitCompleted} / ${unitTotal} lectures complete` 
                                 : `Complete "${prevUnitTitle}" to unlock`}
                             </span>
                           </div>
                         </div>
-                        {isExpanded ? <ChevronUp className="w-5 h-5 text-[#5B54E8]" /> : <ChevronDown className="w-5 h-5 text-[#5B54E8]" />}
+                        {isExpanded ? <ChevronUp className="w-5 h-5 text-[var(--primary)]" /> : <ChevronDown className="w-5 h-5 text-[var(--primary)]" />}
                       </button>
 
                       {isExpanded && (
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800 p-3 bg-[#FBFAF7] dark:bg-[#090D16]">
-                          {unit.lectures.map((lec) => {
+                        <div className="divide-y divide-[var(--border)] p-3 bg-[var(--canvas)]">
+                          {unit.lectures?.map((lec) => {
                             const isDone = completedLectures.includes(lec._id);
                             return (
                               <div
                                 key={lec._id || lec.title}
-                                className="p-3 rounded-2xl flex items-center justify-between text-xs font-semibold hover:bg-white dark:hover:bg-slate-900 transition-colors"
+                                className="p-3.5 rounded-2xl flex items-center justify-between text-xs font-medium hover:bg-[var(--surface)] transition-colors"
                               >
                                 <div className="flex items-center gap-3">
                                   {isDone ? (
-                                    <CheckCircle2 className="w-4 h-4 text-[#2FA876] shrink-0" />
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                                   ) : (
-                                    <PlayCircle className={`w-4 h-4 shrink-0 ${isUnlocked ? 'text-[#5B54E8]' : 'text-slate-400'}`} />
+                                    <PlayCircle className={`w-4 h-4 shrink-0 ${isUnlocked ? 'text-[var(--primary)]' : 'text-[var(--ink-faint)]'}`} />
                                   )}
-                                  <span className={isDone ? 'line-through text-slate-400 font-medium' : isUnlocked ? 'text-[#2B2B38] dark:text-white font-bold' : 'text-slate-400 font-medium'}>
+                                  <span className={isDone ? 'line-through text-[var(--ink-faint)]' : isUnlocked ? 'text-[var(--ink)] font-bold' : 'text-[var(--ink-muted)]'}>
                                     {lec.title}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-[10px] text-slate-400 font-bold">{lec.duration}</span>
+                                  <span className="text-[10px] text-[var(--ink-faint)] font-bold">{lec.duration}</span>
                                   {isUnlocked ? (
                                     <Link
                                       to={`/learning/${course._id}`}
-                                      className="px-3 py-1 rounded-xl bg-[#5B54E8]/10 text-[#5B54E8] font-black text-[10px] hover:bg-[#5B54E8]/20 transition-colors"
+                                      className="px-3.5 py-1 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] font-bold text-[10px] hover:bg-[var(--primary)] hover:text-white transition-colors"
                                     >
                                       Play
                                     </Link>
                                   ) : (
-                                    <span className="px-2.5 py-1 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed">
+                                    <span className="px-2.5 py-1 rounded-full bg-[var(--canvas)] border border-[var(--border)] text-[var(--ink-faint)] font-bold text-[10px] cursor-not-allowed">
                                       Locked 🔒
                                     </span>
                                   )}
@@ -353,7 +361,7 @@ export const CourseExplorePage = () => {
                   );
                 })
               ) : (
-                <div className="text-xs font-bold text-slate-400 py-4">No recorded units available.</div>
+                <div className="text-xs font-bold text-[var(--ink-muted)] py-4">No recorded units available.</div>
               )}
             </div>
 
@@ -363,11 +371,10 @@ export const CourseExplorePage = () => {
         {/* LIVE TAB SECTION */}
         {activeTab === 'live' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-black text-[#2B2B38] dark:text-white flex items-center gap-2">
-              <Radio className="w-5 h-5 text-[#FF7A59] animate-pulse" /> Scheduled Live Masterclasses
+            <h2 className="text-xl font-bold font-manrope text-[var(--ink)] flex items-center gap-2">
+              <Radio className="w-5 h-5 text-rose-500 animate-pulse" /> Scheduled Live Masterclasses
             </h2>
 
-            {/* FLAT HORIZONTAL SCROLLABLE ROW OF LIVE SESSION CARDS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {liveSessions.map((session) => {
                 const isLiveNow = session.status === 'live';
@@ -376,53 +383,53 @@ export const CourseExplorePage = () => {
                 return (
                   <div
                     key={session.id}
-                    className="bg-white dark:bg-[#111827] rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-4"
+                    className="bg-[var(--surface)] rounded-3xl p-6 border border-[var(--border)] shadow-md flex flex-col justify-between space-y-4"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         {isLiveNow ? (
-                          <span className="px-3 py-1 rounded-full bg-[#FF7A59] text-white text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1">
+                          <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wider animate-pulse flex items-center gap-1">
                             🔴 LIVE NOW
                           </span>
                         ) : isCompleted ? (
-                          <span className="px-3 py-1 rounded-full bg-[#2FA876]/10 text-[#2FA876] text-[10px] font-black uppercase tracking-wider">
+                          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
                             ✓ Completed
                           </span>
                         ) : (
-                          <span className="px-3 py-1 rounded-full bg-[#5B54E8]/10 text-[#5B54E8] text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                          <span className="px-3 py-1 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
                             <Clock className="w-3 h-3" /> Upcoming
                           </span>
                         )}
                       </div>
 
-                      <h3 className="font-extrabold text-base text-[#2B2B38] dark:text-white">{session.title}</h3>
-                      <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#5B54E8]" />
+                      <h3 className="font-extrabold text-base text-[var(--ink)] font-manrope">{session.title}</h3>
+                      <div className="text-xs font-semibold text-[var(--ink-muted)] flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-[var(--primary)]" />
                         <span>{new Date(session.startTime).toLocaleString()}</span>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="pt-3 border-t border-[var(--border)]">
                       {isLiveNow ? (
                         <a
                           href={session.meetingUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn-visual bg-[#FF7A59] hover:bg-[#E56848] text-white w-full text-xs font-black py-2.5 rounded-2xl flex items-center justify-center gap-2 shadow-md"
+                          className="bg-rose-600 hover:bg-rose-700 text-white w-full text-xs font-extrabold py-3 rounded-full flex items-center justify-center gap-2 shadow-md transition-all"
                         >
                           <ExternalLink className="w-4 h-4" /> Join Live Masterclass
                         </a>
                       ) : isCompleted ? (
                         <button
                           disabled
-                          className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold text-center"
+                          className="w-full py-2.5 rounded-full bg-[var(--canvas)] text-[var(--ink-faint)] text-xs font-bold text-center border border-[var(--border)]"
                         >
                           Recording Unavailable
                         </button>
                       ) : (
                         <button
                           disabled
-                          className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold text-center cursor-not-allowed"
+                          className="w-full py-2.5 rounded-full bg-[var(--canvas)] text-[var(--ink-faint)] text-xs font-bold text-center cursor-not-allowed border border-[var(--border)]"
                         >
                           Starts Soon
                         </button>
