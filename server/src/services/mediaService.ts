@@ -109,7 +109,15 @@ export class MediaService {
     // Direct new image uploads to Bunny Storage if API keys are configured
     if (bunnyStorageApiKey && bunnyStorageZone) {
       try {
-        const folder = options.folder ? `${options.folder.replace(/^\/|\/$/g, '')}/` : '';
+        // Strip the storage zone name from folder prefix to avoid double-nesting
+        // e.g. folder="class-connect/cms" with zone="class-connect" → just "cms/"
+        let rawFolder = options.folder ? options.folder.replace(/^\/|\/$/g, '') : '';
+        if (rawFolder.startsWith(`${bunnyStorageZone}/`)) {
+          rawFolder = rawFolder.slice(bunnyStorageZone.length + 1);
+        } else if (rawFolder === bunnyStorageZone) {
+          rawFolder = '';
+        }
+        const folder = rawFolder ? `${rawFolder}/` : '';
         const cleanFilename = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '')}`;
         const targetPath = `${folder}${cleanFilename}`;
 

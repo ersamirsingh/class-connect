@@ -19,54 +19,9 @@ import {
   Search,
   Type
 } from 'lucide-react';
+import { cdnImg } from '../../utils/cdnImg';
 
-const VIDEO_TESTIMONIALS = [
-  {
-    id: 'v1',
-    studentName: 'Rohan Sharma',
-    role: 'Full-Stack Engineer @ TechCorp',
-    courseName: 'Full-Stack Architecture & Microservices',
-    hikeStat: '45% Salary Increase',
-    quote: 'The live coding sessions & visual diagrams made microservices so easy to understand!',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    posterUrl: '/assets/students/video_poster_1.jpg',
-    avatarStack: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80'
-    ]
-  },
-  {
-    id: 'v2',
-    studentName: 'Priya Sundaram',
-    role: 'Product Developer @ SaaS Scaleup',
-    courseName: 'React 19 & Next.js Masterclass',
-    hikeStat: '100% Placement Success',
-    quote: 'Being able to ask questions in Hindi during live Q&A gave me total confidence in my code.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    posterUrl: '/assets/students/video_poster_2.jpg',
-    avatarStack: [
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80'
-    ]
-  },
-  {
-    id: 'v3',
-    studentName: 'Vikram Mehta',
-    role: 'Backend Architect @ FinTech',
-    courseName: 'AI & LLM Integration System',
-    hikeStat: '₹18.5 LPA Placement',
-    quote: 'The project-based learning model helped me build production-ready AI applications!',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    posterUrl: '/assets/students/video_poster_3.jpg',
-    avatarStack: [
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80'
-    ]
-  }
-];
+
 
 export function StudentVideoTestimonialsSection({ cmsData }) {
   const testimonialsList = cmsData?.data?.items || [];
@@ -210,7 +165,7 @@ export function StudentVideoTestimonialsSection({ cmsData }) {
                 {/* HTML5 Video Element */}
                 <video
                   ref={videoRef}
-                  src={currentTestimonial.videoUrl}
+                  src={cdnImg(currentTestimonial.videoUrl)}
                   poster={currentTestimonial.posterUrl}
                   playsInline
                   muted={isMuted}

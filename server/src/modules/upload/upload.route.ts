@@ -50,4 +50,30 @@ router.get('/status', async (req: Request, res: Response) => {
   }
 });
 
+// Image proxy to bypass BunnyCDN hotlink protection (serves CDN images through our server)
+router.get('/proxy', async (req: Request, res: Response) => {
+  try {
+    const imageUrl = req.query.url as string;
+    if (!imageUrl || (!imageUrl.includes('.b-cdn.net') && !imageUrl.includes('bunnycdn'))) {
+      res.status(400).json({ success: false, message: 'Invalid or missing CDN URL' });
+      return;
+    }
+
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      res.status(response.status).json({ success: false, message: `CDN returned ${response.status}` });
+      return;
+    }
+
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.send(buffer);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export const uploadRouter = router;

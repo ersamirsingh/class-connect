@@ -6,6 +6,11 @@ export const contentApi = {
     return response.data;
   },
 
+  getContentByPage: async (page = 'home') => {
+    const response = await api.get(`/content?page=${page}`);
+    return response.data;
+  },
+
   getAllContentAdmin: async () => {
     const response = await api.get('/content/admin/all');
     return response.data;

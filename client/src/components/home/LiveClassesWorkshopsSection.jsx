@@ -2,45 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Radio, Users, Calendar, ArrowRight, Video, Sparkles } from 'lucide-react';
+import { cdnImg } from '../../utils/cdnImg';
 
-const liveSessions = [
-  {
-    id: 'live-1',
-    status: 'LIVE NOW',
-    isLiveNow: true,
-    registered: '340 registered',
-    title: 'Advanced React 19 & Server Components Masterclass',
-    host: 'Rohan Sharma',
-    type: 'Interactive Session',
-    actionText: 'Join Room',
-    actionLink: '/courses/react-19-masterclass',
-    image: '/assets/workshops/workshop_react19.jpg',
-  },
-  {
-    id: 'live-2',
-    status: 'Tomorrow • 6:00 PM IST',
-    isLiveNow: false,
-    registered: '215 registered',
-    title: 'Full-Stack Architecture & Microservices Q&A',
-    host: 'Sneha Gupta',
-    type: 'Interactive Session',
-    actionText: 'Reserve Spot',
-    actionLink: '/courses/fullstack-architecture',
-    image: '/assets/workshops/workshop_fullstack.jpg',
-  },
-  {
-    id: 'live-3',
-    status: 'Aug 4 • 8:00 PM IST',
-    isLiveNow: false,
-    registered: '490 registered',
-    title: 'AI Engineering & LLM Integration Live Workshop',
-    host: 'Vikram Mehta',
-    type: 'Interactive Session',
-    actionText: 'Reserve Spot',
-    actionLink: '/courses/ai-engineering-workshop',
-    image: '/assets/workshops/workshop_ai.jpg',
-  },
-];
+
 
 export function LiveClassesWorkshopsSection({ cmsData }) {
   const sessions = cmsData?.data?.items || [];
@@ -94,7 +58,7 @@ export function LiveClassesWorkshopsSection({ cmsData }) {
               {/* Card Image Banner */}
               <div className="relative w-full aspect-video overflow-hidden bg-slate-900">
                 <img 
-                  src={session.image} 
+                  src={cdnImg(session.image)} 
                   alt={session.title}
                   className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                 />

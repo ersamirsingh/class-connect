@@ -10,22 +10,9 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import { cdnImg } from '../../utils/cdnImg';
 
-    {
-      id: 'student-8',
-      name: 'Meera Nair',
-      role: 'Product Designer',
-      company: 'Zomato Tech',
-      companyLogo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=100&q=80',
-      packageCTC: '₹17.0 LPA Package',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-      rating: 5,
-      review: 'Learning UI animation and design systems directly from senior industry leaders completely elevated my design portfolio.',
-      skills: ['Figma', 'UI Animation', 'Design Systems', 'React'],
-      batch: 'Batch Zero 2026',
-    }
-  ]
-};
+
 
 function StudentCardItem({ student }) {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -60,7 +47,7 @@ function StudentCardItem({ student }) {
           >
             {/* Student Portrait Photo */}
             <img
-              src={student.avatarUrl}
+              src={cdnImg(student.avatarUrl)}
               alt={student.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
@@ -80,7 +67,7 @@ function StudentCardItem({ student }) {
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-white text-slate-900 font-bold text-[11px] flex items-center justify-center overflow-hidden shrink-0 shadow-sm border border-white/30">
                   {student.companyLogo ? (
-                    <img src={student.companyLogo} alt={student.company} className="w-full h-full object-cover" />
+                    <img src={cdnImg(student.companyLogo)} alt={student.company} className="w-full h-full object-cover" />
                   ) : (
                     student.company.substring(0, 2).toUpperCase()
                   )}

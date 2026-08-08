@@ -139,20 +139,31 @@ export const ManageCmsPage = () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
 
+    const payload = {
+      ...formData,
+      page: formData.page || 'home',
+      section: formData.section || activeSectionId,
+      title: formData.title || currentSectionMeta.name,
+      isActive: formData.isActive ?? true,
+      order: formData.order || 1
+    };
+
     try {
+      let res;
       if (formData._id) {
-        await contentApi.updateContentBlock(formData._id, formData);
-        setMessage({ type: 'success', text: `Saved "${formData.title || currentSectionMeta.name}" section content successfully!` });
+        res = await contentApi.updateContentBlock(formData._id, payload);
+        setMessage({ type: 'success', text: `Saved "${payload.title}" section content successfully!` });
       } else {
-        const created = await contentApi.createContentBlock(formData);
-        if (created?.data) setFormData(created.data);
-        setMessage({ type: 'success', text: `Published "${formData.title || currentSectionMeta.name}" section!` });
+        res = await contentApi.createContentBlock(payload);
+        const createdData = res?.data || res;
+        if (createdData?._id) setFormData(createdData);
+        setMessage({ type: 'success', text: `Published "${payload.title}" section live!` });
       }
       loadAllData();
       setTimeout(() => setMessage({ type: '', text: '' }), 4000);
     } catch (err) {
       console.error('Save error:', err);
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to save changes.' });
+      setMessage({ type: 'error', text: err.response?.data?.message || err.message || 'Failed to save changes.' });
     } finally {
       setSaving(false);
     }
@@ -184,6 +195,16 @@ export const ManageCmsPage = () => {
     } finally {
       setUploadingField(null);
     }
+  };
+
+  // Proxy BunnyCDN images through server to bypass hotlink protection on localhost
+  const cdnImg = (url) => {
+    if (!url) return '';
+    if (url.startsWith('data:')) return url;
+    if (url.includes('.b-cdn.net') && window.location.hostname === 'localhost') {
+      return `/api/upload/proxy?url=${encodeURIComponent(url)}`;
+    }
+    return url;
   };
 
   // Toggle Featured Course
@@ -505,6 +526,32 @@ export const ManageCmsPage = () => {
                           </button>
                         </div>
 
+                        {/* Student Photo Upload */}
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-[var(--ink-muted)] mb-1">Student Photo</label>
+                          {student.avatarUrl ? (
+                            <div className="flex items-center gap-3">
+                              <img src={cdnImg(student.avatarUrl)} alt="Student" className="w-16 h-16 rounded-xl object-cover border border-[var(--border)]" />
+                              <div className="flex gap-2">
+                                <label className="px-2.5 py-1.5 bg-[var(--primary-soft)] text-[var(--primary)] text-[10px] font-extrabold rounded-lg cursor-pointer hover:bg-[var(--primary)] hover:text-white transition-colors">
+                                  Replace
+                                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFile(f, `data.students.${idx}.avatarUrl`); e.target.value = ''; }} />
+                                </label>
+                                <button type="button" onClick={() => handleUpdateItem(idx, 'avatarUrl', '')} className="px-2.5 py-1.5 bg-red-100 text-red-600 text-[10px] font-extrabold rounded-lg hover:bg-red-600 hover:text-white transition-colors cursor-pointer">Remove</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <label className="w-full h-20 border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors bg-[var(--surface)]">
+                              {uploadingField === `data.students.${idx}.avatarUrl` ? (
+                                <><Loader2 className="w-5 h-5 text-amber-500 animate-spin" /><span className="text-[10px] font-bold text-amber-600">Uploading...</span></>
+                              ) : (
+                                <><UploadCloud className="w-5 h-5 text-[var(--ink-muted)]" /><span className="text-[10px] font-bold text-[var(--ink-muted)]">Upload Student Photo</span></>
+                              )}
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFile(f, `data.students.${idx}.avatarUrl`); e.target.value = ''; }} />
+                            </label>
+                          )}
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <input
                             type="text"
@@ -574,6 +621,32 @@ export const ManageCmsPage = () => {
                         </button>
                       </div>
 
+                      {/* Workshop Banner Image Upload */}
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase text-[var(--ink-muted)] mb-1">Workshop Banner Image</label>
+                        {item.image ? (
+                          <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--canvas)]">
+                            <img src={cdnImg(item.image)} alt="Workshop Banner" className="w-full h-28 object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                              <label className="px-3 py-1.5 bg-white text-slate-900 text-[10px] font-extrabold rounded-lg cursor-pointer">
+                                Replace
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFile(f, `data.items.${idx}.image`); e.target.value = ''; }} />
+                              </label>
+                              <button type="button" onClick={() => handleUpdateItem(idx, 'image', '')} className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-extrabold rounded-lg cursor-pointer">Remove</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="w-full h-24 border-2 border-dashed border-[var(--border)] hover:border-indigo-500 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors bg-[var(--surface)]">
+                            {uploadingField === `data.items.${idx}.image` ? (
+                              <><Loader2 className="w-5 h-5 text-amber-500 animate-spin" /><span className="text-[10px] font-bold text-amber-600">Uploading...</span></>
+                            ) : (
+                              <><UploadCloud className="w-5 h-5 text-indigo-600" /><span className="text-[10px] font-bold text-[var(--ink-muted)]">Upload Workshop Banner</span></>
+                            )}
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFile(f, `data.items.${idx}.image`); e.target.value = ''; }} />
+                          </label>
+                        )}
+                      </div>
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
@@ -587,6 +660,23 @@ export const ManageCmsPage = () => {
                           placeholder="Host Instructor Name"
                           value={item.host || ''}
                           onChange={(e) => handleUpdateItem(idx, 'host', e.target.value)}
+                          className="p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          placeholder="Status (e.g. LIVE NOW, Tomorrow • 6 PM)"
+                          value={item.status || ''}
+                          onChange={(e) => handleUpdateItem(idx, 'status', e.target.value)}
+                          className="p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Action Button Text (e.g. Join Room)"
+                          value={item.actionText || ''}
+                          onChange={(e) => handleUpdateItem(idx, 'actionText', e.target.value)}
                           className="p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
                         />
                       </div>
@@ -661,7 +751,7 @@ export const ManageCmsPage = () => {
                           </label>
                           {item.videoUrl ? (
                             <div className="p-2 rounded-xl bg-black border border-[var(--border)] space-y-2">
-                              <video src={item.videoUrl} controls className="w-full h-24 object-contain rounded-lg" />
+                              <video src={cdnImg(item.videoUrl)} controls className="w-full h-24 object-contain rounded-lg" />
                               <button
                                 type="button"
                                 onClick={() => handleUpdateItem(idx, 'videoUrl', '')}
@@ -694,7 +784,7 @@ export const ManageCmsPage = () => {
                           </label>
                           {item.posterUrl ? (
                             <div className="p-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
-                              <img src={item.posterUrl} alt="Cover" className="w-full h-24 object-cover rounded-lg" />
+                              <img src={cdnImg(item.posterUrl)} alt="Cover" className="w-full h-24 object-cover rounded-lg" />
                               <button
                                 type="button"
                                 onClick={() => handleUpdateItem(idx, 'posterUrl', '')}
@@ -778,6 +868,111 @@ export const ManageCmsPage = () => {
               </div>
             )}
 
+            {/* 6. STUDENT LOVE STORIES / TESTIMONIALS EDITOR */}
+            {activeSectionId === 'testimonial' && (
+              <div className="space-y-4 pt-4 border-t border-[var(--border)]">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-extrabold uppercase text-[var(--ink)] tracking-wider">
+                    Student Love Stories ({(formData.data?.items || []).length})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleAddItem({ name: '', role: '', quote: '', avatar: '', rating: 5 })}
+                    className="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-extrabold hover:bg-rose-700 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Story</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(formData.data?.items || []).map((item, idx) => (
+                    <div key={item.id || idx} className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-3">
+                      <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
+                        <span className="text-xs font-bold text-rose-600 font-mono">Story #{idx + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteItem(idx)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Student Avatar Photo Upload */}
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase text-[var(--ink-muted)] mb-1">Student Photo</label>
+                        {item.avatar ? (
+                          <div className="flex items-center gap-3">
+                            <img src={cdnImg(item.avatar)} alt="Student" className="w-16 h-16 rounded-xl object-cover border border-[var(--border)]" />
+                            <div className="flex gap-2">
+                              <label className="px-2.5 py-1.5 bg-[var(--primary-soft)] text-[var(--primary)] text-[10px] font-extrabold rounded-lg cursor-pointer hover:bg-[var(--primary)] hover:text-white transition-colors">
+                                Replace
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFile(f, `data.items.${idx}.avatar`); e.target.value = ''; }} />
+                              </label>
+                              <button type="button" onClick={() => handleUpdateItem(idx, 'avatar', '')} className="px-2.5 py-1.5 bg-red-100 text-red-600 text-[10px] font-extrabold rounded-lg hover:bg-red-600 hover:text-white transition-colors cursor-pointer">Remove</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="w-full h-20 border-2 border-dashed border-[var(--border)] hover:border-rose-500 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors bg-[var(--surface)]">
+                            {uploadingField === `data.items.${idx}.avatar` ? (
+                              <><Loader2 className="w-5 h-5 text-amber-500 animate-spin" /><span className="text-[10px] font-bold text-amber-600">Uploading...</span></>
+                            ) : (
+                              <><UploadCloud className="w-5 h-5 text-rose-600" /><span className="text-[10px] font-bold text-[var(--ink-muted)]">Upload Student Photo</span></>
+                            )}
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFile(f, `data.items.${idx}.avatar`); e.target.value = ''; }} />
+                          </label>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          placeholder="Student Name"
+                          value={item.name || ''}
+                          onChange={(e) => handleUpdateItem(idx, 'name', e.target.value)}
+                          className="p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Role (e.g. Frontend Engineer @ Swiggy)"
+                          value={item.role || ''}
+                          onChange={(e) => handleUpdateItem(idx, 'role', e.target.value)}
+                          className="p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                        />
+                      </div>
+
+                      <textarea
+                        rows={2}
+                        placeholder="Student's testimonial quote..."
+                        value={item.quote || ''}
+                        onChange={(e) => handleUpdateItem(idx, 'quote', e.target.value)}
+                        className="w-full p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-medium"
+                      />
+
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase text-[var(--ink-muted)] mb-1">Rating (1-5)</label>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => handleUpdateItem(idx, 'rating', star)}
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer transition-colors ${
+                                star <= (item.rating || 5) ? 'bg-amber-400 text-white' : 'bg-[var(--surface)] text-[var(--ink-muted)] border border-[var(--border)]'
+                              }`}
+                            >
+                              <Star className="w-3.5 h-3.5" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* GENERIC HERO / BANNER IMAGE DROPZONE */}
             {(activeSectionId === 'hero' || activeSectionId === 'banner') && (
               <div className="space-y-4 pt-4 border-t border-[var(--border)]">
@@ -785,7 +980,7 @@ export const ManageCmsPage = () => {
                   <label className="block text-xs font-bold uppercase text-[var(--ink-muted)] mb-2">Section Image / Banner</label>
                   {formData.data?.imageUrl ? (
                     <div className="relative group rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--canvas)]">
-                      <img src={formData.data.imageUrl} alt="Banner" className="w-full h-44 object-cover" />
+                      <img src={cdnImg(formData.data.imageUrl)} alt="Banner" className="w-full h-44 object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                         <button
                           type="button"

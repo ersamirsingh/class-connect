@@ -42,6 +42,7 @@ import { CompareOptionsSection } from '../../components/home/CompareOptionsSecti
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { contentApi } from '../../api/models/content.api';
+import { cdnImg } from '../../utils/cdnImg';
 
 // --- Placeholder Translations (Fallback if keys missing) ---
 const getTranslation = (t, key, fallback) => {
@@ -64,6 +65,9 @@ export function HomePage() {
   const [testimonialsCms, setTestimonialsCms] = useState(null);
   const [heroCms, setHeroCms] = useState(null);
   const [bannerCms, setBannerCms] = useState(null);
+  const [howItWorksCms, setHowItWorksCms] = useState(null);
+  const [statsCms, setStatsCms] = useState(null);
+  const [compareCms, setCompareCms] = useState(null);
 
   const [isLoadingCats, setIsLoadingCats] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
@@ -96,9 +100,16 @@ export function HomePage() {
     const fetchCmsBlocks = async () => {
       try {
         const response = await contentApi.getContentByPage('home');
-        const blocks = Array.isArray(response?.data) 
-          ? response.data 
-          : (response?.data?.blocks || []);
+        let blocks = [];
+        if (Array.isArray(response)) {
+          blocks = response;
+        } else if (Array.isArray(response?.data)) {
+          blocks = response.data;
+        } else if (Array.isArray(response?.data?.data)) {
+          blocks = response.data.data;
+        } else if (Array.isArray(response?.blocks)) {
+          blocks = response.blocks;
+        }
         
         const heroBlock = blocks.find(b => b.section === 'hero' && b.isActive);
         if (heroBlock) setHeroCms(heroBlock);
@@ -121,9 +132,18 @@ export function HomePage() {
         const testBlock = blocks.find(b => b.section === 'testimonial' && b.isActive);
         if (testBlock) setTestimonialsCms(testBlock);
 
+        const howBlock = blocks.find(b => b.section === 'how-it-works' && b.isActive);
+        if (howBlock) setHowItWorksCms(howBlock);
+
+        const statsBlock = blocks.find(b => b.section === 'stats-cta' && b.isActive);
+        if (statsBlock) setStatsCms(statsBlock);
+
+        const compareBlock = blocks.find(b => b.section === 'compare-options' && b.isActive);
+        if (compareBlock) setCompareCms(compareBlock);
+
         const featuredBlock = blocks.find(b => b.section === 'featured_courses' && b.isActive);
-        if (featuredBlock?.data?.courses?.length > 0) {
-          setFeaturedCourses(featuredBlock.data.courses);
+        if (featuredBlock) {
+          setFeaturedCourses(featuredBlock.data?.courses || []);
         }
       } catch (error) {
         console.warn('Failed to load CMS blocks:', error.message);
@@ -149,7 +169,7 @@ export function HomePage() {
         {/* Full-Screen Background Image Layer (Spans 100% Width & Height Edge-to-Edge) */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden m-0 p-0">
           <img 
-            src={heroCms?.data?.imageUrl || "/assets/hero_students_hq.jpg"} 
+            src={cdnImg(heroCms?.data?.imageUrl) || "/assets/hero_students_hq.jpg"} 
             alt="ClassConnect Workspace" 
             className="w-full h-full object-cover object-right antialiased block m-0 p-0 border-none"
             style={{ imageRendering: 'high-quality' }}
@@ -325,23 +345,27 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 6. Live Classes & Workshops Section (Directly Below Featured Courses) */}
-      <LiveClassesWorkshopsSection cmsData={liveClassesCms} />
+      {/* 6. Live Classes & Workshops Section */}
+      {liveClassesCms && liveClassesCms.isActive && <LiveClassesWorkshopsSection cmsData={liveClassesCms} />}
 
       {/* 7. How It Works Section */}
-      <HowItWorksFlowSection />
+      {howItWorksCms && howItWorksCms.isActive && <HowItWorksFlowSection cmsData={howItWorksCms} />}
 
       {/* 8. Arc Orbit Stats & Merged CTA Section */}
-      <ArcOrbitStatsCtaSection />
+      {statsCms && statsCms.isActive && <ArcOrbitStatsCtaSection cmsData={statsCms} />}
 
       {/* 9. Compare Your Options Comparison Chart */}
-      <CompareOptionsSection />
+      {compareCms && compareCms.isActive && <CompareOptionsSection cmsData={compareCms} />}
 
       {/* 10. Merged Side-by-Side Section: Student Loved Stories (Left) + FAQs (Right) */}
-      <MergedTestimonialsFaqSection cmsData={testimonialsCms} faqCmsData={faqCms} />
+      {((testimonialsCms && testimonialsCms.isActive) || (faqCms && faqCms.isActive)) && (
+        <MergedTestimonialsFaqSection cmsData={testimonialsCms} faqCmsData={faqCms} />
+      )}
 
       {/* 11. Student Video Testimonials Showcase */}
-      <StudentVideoTestimonialsSection cmsData={videoTestimonialsCms} />
+      {videoTestimonialsCms && videoTestimonialsCms.isActive && (
+        <StudentVideoTestimonialsSection cmsData={videoTestimonialsCms} />
+      )}
 
       {/* 12. Dynamic CMS Promotional Banner */}
       {bannerCms && bannerCms.isActive && (
@@ -349,7 +373,7 @@ export function HomePage() {
           <div className="max-w-[var(--max-width)] mx-auto p-8 rounded-3xl bg-gradient-to-r from-[var(--primary)] to-indigo-700 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
             {bannerCms.data?.imageUrl && (
               <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-20 pointer-events-none overflow-hidden">
-                <img src={bannerCms.data.imageUrl} alt={bannerCms.title} className="w-full h-full object-cover" />
+                <img src={cdnImg(bannerCms.data.imageUrl)} alt={bannerCms.title} className="w-full h-full object-cover" />
               </div>
             )}
             <div className="space-y-2 max-w-2xl relative z-10">

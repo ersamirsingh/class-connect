@@ -8,69 +8,9 @@ import {
   Sparkles,
   MessageSquare
 } from 'lucide-react';
+import { cdnImg } from '../../utils/cdnImg';
 
-const TESTIMONIALS = [
-  {
-    id: 1,
-    name: 'Arjun Mehta',
-    role: 'Frontend Engineer @ Swiggy',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-    quote: 'ClassConnect\'s bilingual Hindi & English visual learning made complex React & Next.js 15 concepts crystal clear. Landed my first developer role in 3 months!',
-    rating: 5
-  },
-  {
-    id: 2,
-    name: 'Ananya Sharma',
-    role: 'UI/UX Designer @ CRED',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
-    quote: 'The Figma motion design system and hands-on portfolio projects are top-notch. Best learning OS built for real-world skill builders.',
-    rating: 5
-  },
-  {
-    id: 3,
-    name: 'Rohan Verma',
-    role: 'Full-Stack Lead @ Razorpay',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
-    quote: 'I\'ve tried many platforms, but ClassConnect stands out with its attention to visual detail, bilingual clarity, and verifiable certificates.',
-    rating: 5
-  },
-  {
-    id: 4,
-    name: 'Kavita Patel',
-    role: 'AI Engineer @ SaaS Startup',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80',
-    quote: 'From zero Python knowledge to building custom LLM AI agents. The bilingual explanations and 24/7 community support are a total game changer!',
-    rating: 5
-  }
-];
 
-const FAQS = [
-  {
-    id: 1,
-    question: "Do I get full lifetime access?",
-    answer: "Yes! Once you enroll in a course, you receive full lifetime access to all video lessons, project code repositories, live class recordings, and future course updates."
-  },
-  {
-    id: 2,
-    question: "Are the courses taught in Hindi or English?",
-    answer: "Our courses feature a bilingual learning system — key technical terms are explained in English, with step-by-step practical walk-throughs in clear Hindi and English."
-  },
-  {
-    id: 3,
-    question: "Do you provide verifiable certificates upon completion?",
-    answer: "Absolutely! Upon finishing all lessons and submitting course projects, you will receive a QR-verifiable certificate that can be shared on LinkedIn and your resume."
-  },
-  {
-    id: 4,
-    question: "Can I access the platform on my mobile phone?",
-    answer: "Yes, ClassConnect is fully optimized for mobile devices, tablets, and desktops so you can learn on the go anywhere, anytime."
-  },
-  {
-    id: 5,
-    question: "What is your refund policy?",
-    answer: "We offer a hassle-free 7-day money-back guarantee. If you're not completely satisfied with the course, you can request a 100% refund within the first 7 days."
-  }
-];
 
 export function MergedTestimonialsFaqSection({ cmsData, faqCmsData }) {
   const testimonialsList = cmsData?.data?.items || [];
@@ -137,7 +77,7 @@ export function MergedTestimonialsFaqSection({ cmsData, faqCmsData }) {
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
                     <div className="flex items-center gap-2.5">
                       <img 
-                        src={t.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'} 
+                        src={cdnImg(t.avatar) || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'} 
                         alt={t.name} 
                         className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-50 shadow-xs"
                       />

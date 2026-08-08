@@ -16,7 +16,7 @@ const contentBlockSchema = new Schema<IContentBlock>(
   {
     page: { type: String, required: true, default: 'home', index: true },
     section: { type: String, required: true, index: true },
-    title: { type: String, required: true, trim: true },
+    title: { type: String, default: '', trim: true },
     subtitle: { type: String, default: '' },
     data: { type: Schema.Types.Mixed, default: {} },
     order: { type: Number, default: 0 },
