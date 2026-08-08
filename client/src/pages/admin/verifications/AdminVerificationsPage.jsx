@@ -98,6 +98,7 @@ export function AdminVerificationsPage() {
                 <thead className="bg-[var(--canvas)] text-[var(--ink-muted)] font-black uppercase text-[10px] border-b border-[var(--border)]">
                   <tr>
                     <th className="p-4">Student</th>
+                    <th className="p-4">Aadhaar Number</th>
                     <th className="p-4">PAN Number</th>
                     <th className="p-4">Documents</th>
                     <th className="p-4">Status</th>
@@ -114,8 +115,12 @@ export function AdminVerificationsPage() {
                         <p className="text-[10px] text-[var(--ink-muted)] font-mono">{doc.student?.email}</p>
                       </td>
 
-                      <td className="p-4 font-mono font-bold uppercase text-[var(--primary)]">
-                        {doc.panNumber}
+                      <td className="p-4 font-mono font-bold text-[var(--primary)]">
+                        {doc.aadhaarNumber || 'N/A'}
+                      </td>
+
+                      <td className="p-4 font-mono font-bold uppercase text-[var(--ink-muted)]">
+                        {doc.panNumber || '—'}
                       </td>
 
                       <td className="p-4">
@@ -176,22 +181,28 @@ export function AdminVerificationsPage() {
             <div className="flex justify-between items-center border-b border-[var(--border)] pb-3">
               <div>
                 <h3 className="font-extrabold text-base text-[var(--ink)] font-manrope">Verification Documents</h3>
-                <p className="text-xs text-[var(--ink-muted)]">{selectedDoc.student?.name} — PAN: <strong className="font-mono">{selectedDoc.panNumber}</strong></p>
+                <p className="text-xs text-[var(--ink-muted)]">{selectedDoc.student?.name} — Aadhaar: <strong className="font-mono">{selectedDoc.aadhaarNumber}</strong> {selectedDoc.panNumber && `| PAN: ${selectedDoc.panNumber}`}</p>
               </div>
-              <button onClick={() => setSelectedDoc(null)} className="text-xs font-bold text-slate-500 hover:text-slate-800">Close</button>
+              <button onClick={() => setSelectedDoc(null)} className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer">Close</button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <span className="text-xs font-bold text-[var(--ink-muted)] block mb-1">PAN Card Image</span>
-                <img src={selectedDoc.panImageUrl} alt="PAN Card" className="w-full h-48 object-contain bg-slate-900 rounded-xl border border-slate-700" />
-              </div>
-              {selectedDoc.aadhaarImageUrl && (
-                <div>
-                  <span className="text-xs font-bold text-[var(--ink-muted)] block mb-1">Aadhaar Card Image</span>
+                <span className="text-xs font-bold text-[var(--ink-muted)] block mb-1">Aadhaar Card Image (Required)</span>
+                {selectedDoc.aadhaarImageUrl ? (
                   <img src={selectedDoc.aadhaarImageUrl} alt="Aadhaar Card" className="w-full h-48 object-contain bg-slate-900 rounded-xl border border-slate-700" />
-                </div>
-              )}
+                ) : (
+                  <div className="h-48 flex items-center justify-center bg-slate-100 rounded-xl text-xs text-slate-500">No Image</div>
+                )}
+              </div>
+              <div>
+                <span className="text-xs font-bold text-[var(--ink-muted)] block mb-1">PAN Card Image (Optional)</span>
+                {selectedDoc.panImageUrl ? (
+                  <img src={selectedDoc.panImageUrl} alt="PAN Card" className="w-full h-48 object-contain bg-slate-900 rounded-xl border border-slate-700" />
+                ) : (
+                  <div className="h-48 flex items-center justify-center bg-slate-100 rounded-xl text-xs text-slate-500">Not Uploaded (Optional)</div>
+                )}
+              </div>
             </div>
           </motion.div>
         </div>

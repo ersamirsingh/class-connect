@@ -29,4 +29,15 @@ export const uploadMultipleImages = multer({
 export const uploadGenericFile = multer({
   storage,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for video/files
+  fileFilter: (req, file, cb) => {
+    const isImage = file.mimetype.startsWith('image/');
+    const isVideo = file.mimetype.startsWith('video/');
+    const isPdf = file.mimetype === 'application/pdf';
+
+    if (isImage || isVideo || isPdf) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file format. Only images, videos, and PDF documents are allowed.'));
+    }
+  },
 }).single('file');

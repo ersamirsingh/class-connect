@@ -13,12 +13,22 @@ export function SignupPage() {
     name: '',
     email: '',
     phone: '',
-    password: ''
+    password: '',
+    referralCode: localStorage.getItem('pendingReferralCode') || '',
   });
   
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refParam = params.get('ref');
+    if (refParam) {
+      localStorage.setItem('pendingReferralCode', refParam);
+      setFormData((prev) => ({ ...prev, referralCode: refParam }));
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -45,7 +55,8 @@ export function SignupPage() {
     setError('');
     
     try {
-      const user = await signup(formData.name, formData.email, formData.password, formData.phone, null);
+      const user = await signup(formData.name, formData.email, formData.password, formData.phone, null, formData.referralCode);
+      localStorage.removeItem('pendingReferralCode');
       if (user?.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
@@ -150,6 +161,22 @@ export function SignupPage() {
               </button>
             </div>
           </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs font-bold text-[var(--ink-muted)] uppercase tracking-wider flex items-center justify-between">
+            <span>Referral Code</span>
+            <span className="text-[10px] text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <input
+            type="text"
+            name="referralCode"
+            value={formData.referralCode}
+            onChange={handleChange}
+            className="w-full min-h-[42px] px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] text-sm font-semibold uppercase focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] transition-all font-mono"
+            placeholder="e.g. REF12345"
+            disabled={loading}
+          />
         </div>
 
         {/* Password Strength Bar */}

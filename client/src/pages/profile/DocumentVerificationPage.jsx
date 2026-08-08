@@ -20,9 +20,10 @@ export function DocumentVerificationPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
+    aadhaarNumber: '',
+    aadhaarImageUrl: '',
     panNumber: '',
     panImageUrl: '',
-    aadhaarImageUrl: '',
   });
   const [msg, setMsg] = useState({ type: '', text: '' });
 
@@ -33,9 +34,10 @@ export function DocumentVerificationPage() {
       setData(res.data);
       if (res.data) {
         setForm({
+          aadhaarNumber: res.data.aadhaarNumber || '',
+          aadhaarImageUrl: res.data.aadhaarImageUrl || '',
           panNumber: res.data.panNumber || '',
           panImageUrl: res.data.panImageUrl || '',
-          aadhaarImageUrl: res.data.aadhaarImageUrl || '',
         });
       }
     } catch (err) {
@@ -87,14 +89,6 @@ export function DocumentVerificationPage() {
     reader.readAsDataURL(file);
   };
 
-  const handlePanFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    compressImageFile(file, (compressedUrl) => {
-      setForm((prev) => ({ ...prev, panImageUrl: compressedUrl }));
-    });
-  };
-
   const handleAadhaarFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -103,18 +97,26 @@ export function DocumentVerificationPage() {
     });
   };
 
+  const handlePanFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    compressImageFile(file, (compressedUrl) => {
+      setForm((prev) => ({ ...prev, panImageUrl: compressedUrl }));
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg({ type: '', text: '' });
-    if (!form.panImageUrl) {
-      setMsg({ type: 'error', text: 'Please select and upload your PAN Card image file.' });
+    if (!form.aadhaarNumber || !form.aadhaarImageUrl) {
+      setMsg({ type: 'error', text: 'Please enter your 12-digit Aadhaar number and upload your Aadhaar card image file.' });
       return;
     }
 
     try {
       setSubmitting(true);
       await verificationApi.submitVerification(form);
-      setMsg({ type: 'success', text: 'Documents submitted successfully for Admin review!' });
+      setMsg({ type: 'success', text: 'Verification documents submitted successfully for Admin review!' });
       await loadStatus();
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.message || err.message });
@@ -191,54 +193,35 @@ export function DocumentVerificationPage() {
           className="bg-[var(--surface)] p-6 sm:p-8 rounded-3xl border border-[var(--border)] shadow-xl space-y-6"
         >
           <div className="border-b border-[var(--border)] pb-4">
-            <h3 className="font-extrabold text-lg text-[var(--ink)] font-manrope">PAN & Aadhaar Image File Upload</h3>
-            <p className="text-xs text-[var(--ink-muted)] font-medium">Select and upload your document image files directly from your device.</p>
+            <h3 className="font-extrabold text-lg text-[var(--ink)] font-manrope">Aadhaar & PAN Document Verification</h3>
+            <p className="text-xs text-[var(--ink-muted)] font-medium">Aadhaar verification is required to unlock wallet withdrawals. PAN card is optional.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* PAN Number */}
+            {/* Aadhaar Number - MANDATORY */}
             <div>
-              <label className="text-xs font-bold text-[var(--ink-muted)] block mb-1">PAN Card Number (Required)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-extrabold text-[var(--ink)] uppercase">
+                  Aadhaar Card Number <span className="text-red-500 font-bold">* (Required)</span>
+                </label>
+              </div>
               <input
                 type="text"
-                placeholder="e.g. ABCDE1234F"
-                value={form.panNumber}
-                onChange={(e) => setForm({ ...form, panNumber: e.target.value })}
+                placeholder="e.g. 1234 5678 9012"
+                value={form.aadhaarNumber}
+                onChange={(e) => setForm({ ...form, aadhaarNumber: e.target.value })}
                 required
                 disabled={status === 'verified'}
-                className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] font-mono text-xs uppercase font-bold focus:outline-none focus:border-[var(--primary)]"
+                className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] font-mono text-xs font-bold focus:outline-none focus:border-[var(--primary)]"
               />
             </div>
 
-            {/* PAN Image File Upload Box */}
+            {/* Aadhaar Image File Upload Box - MANDATORY */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[var(--ink-muted)] block">PAN Card Document Image File (Required)</label>
-              
-              {form.panImageUrl ? (
-                <div className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] max-w-sm space-y-3">
-                  <img src={form.panImageUrl} alt="PAN Card Preview" className="w-full h-44 object-contain rounded-xl bg-slate-900 border border-slate-700" />
-                  {status !== 'verified' && (
-                    <label className="w-full py-2 bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer">
-                      <Upload className="w-4 h-4" />
-                      <span>Change PAN Image File</span>
-                      <input type="file" className="hidden" accept="image/*" onChange={handlePanFileChange} />
-                    </label>
-                  )}
-                </div>
-              ) : (
-                <label className="border-2 border-dashed border-[var(--primary)]/40 hover:border-[var(--primary)] bg-[var(--canvas)] p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors max-w-md">
-                  <UploadCloud className="w-8 h-8 text-[var(--primary)]" />
-                  <span className="text-xs font-bold text-[var(--ink)]">Click to Select PAN Card Image File</span>
-                  <span className="text-[10px] text-[var(--ink-muted)] font-medium">Supports JPG, PNG, WEBP images</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handlePanFileChange} disabled={status === 'verified'} />
-                </label>
-              )}
-            </div>
-
-            {/* Optional Aadhaar Image File Upload Box */}
-            <div className="space-y-2 pt-2 border-t border-[var(--border)]">
-              <label className="text-xs font-bold text-[var(--ink-muted)] block">Aadhaar Card Document Image File (Optional)</label>
+              <label className="text-xs font-extrabold text-[var(--ink)] block">
+                Aadhaar Card Document Image File <span className="text-red-500 font-bold">* (Required)</span>
+              </label>
               
               {form.aadhaarImageUrl ? (
                 <div className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] max-w-sm space-y-3">
@@ -252,12 +235,55 @@ export function DocumentVerificationPage() {
                   )}
                 </div>
               ) : (
-                <label className="border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] bg-[var(--canvas)] p-5 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors max-w-md">
-                  <FileImage className="w-7 h-7 text-[var(--ink-muted)]" />
-                  <span className="text-xs font-bold text-[var(--ink)]">Click to Select Aadhaar Card Image File</span>
+                <label className="border-2 border-dashed border-[var(--primary)]/60 hover:border-[var(--primary)] bg-[var(--canvas)] p-6 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors max-w-md">
+                  <UploadCloud className="w-8 h-8 text-[var(--primary)]" />
+                  <span className="text-xs font-extrabold text-[var(--ink)]">Click to Select Aadhaar Card Image File</span>
+                  <span className="text-[10px] text-[var(--ink-muted)] font-medium">Supports JPG, PNG, WEBP images (Mandatory)</span>
                   <input type="file" className="hidden" accept="image/*" onChange={handleAadhaarFileChange} disabled={status === 'verified'} />
                 </label>
               )}
+            </div>
+
+            {/* Optional PAN Section */}
+            <div className="space-y-4 pt-4 border-t border-[var(--border)]">
+              <div>
+                <label className="text-xs font-bold text-[var(--ink-muted)] block mb-1">
+                  PAN Card Number <span className="text-slate-400 font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. ABCDE1234F"
+                  value={form.panNumber}
+                  onChange={(e) => setForm({ ...form, panNumber: e.target.value })}
+                  disabled={status === 'verified'}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--canvas)] text-[var(--ink)] font-mono text-xs uppercase font-bold focus:outline-none focus:border-[var(--primary)]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-[var(--ink-muted)] block">
+                  PAN Card Document Image File <span className="text-slate-400 font-normal">(Optional)</span>
+                </label>
+                
+                {form.panImageUrl ? (
+                  <div className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] max-w-sm space-y-3">
+                    <img src={form.panImageUrl} alt="PAN Card Preview" className="w-full h-44 object-contain rounded-xl bg-slate-900 border border-slate-700" />
+                    {status !== 'verified' && (
+                      <label className="w-full py-2 bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-colors rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer">
+                        <Upload className="w-4 h-4" />
+                        <span>Change PAN Image File</span>
+                        <input type="file" className="hidden" accept="image/*" onChange={handlePanFileChange} />
+                      </label>
+                    )}
+                  </div>
+                ) : (
+                  <label className="border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] bg-[var(--canvas)] p-5 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors max-w-md">
+                    <FileImage className="w-7 h-7 text-[var(--ink-muted)]" />
+                    <span className="text-xs font-bold text-[var(--ink)]">Click to Select PAN Card Image File (Optional)</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handlePanFileChange} disabled={status === 'verified'} />
+                  </label>
+                )}
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -265,7 +291,7 @@ export function DocumentVerificationPage() {
               <div className="flex justify-end pt-4 border-t border-[var(--border)]">
                 <button
                   type="submit"
-                  disabled={submitting || !form.panImageUrl}
+                  disabled={submitting || !form.aadhaarNumber || !form.aadhaarImageUrl}
                   className="px-8 py-3 bg-[var(--primary)] text-white text-xs font-extrabold rounded-xl shadow-md hover:bg-[var(--deep-anchor,#24216F)] transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4" />

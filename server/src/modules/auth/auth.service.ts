@@ -17,8 +17,17 @@ export class AuthService {
     }
 
     let referrerUser = null;
-    if (payload.refCode) {
-      referrerUser = await UserModel.findOne({ referralCode: payload.refCode.trim().toUpperCase() });
+    const refCodeToUse = payload.refCode || (payload as any).referralCode;
+    if (refCodeToUse) {
+      const foundReferrer = await UserModel.findOne({ referralCode: refCodeToUse.trim().toUpperCase() });
+      if (foundReferrer) {
+        const isSelfReferral =
+          foundReferrer.email.toLowerCase() === payload.email.toLowerCase() ||
+          (payload.phone && foundReferrer.phone && foundReferrer.phone.trim() === payload.phone.trim());
+        if (!isSelfReferral) {
+          referrerUser = foundReferrer;
+        }
+      }
     }
 
     const sessionId = crypto.randomUUID();

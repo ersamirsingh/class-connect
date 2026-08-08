@@ -40,6 +40,16 @@ export class EnrollmentController {
     }
   }
 
+  static async verifyPublicCertificate(req: any, res: Response): Promise<void> {
+    try {
+      const uniqueId = req.params.uniqueId as string;
+      const cert = await EnrollmentService.verifyPublicCertificate(uniqueId);
+      res.status(200).json({ success: true, data: cert });
+    } catch (error: any) {
+      res.status(404).json({ success: false, message: error.message });
+    }
+  }
+
   static async checkStatus(req: AuthRequest, res: Response): Promise<void> {
     try {
       const studentId = req.user!._id.toString();
@@ -48,6 +58,30 @@ export class EnrollmentController {
       res.status(200).json({ success: true, data: result });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  static async getTopicUnlockStatus(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const studentId = req.user!._id.toString();
+      const courseId = req.params.courseId as string;
+      const data = await EnrollmentService.getCourseTopicUnlockStatus(studentId, courseId);
+      res.status(200).json({ success: true, data });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  static async getLecturePlayback(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const studentId = req.user!._id.toString();
+      const courseId = req.params.courseId as string;
+      const lectureId = req.params.lectureId as string;
+      const data = await EnrollmentService.getLecturePlayback(studentId, courseId, lectureId);
+      res.status(200).json({ success: true, data });
+    } catch (error: any) {
+      const statusCode = error.statusCode || 400;
+      res.status(statusCode).json({ success: false, message: error.message });
     }
   }
 }

@@ -12,8 +12,8 @@ import { ThemeToggle } from '../components/shared/ThemeToggle';
 
 const adminNavItems = [
   { key: 'admin.dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-  { key: 'admin.manageCourses', path: '/admin/courses', icon: BookOpen },
   { key: 'admin.manageCategories', path: '/admin/categories', icon: FolderOpen },
+  { key: 'admin.manageCourses', path: '/admin/courses', icon: BookOpen },
   { key: 'admin.manageUsers', path: '/admin/users', icon: Users },
   { key: 'admin.manageAdmins', path: '/admin/admins', icon: ShieldCheck },
   { key: 'admin.payments', path: '/admin/payments', icon: CreditCard },

@@ -10,5 +10,11 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET || 'classconnect_super_secret_jwt_key_2026',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   nodeEnv: process.env.NODE_ENV || 'development',
+  bunnyStreamApiKey: process.env.BUNNY_STREAM_API_KEY || '',
+  bunnyStreamLibraryId: process.env.BUNNY_STREAM_LIBRARY_ID || '',
+  bunnyStreamCdnUrl: process.env.BUNNY_STREAM_CDN_URL || 'https://iframe.mediadelivery.net',
+  bunnyStorageApiKey: process.env.BUNNY_STORAGE_API_KEY || '',
+  bunnyStorageZone: process.env.BUNNY_STORAGE_ZONE || '',
+  bunnyStorageCdnUrl: process.env.BUNNY_STORAGE_CDN_URL || '',
 };
 

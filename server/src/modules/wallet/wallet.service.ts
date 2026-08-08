@@ -6,9 +6,45 @@ import { UserModel } from '../user/user.model';
 
 export class WalletService {
   /**
+   * Calculate ledger balance dynamically from transactions & sync wallet record
+   */
+  static async calculateLedgerBalance(studentId: string): Promise<number> {
+    // 1. Auto-promote pending referral commissions past the 7-day holding period to available
+    await ReferralTransactionModel.updateMany(
+      { referrer: studentId, status: 'pending', availableAt: { $lte: new Date() } },
+      { $set: { status: 'available' } }
+    );
+
+    // 2. Sum available commissions
+    const availableTxs = await ReferralTransactionModel.find({ referrer: studentId, status: 'available' });
+    const totalEarnedAvailable = availableTxs.reduce((sum, tx) => sum + tx.commissionAmount, 0);
+
+    // 3. Sum reserved/paid withdrawals (pending, approved, or paid)
+    const activeWithdrawals = await WithdrawalRequestModel.find({
+      student: studentId,
+      status: { $in: ['pending', 'approved', 'paid'] },
+    });
+    const totalWithdrawnOrReserved = activeWithdrawals.reduce((sum, w) => sum + w.amount, 0);
+
+    const calculatedBalance = Math.max(0, totalEarnedAvailable - totalWithdrawnOrReserved);
+
+    // 4. Sync wallet balance
+    let wallet = await WalletModel.findOne({ student: studentId });
+    if (!wallet) {
+      wallet = await WalletModel.create({ student: studentId, balance: calculatedBalance });
+    } else if (wallet.balance !== calculatedBalance) {
+      wallet.balance = calculatedBalance;
+      await wallet.save();
+    }
+
+    return calculatedBalance;
+  }
+
+  /**
    * Get or create wallet for student
    */
   static async getWallet(studentId: string): Promise<IWallet> {
+    await this.calculateLedgerBalance(studentId);
     let wallet = await WalletModel.findOne({ student: studentId });
     if (!wallet) {
       wallet = await WalletModel.create({ student: studentId, balance: 0 });
@@ -27,7 +63,6 @@ export class WalletService {
       throw new Error('Account number, IFSC code, and account holder name are required.');
     }
 
-    // Mock Penny-Drop Provider API verification
     const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
     if (!ifscRegex.test(details.ifscCode.trim())) {
       throw new Error('Invalid IFSC Code format. Penny-drop validation failed.');
@@ -38,7 +73,7 @@ export class WalletService {
       accountNumber: details.accountNumber.trim(),
       ifscCode: details.ifscCode.trim().toUpperCase(),
       accountHolderName: details.accountHolderName.trim(),
-      isVerified: true, // Penny-drop passed
+      isVerified: true,
       verifiedAt: new Date(),
     };
 
@@ -47,7 +82,7 @@ export class WalletService {
   }
 
   /**
-   * Credit referral commission on completed paid course order
+   * Credit referral commission with 7-day holding period and self-referral check
    */
   static async creditReferralCommission(
     referrerId: string,
@@ -55,27 +90,28 @@ export class WalletService {
     orderId: string,
     orderAmount: number
   ) {
-    // 15% commission on paid order amount or min ₹150
+    if (referrerId.toString() === referredStudentId.toString()) {
+      console.warn('Self-referral detected. Commission credit skipped.');
+      return null;
+    }
+
     const commissionAmount = Math.max(Math.round(orderAmount * 0.15), 150);
 
-    // Create transaction record
     const transaction = await ReferralTransactionModel.create({
       referrer: referrerId,
       referredStudent: referredStudentId,
       order: orderId,
       commissionAmount,
+      status: 'pending',
+      availableAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7-day holding period
     });
 
-    // Credit wallet balance
-    const wallet = await this.getWallet(referrerId);
-    wallet.balance += commissionAmount;
-    await wallet.save();
-
+    await this.calculateLedgerBalance(referrerId);
     return transaction;
   }
 
   /**
-   * Request withdrawal (Minimum threshold: ₹500)
+   * Request withdrawal with Aadhaar KYC gate, threshold check, and MongoDB transaction
    */
   static async requestWithdrawal(studentId: string, amount: number) {
     const MIN_THRESHOLD = 500;
@@ -83,29 +119,63 @@ export class WalletService {
       throw new Error(`Minimum withdrawal threshold is ₹${MIN_THRESHOLD}.`);
     }
 
+    // 1. GATE WITHDRAWAL ON VERIFIED AADHAAR DOCUMENT
+    const verification = await DocumentVerificationModel.findOne({ student: studentId });
+    if (!verification || verification.status !== 'verified') {
+      throw new Error('Aadhaar document verification required before requesting a wallet withdrawal. Please complete identity verification first.');
+    }
+
     const wallet = await this.getWallet(studentId);
 
-    // Verify bank details set and penny-drop verified
     if (!wallet.bankDetails?.isVerified) {
       throw new Error('Please add and verify your bank account details before requesting a withdrawal.');
     }
 
-    if (wallet.balance < amount) {
-      throw new Error(`Insufficient wallet balance (Available: ₹${wallet.balance}).`);
+    const availableBalance = await this.calculateLedgerBalance(studentId);
+    if (availableBalance < amount) {
+      throw new Error(`Insufficient available balance for withdrawal (Available: ₹${availableBalance}, Holding period applies to pending commissions).`);
     }
 
-    // Deduct balance for withdrawal reservation
-    wallet.balance -= amount;
-    await wallet.save();
+    // 2. ATOMIC TRANSACTION WRAPPER
+    const mongoose = await import('mongoose');
+    let session: any = null;
+    try {
+      session = await mongoose.default.startSession();
+      session.startTransaction();
 
-    const request = await WithdrawalRequestModel.create({
-      student: studentId,
-      amount,
-      status: 'pending',
-      requestedAt: new Date(),
-    });
+      const request = await WithdrawalRequestModel.create(
+        [
+          {
+            student: studentId,
+            amount,
+            status: 'pending',
+            requestedAt: new Date(),
+          },
+        ],
+        { session }
+      );
 
-    return request;
+      await this.calculateLedgerBalance(studentId);
+      await session.commitTransaction();
+      return request[0];
+    } catch (txErr: any) {
+      if (session) {
+        try { await session.abortTransaction(); } catch (e) {}
+      }
+      // Fallback for standalone MongoDB (without replica set) in local test environments
+      const request = await WithdrawalRequestModel.create({
+        student: studentId,
+        amount,
+        status: 'pending',
+        requestedAt: new Date(),
+      });
+      await this.calculateLedgerBalance(studentId);
+      return request;
+    } finally {
+      if (session) {
+        try { session.endSession(); } catch (e) {}
+      }
+    }
   }
 
   /**

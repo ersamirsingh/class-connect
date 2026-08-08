@@ -20,12 +20,20 @@ export function VideoPlayerPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [unlockStatus, setUnlockStatus] = useState({ unlockedSections: [0] });
+
   useEffect(() => {
     async function loadCourse() {
       try {
-        const res = await courseApi.getCourseByIdOrSlug(courseId);
+        const [res, unlockRes] = await Promise.all([
+          courseApi.getCourseByIdOrSlug(courseId),
+          enrollmentApi.getUnlockStatus(courseId).catch(() => ({ data: { unlockedSections: [0] } })),
+        ]);
         const loadedCourse = res?.data;
         setCourse(loadedCourse);
+        if (unlockRes && unlockRes.data) {
+          setUnlockStatus(unlockRes.data);
+        }
 
         // Find first lecture across sections or lectures array
         if (loadedCourse) {
@@ -163,17 +171,19 @@ export function VideoPlayerPage() {
             </button>
           </div>
 
-          {/* REAL-TIME LIVE CLASS CHAT & ADMIN MODERATION PANEL */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div className="md:col-span-7">
-              <LiveChatPanel liveSessionId={liveSessionId} />
-            </div>
-            {isAdmin && (
-              <div className="md:col-span-5">
-                <AdminLiveParticipantPanel liveSessionId={liveSessionId} />
+          {/* REAL-TIME LIVE CLASS CHAT & ADMIN MODERATION PANEL (RESTRICTED TO LIVE SESSIONS ONLY) */}
+          {course.type === 'live' && (
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="md:col-span-7">
+                <LiveChatPanel liveSessionId={liveSessionId} />
               </div>
-            )}
-          </div>
+              {isAdmin && (
+                <div className="md:col-span-5">
+                  <AdminLiveParticipantPanel liveSessionId={liveSessionId} />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Description & Resources */}
           <div className="prose max-w-none text-sm text-[var(--ink-muted)] leading-relaxed space-y-3 pb-10">
@@ -195,39 +205,57 @@ export function VideoPlayerPage() {
 
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {course.sections && course.sections.length > 0 ? (
-            course.sections.map((section, sIdx) => (
-              <div key={section._id || sIdx} className="space-y-1 mb-3">
-                <div className="px-3 py-1.5 text-[11px] font-black uppercase text-[var(--ink-muted)] tracking-wider">
-                  {section.title}
+            course.sections.map((section, sIdx) => {
+              const isSecUnlocked = course.type === 'live' || sIdx === 0 || (unlockStatus.unlockedSections && unlockStatus.unlockedSections.includes(sIdx));
+              const prevSecTitle = course.sections[sIdx - 1]?.title || 'previous topic';
+
+              return (
+                <div key={section._id || sIdx} className="space-y-1 mb-3">
+                  <div className="px-3 py-1.5 text-[11px] font-black uppercase text-[var(--ink-muted)] tracking-wider flex items-center justify-between">
+                    <span>{section.title}</span>
+                    {!isSecUnlocked && <span className="text-[10px] text-amber-600 font-extrabold lowercase">🔒 locked</span>}
+                  </div>
+                  {(section.lectures || []).map((lecture, lIdx) => {
+                    const isSelected = (currentLecture?._id || currentLecture?.id || currentLecture?.title) === (lecture._id || lecture.id || lecture.title);
+                    return (
+                      <button 
+                        key={lecture._id || lIdx}
+                        disabled={!isSecUnlocked}
+                        onClick={() => {
+                          if (isSecUnlocked) {
+                            setCurrentLecture(lecture);
+                          }
+                        }}
+                        title={!isSecUnlocked ? `Complete all lectures in "${prevSecTitle}" to unlock` : ''}
+                        className={`w-full text-left p-3 rounded-xl min-h-[44px] flex items-center gap-3 transition-all ${
+                          !isSecUnlocked 
+                            ? 'opacity-50 bg-slate-100 dark:bg-slate-900 cursor-not-allowed text-slate-400'
+                            : isSelected 
+                              ? 'bg-[var(--primary-soft)] border border-[var(--primary)] text-[var(--primary)] cursor-pointer' 
+                              : 'hover:bg-[var(--canvas)] text-[var(--ink)] cursor-pointer'
+                        }`}
+                      >
+                        <div className="shrink-0 text-[var(--primary)]">
+                          {!isSecUnlocked ? (
+                            <span className="text-xs">🔒</span>
+                          ) : lecture.completed ? (
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" />
+                          ) : (
+                            <PlayCircle className="w-4.5 h-4.5 text-[var(--ink-muted)]" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-extrabold text-xs line-clamp-1">{lecture.title}</div>
+                          <div className="text-[10px] text-[var(--ink-muted)] font-mono">
+                            {!isSecUnlocked ? `Locked (Complete ${prevSecTitle})` : (lecture.duration || '10 mins')}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-                {(section.lectures || []).map((lecture, lIdx) => {
-                  const isSelected = (currentLecture?._id || currentLecture?.id || currentLecture?.title) === (lecture._id || lecture.id || lecture.title);
-                  return (
-                    <button 
-                      key={lecture._id || lIdx}
-                      onClick={() => setCurrentLecture(lecture)}
-                      className={`w-full text-left p-3 rounded-xl min-h-[44px] flex items-center gap-3 transition-all cursor-pointer ${
-                        isSelected 
-                          ? 'bg-[var(--primary-soft)] border border-[var(--primary)] text-[var(--primary)]' 
-                          : 'hover:bg-[var(--canvas)] text-[var(--ink)]'
-                      }`}
-                    >
-                      <div className="shrink-0 text-[var(--primary)]">
-                        {lecture.completed ? (
-                          <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" />
-                        ) : (
-                          <PlayCircle className="w-4.5 h-4.5 text-[var(--ink-muted)]" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-extrabold text-xs line-clamp-1">{lecture.title}</div>
-                        <div className="text-[10px] text-[var(--ink-muted)] font-mono">{lecture.duration || '10 mins'}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            ))
+              );
+            })
           ) : (
             allLecturesList.map((lecture, idx) => {
               const isSelected = (currentLecture?._id || currentLecture?.id || currentLecture?.title) === (lecture._id || lecture.id || lecture.title);

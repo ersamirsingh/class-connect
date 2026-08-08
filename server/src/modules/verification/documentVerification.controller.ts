@@ -5,11 +5,12 @@ export class DocumentVerificationController {
   static async submitVerification(req: Request, res: Response): Promise<void> {
     try {
       const studentId = (req as any).user.id || (req as any).user._id;
-      const { panNumber, panImageUrl, aadhaarImageUrl } = req.body;
+      const { aadhaarNumber, aadhaarImageUrl, panNumber, panImageUrl } = req.body;
       const result = await DocumentVerificationService.submitVerification(studentId, {
+        aadhaarNumber,
+        aadhaarImageUrl,
         panNumber,
         panImageUrl,
-        aadhaarImageUrl,
       });
       res.status(200).json({ success: true, message: 'Document submitted for Admin verification.', data: result });
     } catch (err: any) {

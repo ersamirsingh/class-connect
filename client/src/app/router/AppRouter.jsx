@@ -28,6 +28,7 @@ import { CourseExplorePage } from '../../pages/learning/CourseExplorePage';
 import { VideoPlayerPage } from '../../pages/learning/VideoPlayerPage';
 import { CertificatePage } from '../../pages/learning/CertificatePage';
 import { CertificatesListPage } from '../../pages/learning/CertificatesListPage';
+import { VerifyCertificatePage } from '../../pages/learning/VerifyCertificatePage';
 
 import { ReportProblemPage } from '../../pages/report/ReportProblemPage';
 import { NotificationsPage } from '../../pages/notifications/NotificationsPage';
@@ -61,6 +62,7 @@ export const AppRouter = () => {
       <Route path="/course/:idOrSlug" element={<CourseDetailPage />} />
       <Route path="/report" element={<ReportProblemPage />} />
       <Route path="/report-problem" element={<ReportProblemPage />} />
+      <Route path="/verify-certificate/:uniqueId" element={<VerifyCertificatePage />} />
 
       {/* Public Auth Routes */}
       <Route element={<AuthLayout />}>
