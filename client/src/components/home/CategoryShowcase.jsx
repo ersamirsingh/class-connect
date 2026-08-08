@@ -247,7 +247,7 @@ export function CategoryShowcase() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   return (
-    <section className="relative py-20 sm:py-28 bg-[var(--canvas)] overflow-hidden">
+    <section className="relative py-20 sm:py-28 bg-[var(--surface)] overflow-hidden">
       {/* Section Header */}
       <div className="text-center mb-6 sm:mb-10 px-6">
         <motion.div
@@ -256,16 +256,15 @@ export function CategoryShowcase() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-[11px] font-extrabold mb-4 tracking-wide uppercase">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-100/80 text-indigo-700 text-[11px] font-extrabold mb-4 tracking-wide uppercase">
             <Sparkles className="w-3.5 h-3.5" />
-            Explore Categories
+            🔥 High-Income Career Tracks
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-tight">
-            The Ultimate <br />
-            <span className="text-[var(--primary)]">Collections</span>
+            Explore <span className="font-cursive font-normal text-indigo-600 text-4xl sm:text-5xl lg:text-6xl">Curated Skill</span> Collections
           </h2>
           <p className="text-sm sm:text-base text-[var(--ink-muted)] mt-3 max-w-md mx-auto font-medium leading-relaxed">
-            Curated learning paths designed to take you from beginner to industry-ready professional.
+            Industry-crafted roadmaps to fast-track your journey from beginner to ₹12+ LPA tech professional.
           </p>
         </motion.div>
       </div>

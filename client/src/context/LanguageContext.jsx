@@ -27,11 +27,7 @@ export function LanguageProvider({ children }) {
   }, [language]);
 
   const toggleLanguage = useCallback(() => {
-    setLanguage((prev) => {
-      if (prev === 'en') return 'te';
-      if (prev === 'te') return 'hi';
-      return 'en';
-    });
+    setLanguage((prev) => (prev === 'en' ? 'te' : 'en'));
   }, []);
 
   const t = useCallback(

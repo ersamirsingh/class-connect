@@ -114,7 +114,7 @@ export function StudentVideoTestimonialsSection() {
   };
 
   return (
-    <section className="py-20 px-6 lg:px-[var(--space-page)] bg-white border-t border-slate-200">
+    <section className="py-20 px-6 lg:px-[var(--space-page)] bg-white">
       <div className="max-w-6xl mx-auto">
         
         {/* Main Light Rounded Card Container (Matching Reference Screenshot Exactly) */}

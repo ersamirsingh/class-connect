@@ -32,10 +32,19 @@ export function CategoryListPage() {
       setIsLoading(true);
       try {
         const catRes = await categoryApi.getCategories();
-        const loadedCats = Array.isArray(catRes.data)
+        const rawCats = Array.isArray(catRes.data)
           ? catRes.data
           : (catRes.data?.categories || (Array.isArray(catRes) ? catRes : SAMPLE_CATEGORIES));
-        setCategories(loadedCats);
+        
+        // Filter out legacy categories, ensuring only the 6 actual categories are displayed
+        const validSlugs = ['web-development', 'app-development', 'ui-ux-design', 'ai-data-science', 'digital-marketing', 'cyber-security-cloud'];
+        const loadedCats = rawCats.filter(c => {
+          const s = c.slug || c.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          return validSlugs.includes(s);
+        });
+
+        const finalCats = loadedCats.length > 0 ? loadedCats : SAMPLE_CATEGORIES;
+        setCategories(finalCats);
 
         if (id) {
           const match = loadedCats.find(c => c._id === id || c.slug === id || c.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()) || {

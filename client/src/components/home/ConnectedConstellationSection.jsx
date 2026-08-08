@@ -127,8 +127,8 @@ export function ConnectedConstellationSection() {
     {
       id: 'node-bilingual',
       title: 'Bilingual OS',
-      sub: 'Hindi & English',
-      badge: 'HI + EN',
+      sub: 'Telugu & English',
+      badge: 'TE + EN',
       badgeBg: 'bg-rose-500',
       icon: Globe,
       color: 'text-indigo-600',
@@ -138,8 +138,8 @@ export function ConnectedConstellationSection() {
     },
     {
       id: 'node-certificates',
-      title: 'Certificates',
-      sub: '8 Verifiable',
+      title: 'Verifiable Badges',
+      sub: 'Shareable Credentials',
       badge: '100%',
       badgeBg: 'bg-amber-500',
       icon: Award,
@@ -150,8 +150,8 @@ export function ConnectedConstellationSection() {
     },
     {
       id: 'node-instructors',
-      title: 'Mentors',
-      sub: 'Expert Faculty',
+      title: 'Senior Mentors',
+      sub: '1-on-1 Engineers',
       badge: 'PRO',
       badgeBg: 'bg-blue-600',
       icon: GraduationCap,
@@ -162,9 +162,9 @@ export function ConnectedConstellationSection() {
     },
     {
       id: 'node-skills',
-      title: 'Job Skills',
-      sub: 'Real Projects',
-      badge: '100A',
+      title: 'High-Income Skills',
+      sub: 'Production Projects',
+      badge: '100%',
       badgeBg: 'bg-emerald-600',
       icon: Code2,
       color: 'text-emerald-600',
@@ -174,8 +174,8 @@ export function ConnectedConstellationSection() {
     },
     {
       id: 'node-learners',
-      title: 'Learners',
-      sub: 'Active Community',
+      title: 'Active Graduates',
+      sub: '100% Placed Network',
       badge: '10K+',
       badgeBg: 'bg-purple-600',
       icon: Users,
@@ -186,27 +186,25 @@ export function ConnectedConstellationSection() {
     },
     {
       id: 'node-rating',
-      title: 'Rating',
-      sub: 'Top Reviewed',
+      title: 'Student Rating',
+      sub: '4.8★ Top Reviewed',
       badge: '4.8 ★',
       badgeBg: 'bg-orange-500',
       icon: Star,
       color: 'text-orange-500',
       bgColor: 'bg-orange-50/90 dark:bg-orange-950/60',
       borderColor: 'border-orange-200 dark:border-orange-800',
-      glowColor: 'rgba(255, 107, 53, 0.45)',
+      glowColor: 'rgba(249, 115, 22, 0.45)',
     },
   ];
 
   return (
     <section 
       ref={sectionRef} 
-      className="relative py-16 sm:py-24 px-3 sm:px-8 bg-[var(--canvas)] overflow-hidden min-h-[640px] flex flex-col justify-between"
+      className="relative py-16 sm:py-24 px-3 sm:px-8 bg-[var(--surface)] overflow-hidden min-h-[640px] flex flex-col justify-between"
     >
-      {/* Real-time Calculated SVG Connecting Lines */}
       <svg 
         className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible"
-        fill="none"
       >
         <defs>
           <linearGradient id="liveConstellationGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -218,20 +216,34 @@ export function ConnectedConstellationSection() {
 
         {lines.map((line, index) => (
           <g key={line.id}>
-            <motion.path
-              d={line.pathD}
+            <line
+              x1={line.x1}
+              y1={line.y1}
+              x2={line.x2}
+              y2={line.y2}
               stroke="url(#liveConstellationGrad)"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={isInView ? { pathLength: 1, opacity: 0.95 } : { pathLength: 0, opacity: 0 }}
-              transition={{ duration: 1.2, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              strokeWidth="2"
+              strokeDasharray="6 6"
+              className="opacity-40 dark:opacity-30"
             />
+            {isInView && (
+              <motion.circle
+                r="4"
+                fill="#4338F2"
+                initial={{ cx: line.x1, cy: line.y1 }}
+                animate={{ cx: [line.x1, line.x2], cy: [line.y1, line.y2] }}
+                transition={{
+                  duration: 2.5 + index * 0.4,
+                  repeat: Infinity,
+                  repeatType: 'loop',
+                  ease: 'easeInOut',
+                }}
+              />
+            )}
           </g>
         ))}
       </svg>
 
-      {/* Top Row Nodes: Responsive Flex Wrap */}
       <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-10">
         <div ref={(el) => (nodeRefs.current['node-bilingual'] = el)}>
           <NodeCard node={nodes[0]} isInView={isInView} delay={0.1} />
@@ -244,32 +256,30 @@ export function ConnectedConstellationSection() {
         </div>
       </div>
 
-      {/* Center Headline */}
-      <div ref={centerTextRef} className="relative z-20 max-w-2xl mx-auto text-center px-2 sm:px-4 py-4 sm:py-6">
+      <div ref={centerTextRef} className="relative z-10 max-w-2xl mx-auto text-center px-4">
         <motion.h2
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={isInView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: 15 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-xl sm:text-3xl md:text-4xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-[1.25] mb-6 sm:mb-8"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.6 }}
+          className="text-2xl sm:text-3xl md:text-4xl font-black font-manrope text-[var(--ink)] tracking-tight leading-snug mb-6"
         >
           {isHindi ? (
             <span>
-              पारंपरिक ऑनलाइन शिक्षा अव्यवस्थित है।{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4338F2] via-[#7C3AED] to-[#FF6B35]">
-                क्लासकनेक्ट सब कुछ जोड़ता है।
+              సాంప్రదాయ ఆన్‌లైన్ నేర్చుకోవడం విచ్ఛిన్నమైంది.{' '}
+              <span className="font-cursive font-normal text-indigo-600 text-3xl sm:text-4xl lg:text-5xl">
+                క్లాస్‌కనెక్ట్ అన్నింటినీ ఒకే చోట చేర్చుతుంది.
               </span>
             </span>
           ) : (
             <span>
               Traditional online learning is fragmented.{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4338F2] via-[#7C3AED] to-[#FF6B35]">
+              <span className="font-cursive font-normal text-indigo-600 text-3xl sm:text-4xl lg:text-5xl">
                 ClassConnect unites everything.
               </span>
             </span>
           )}
         </motion.h2>
 
-        {/* 3 Sub-Text Bullet Items */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -278,19 +288,19 @@ export function ConnectedConstellationSection() {
         >
           <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
-              {isHindi ? '100% द्विभाषी हिंदी और अंग्रेजी भाषा में लर्निंग OS' : '100% Bilingual Hindi & English visual learning OS.'}
+              {isHindi ? 'తెలుగు & ఇంగ్లీషులో 100% విజువల్ లెర్నింగ్ OS.' : '100% Visual Learning OS in Telugu & English.'}
             </div>
           </div>
 
           <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
-              {isHindi ? '10,000+ सक्रिय विद्यार्थी रियल स्किल्स सीख रहे हैं' : '10,000+ active learners mastering real skills.'}
+              {isHindi ? '10,000+ విద్యార్థులు నైపుణ్యంతో రాణిస్తున్నారు.' : '10,000+ active graduates mastering high-income skills.'}
             </div>
           </div>
 
           <div className="p-3 sm:p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-md">
             <div className="text-xs font-semibold text-[var(--ink-muted)] leading-relaxed">
-              {isHindi ? '4.8★ रेटिंग और 8 सत्यापन योग्य प्रमाण पत्र' : '4.8★ rating with 8 verifiable skill certificates.'}
+              {isHindi ? '4.8★ రేటింగ్ • ధృవీకరించదగిన సర్టిఫికెట్లు.' : '4.8★ Rating • Verifiable Shareable Credentials.'}
             </div>
           </div>
         </motion.div>

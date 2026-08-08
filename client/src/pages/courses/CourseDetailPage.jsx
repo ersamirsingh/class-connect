@@ -17,7 +17,10 @@ import {
   Radio,
   FileText,
   Compass,
-  ArrowRight
+  ArrowRight,
+  Share2,
+  BookOpen,
+  Users
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -211,7 +214,15 @@ export function CourseDetailPage() {
               <div className="bg-[var(--canvas)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] overflow-hidden sticky top-32">
                 <div className="aspect-video bg-black relative group">
                   {course.thumbnail ? (
-                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={course.thumbnail} 
+                      alt={course.title} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/assets/about_hero_lead.jpg';
+                      }}
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)]">
                       <PlayCircle className="w-16 h-16 text-[var(--primary)]" />

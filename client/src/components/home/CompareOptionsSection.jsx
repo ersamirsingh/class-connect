@@ -56,7 +56,7 @@ const COMPARISON_DATA = {
 
 export function CompareOptionsSection() {
   return (
-    <section className="py-20 px-6 lg:px-[var(--space-page)] bg-white text-slate-900 border-t border-slate-200 relative overflow-hidden">
+    <section className="py-20 px-6 lg:px-[var(--space-page)] bg-white text-slate-900 relative overflow-hidden">
       
       {/* Background Subtle Ambient Glow */}
       <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-slate-100/60 rounded-full blur-[140px]" />

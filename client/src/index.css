@@ -1,7 +1,12 @@
-/* Google Fonts: Manrope (headlines) + Inter (body) + Noto Sans Devanagari (Hindi) */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+/* Google Fonts: Manrope (headlines) + Inter (body) + Playfair Display & Instrument Serif (cursive editorial) + Noto Sans Devanagari (Hindi) */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,600;1,700&family=Instrument+Serif:ital@1&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
+
+.font-cursive {
+  font-family: 'Instrument Serif', 'Playfair Display', Georgia, serif;
+  font-style: italic;
+}
 
 /* ═══════════════════════════════════════════════════════════
    LUMINOUS LEARNING OS — Design System Tokens

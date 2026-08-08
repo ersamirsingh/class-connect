@@ -77,7 +77,7 @@ const faqs = [
 export function HomePage() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const isHindi = language === 'hi';
+  const isTelugu = language === 'te';
   const [categories, setCategories] = useState(SAMPLE_CATEGORIES);
   const [featuredCourses, setFeaturedCourses] = useState(SAMPLE_COURSES);
   const [studentResultsCms, setStudentResultsCms] = useState(null);
@@ -139,8 +139,8 @@ export function HomePage() {
     <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] overflow-x-hidden selection:bg-[var(--primary-soft)] selection:text-[var(--primary-deep)]">
       <FloatingNav />
 
-      {/* 1. Full-Screen Hero Section (100% Viewport Edge-to-Edge with 0px Right Padding) */}
-      <section className="relative min-h-screen w-full flex items-center pt-28 pb-16 overflow-hidden">
+      {/* 1. Full-Screen Hero Section (100% Viewport Edge-to-Edge with 0px Top, Left & Right Padding) */}
+      <section className="relative min-h-screen w-full flex items-center overflow-hidden m-0 p-0 border-none">
         
         {/* Full-Screen Background Image Layer (Spans 100% Width & Height Edge-to-Edge) */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden m-0 p-0">
@@ -153,37 +153,41 @@ export function HomePage() {
         </div>
 
         {/* Content Layer Shifted Farther to the Left Edge */}
-        <div className="w-full relative z-10 px-6 sm:px-10 lg:px-16 flex items-center min-h-[72vh]">
+        <div className="w-full relative z-10 px-6 sm:px-10 lg:px-16 flex items-center min-h-screen pt-24 pb-16">
           
-          <div className="flex flex-col items-start text-left max-w-xl lg:max-w-2xl pt-4">
+          <div className="flex flex-col items-start text-left max-w-xl lg:max-w-2xl pt-6">
+            {/* Top Pill Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-indigo-200/80 text-indigo-700 text-xs font-extrabold mb-5 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>🚀 100% Practical • High-CTC Tech Outcomes</span>
+            </div>
+
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-extrabold font-manrope tracking-tight leading-[1.12] text-slate-900 mb-5">
-              {isHindi ? (
+            <h1 className="text-4xl sm:text-5xl lg:text-[60px] font-extrabold font-manrope tracking-tight leading-[1.10] text-slate-900 mb-5">
+              {isTelugu ? (
                 <span>
-                  ऐसी{' '}
-                  <span className="font-extrabold italic text-[#FF6B35]">
-                    स्किल्स
+                  మీ కేరిర్‌ను{' '}
+                  <span className="font-cursive font-normal text-[#FF6B35] text-5xl sm:text-6xl lg:text-[70px]">
+                    నెక్స్ట్ లెవెల్‌కి
                   </span>{' '}
-                  सीखें जो <SquigglyText>आगे ले जाएं</SquigglyText>
+                  తీసుకెళ్లే నైపుణ్యాలు <SquigglyText>నేర్చుకోండి</SquigglyText>
                 </span>
               ) : (
                 <span>
-                  Learn{' '}
-                  <span className="font-extrabold italic text-[#FF6B35]">
-                    skills
+                  Master{' '}
+                  <span className="font-cursive font-normal text-[#FF6B35] text-5xl sm:text-6xl lg:text-[70px]">
+                    High-Income
                   </span>{' '}
-                  that <SquigglyText>move you forward</SquigglyText>
+                  skills that <SquigglyText>scale your career</SquigglyText>
                 </span>
               )}
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-slate-700 mb-8 max-w-lg font-medium leading-relaxed">
-              {getTranslation(
-                t,
-                'hero.subtitle',
-                "India's most visual learning platform. Master real-world skills with expert-led courses in Hindi & English."
-              )}
+              {isTelugu
+                ? 'సాధారణ పాఠాలను వదిలేయండి. సీనియర్ ఇండస్ట్రీ లీడర్ల మార్గదర్శకత్వంలో రియల్-వరల్డ్ ప్రాజెక్ట్‌లను నిర్మించి 10x నైపుణ్యం సాధించండి.'
+                : 'Break free from generic tutorials. Build production-grade Web apps, AI agents & Design systems alongside senior industry leaders with 100% bilingual clarity.'}
             </p>
 
             {/* Action Buttons */}
@@ -194,8 +198,8 @@ export function HomePage() {
               className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
               <Link to="/courses">
-                <button className="w-full sm:w-auto px-8 py-3.5 text-base font-bold rounded-full bg-[#3B82F6] hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 transition-all cursor-pointer">
-                  Explore Courses
+                <button className="w-full sm:w-auto px-8 py-4 text-base font-extrabold rounded-full bg-[#3B82F6] hover:bg-blue-600 text-white shadow-xl shadow-blue-500/25 hover:scale-105 transition-all cursor-pointer">
+                  {isTelugu ? 'కోర్సులను అన్వేషించండి' : 'Explore Courses'}
                 </button>
               </Link>
               <button 
@@ -207,9 +211,9 @@ export function HomePage() {
                     window.location.href = '/courses';
                   }
                 }}
-                className="w-full sm:w-auto px-8 py-3.5 text-base font-bold rounded-full border border-slate-300/80 bg-white/80 backdrop-blur-md text-slate-800 hover:bg-slate-100 transition-all cursor-pointer"
+                className="w-full sm:w-auto px-8 py-4 text-base font-extrabold rounded-full border border-slate-300/80 bg-white/90 backdrop-blur-md text-slate-800 hover:bg-slate-100 hover:scale-105 transition-all cursor-pointer"
               >
-                {isHindi ? 'सीखना शुरू करें' : 'Start Learning'}
+                {isTelugu ? 'నేర్చుకోవడం ప్రారంభించండి' : 'Start Learning Free'}
               </button>
             </motion.div>
           </div>
@@ -231,11 +235,11 @@ export function HomePage() {
         <div className="max-w-[var(--max-width)] mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
-              <h2 className="text-3xl md:text-4xl font-manrope font-bold mb-4">
-                <TextEffect preset="fade-up">Featured courses</TextEffect>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-manrope font-extrabold mb-3">
+                Featured <span className="font-cursive font-normal text-indigo-600 text-4xl sm:text-5xl lg:text-6xl">Industry-Grade</span> Masterclasses
               </h2>
-              <p className="text-[var(--ink-muted)] text-lg max-w-xl">
-                Hand-picked by our experts, these courses represent the best of what ClassConnect has to offer.
+              <p className="text-[var(--ink-muted)] text-base sm:text-lg max-w-xl font-medium">
+                Hand-picked hands-on courses engineered to turn ambitious learners into top 1% engineers & designers.
               </p>
             </div>
             <Link to="/courses" className="inline-flex items-center gap-2 text-[var(--primary)] font-semibold hover:text-[var(--primary-deep)] transition-colors">

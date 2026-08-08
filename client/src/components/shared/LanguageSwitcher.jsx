@@ -8,7 +8,6 @@ export function LanguageSwitcher({ variant = 'pill', className = '' }) {
   const labels = {
     en: { short: 'EN', full: 'English' },
     te: { short: 'తె', full: 'తెలుగు' },
-    hi: { short: 'हि', full: 'हिंदी' },
   };
 
   const currentLabel = labels[language] || labels.en;
@@ -22,7 +21,7 @@ export function LanguageSwitcher({ variant = 'pill', className = '' }) {
           text-[var(--ink)] hover:text-[var(--primary)] hover:bg-[var(--primary-soft)] cursor-pointer
           ${className}`}
         aria-label="Toggle Language"
-        title="Switch Language (EN / TE / HI)"
+        title="Switch Language (EN / TE)"
       >
         <Globe className="w-3.5 h-3.5 text-[var(--primary)]" />
         <span className="font-mono font-extrabold">{currentLabel.short}</span>

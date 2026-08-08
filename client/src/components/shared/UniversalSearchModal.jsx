@@ -198,9 +198,13 @@ export function UniversalSearchModal({ isOpen, onClose }) {
                         >
                           <div className="flex items-center gap-3">
                             <img
-                              src={c.thumbnail || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=120&q=80'}
+                              src={c.thumbnail || '/assets/about_hero_lead.jpg'}
                               alt={c.title}
                               className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = '/assets/about_hero_lead.jpg';
+                              }}
                             />
                             <div>
                               <div className="flex items-center gap-2 mb-0.5">

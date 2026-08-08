@@ -38,17 +38,36 @@ export function CourseListPage() {
           courseApi.getCourses()
         ]);
         
-        const apiCats = Array.isArray(categoriesRes.data)
+        const rawCats = Array.isArray(categoriesRes.data)
           ? categoriesRes.data
           : (categoriesRes.data?.categories || (Array.isArray(categoriesRes) ? categoriesRes : []));
+
+        const validSlugs = ['web-development', 'app-development', 'ui-ux-design', 'ai-data-science', 'digital-marketing', 'cyber-security-cloud'];
+        const validApiCats = rawCats.filter(c => {
+          const s = c.slug || c.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          return validSlugs.includes(s);
+        });
+
         const apiCourses = Array.isArray(coursesRes.data)
           ? coursesRes.data
           : (coursesRes.data?.courses || (Array.isArray(coursesRes) ? coursesRes : []));
 
-        if (apiCats.length > 0) setCategories(apiCats);
-        if (apiCourses.length > 0) setAllCourses(apiCourses);
+        if (validApiCats.length > 0) {
+          setCategories(validApiCats);
+        } else {
+          setCategories(SAMPLE_CATEGORIES);
+        }
+
+        // Merge API courses with sample courses so every category always has courses
+        const combinedCourses = Array.isArray(apiCourses) && apiCourses.length > 0
+          ? [...apiCourses, ...SAMPLE_COURSES.filter(sc => !apiCourses.some(ac => ac.slug === sc.slug || ac._id === sc._id))]
+          : SAMPLE_COURSES;
+
+        setAllCourses(combinedCourses);
       } catch (error) {
         console.warn('Using sample courses fallback for CourseListPage:', error.message);
+        setCategories(SAMPLE_CATEGORIES);
+        setAllCourses(SAMPLE_COURSES);
       }
     };
     
@@ -61,14 +80,17 @@ export function CourseListPage() {
       // 1. Category Filter
       if (categoryParam) {
         const paramClean = categoryParam.toLowerCase().trim();
+        const normalizedParam = paramClean.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
         const courseCatSlug = (typeof course.category === 'object' ? course.category?.slug : '').toLowerCase();
         const courseCatName = (typeof course.category === 'object' ? course.category?.name : String(course.category || '')).toLowerCase();
         const courseCatId = (typeof course.category === 'object' ? course.category?._id : String(course.category || ''));
 
         const normalizedCatName = courseCatName.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const normalizedCatSlug = courseCatSlug.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-        const matchesSlug = courseCatSlug === paramClean;
-        const matchesName = courseCatName === paramClean || normalizedCatName === paramClean;
+        const matchesSlug = courseCatSlug === paramClean || normalizedCatSlug === normalizedParam;
+        const matchesName = courseCatName === paramClean || normalizedCatName === paramClean || normalizedCatName === normalizedParam;
         const matchesId = courseCatId === categoryParam;
 
         if (!matchesSlug && !matchesName && !matchesId) {
@@ -139,15 +161,17 @@ export function CourseListPage() {
           {/* Hero Section */}
           <div className="text-center mb-12">
             <InView>
-              <TextEffect 
-                className="text-4xl md:text-5xl font-extrabold text-[var(--ink)] mb-4 tracking-tight"
-              >
-                {isHindi ? "कोर्स खोजें" : "Explore Courses"}
-              </TextEffect>
-              <p className="text-lg text-[var(--ink-muted)] max-w-2xl mx-auto">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[var(--ink)] mb-4 tracking-tight font-manrope">
+                {isHindi ? (
+                  <span>కోర్సులు <span className="font-cursive font-normal text-indigo-600 text-5xl md:text-6xl">అన్వేషించండి</span></span>
+                ) : (
+                  <span>Explore <span className="font-cursive font-normal text-indigo-600 text-5xl md:text-6xl">High-Income</span> Masterclasses</span>
+                )}
+              </h1>
+              <p className="text-base sm:text-lg text-[var(--ink-muted)] max-w-2xl mx-auto font-medium">
                 {isHindi 
-                  ? "अपनी पसंद के विषयों में महारत हासिल करें और अपने करियर को नई ऊंचाइयों पर ले जाएं।"
-                  : "Master new skills and take your career to new heights with our premium courses."}
+                  ? "మీ కేరిర్‌ను వేగవంతం చేసే పరిశ్రమ-ఆధారిత నైపుణ్యాలను నేర్చుకోండి."
+                  : "Master industry-proven skills, build portfolio-ready projects, and land high-paying roles with top mentor guidance."}
               </p>
             </InView>
           </div>
@@ -236,6 +260,10 @@ export function CourseListPage() {
                                 src={course.thumbnail} 
                                 alt={course.title} 
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = '/assets/about_hero_lead.jpg';
+                                }}
                               />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--accent-soft)] flex items-center justify-center">
