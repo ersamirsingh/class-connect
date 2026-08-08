@@ -84,6 +84,8 @@ export function HomePage() {
   const [videoTestimonialsCms, setVideoTestimonialsCms] = useState(null);
   const [faqCms, setFaqCms] = useState(null);
   const [testimonialsCms, setTestimonialsCms] = useState(null);
+  const [heroCms, setHeroCms] = useState(null);
+  const [bannerCms, setBannerCms] = useState(null);
 
   const [isLoadingCats, setIsLoadingCats] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
@@ -120,6 +122,12 @@ export function HomePage() {
           ? response.data 
           : (response?.data?.blocks || []);
         
+        const heroBlock = blocks.find(b => b.section === 'hero' && b.isActive);
+        if (heroBlock) setHeroCms(heroBlock);
+
+        const bannerBlock = blocks.find(b => b.section === 'banner' && b.isActive);
+        if (bannerBlock) setBannerCms(bannerBlock);
+
         const resultsBlock = blocks.find(b => b.section === 'student-results' && b.isActive);
         if (resultsBlock) setStudentResultsCms(resultsBlock);
 
@@ -134,6 +142,11 @@ export function HomePage() {
 
         const testBlock = blocks.find(b => b.section === 'testimonial' && b.isActive);
         if (testBlock) setTestimonialsCms(testBlock);
+
+        const featuredBlock = blocks.find(b => b.section === 'featured_courses' && b.isActive);
+        if (featuredBlock?.data?.courses?.length > 0) {
+          setFeaturedCourses(featuredBlock.data.courses);
+        }
       } catch (error) {
         console.warn('Failed to load CMS blocks:', error.message);
       }
@@ -158,8 +171,8 @@ export function HomePage() {
         {/* Full-Screen Background Image Layer (Spans 100% Width & Height Edge-to-Edge) */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden m-0 p-0">
           <img 
-            src="/assets/hero_students_hq.jpg" 
-            alt="ClassConnect Indian Students Workspace" 
+            src={heroCms?.data?.imageUrl || "/assets/hero_students_hq.jpg"} 
+            alt="ClassConnect Workspace" 
             className="w-full h-full object-cover object-right antialiased block m-0 p-0 border-none"
             style={{ imageRendering: 'high-quality' }}
           />
@@ -172,12 +185,14 @@ export function HomePage() {
             {/* Top Pill Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-indigo-200/80 text-indigo-700 text-xs font-extrabold mb-5 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>🚀 100% Practical • High-CTC Tech Outcomes</span>
+              <span>{heroCms?.data?.badge || '🚀 100% Practical • High-CTC Tech Outcomes'}</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[60px] font-extrabold font-manrope tracking-tight leading-[1.10] text-slate-900 mb-5">
-              {isTelugu ? (
+              {heroCms?.title ? (
+                <span>{heroCms.title}</span>
+              ) : isTelugu ? (
                 <span>
                   మీ కేరిర్‌ను{' '}
                   <span className="font-cursive font-normal text-[#FF6B35] text-5xl sm:text-6xl lg:text-[70px]">
@@ -198,9 +213,9 @@ export function HomePage() {
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-slate-700 mb-8 max-w-lg font-medium leading-relaxed">
-              {isTelugu
+              {heroCms?.subtitle || (isTelugu
                 ? 'సాధారణ పాఠాలను వదిలేయండి. సీనియర్ ఇండస్ట్రీ లీడర్ల మార్గదర్శకత్వంలో రియల్-వరల్డ్ ప్రాజెక్ట్‌లను నిర్మించి 10x నైపుణ్యం సాధించండి.'
-                : 'Break free from generic tutorials. Build production-grade Web apps, AI agents & Design systems alongside senior industry leaders with 100% bilingual clarity.'}
+                : 'Break free from generic tutorials. Build production-grade Web apps, AI agents & Design systems alongside senior industry leaders with 100% bilingual clarity.')}
             </p>
 
             {/* Action Buttons */}
@@ -349,6 +364,32 @@ export function HomePage() {
 
       {/* 11. Student Video Testimonials Showcase */}
       <StudentVideoTestimonialsSection cmsData={videoTestimonialsCms} />
+
+      {/* 12. Dynamic CMS Promotional Banner */}
+      {bannerCms && bannerCms.isActive && (
+        <section className="py-12 px-6 lg:px-[var(--space-page)] bg-[var(--surface)] border-t border-b border-[var(--border)]">
+          <div className="max-w-[var(--max-width)] mx-auto p-8 rounded-3xl bg-gradient-to-r from-[var(--primary)] to-indigo-700 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+            {bannerCms.data?.imageUrl && (
+              <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-20 pointer-events-none overflow-hidden">
+                <img src={bannerCms.data.imageUrl} alt={bannerCms.title} className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="space-y-2 max-w-2xl relative z-10">
+              <span className="px-3 py-1 bg-white/20 text-white text-[10px] font-extrabold rounded-full uppercase tracking-wider">
+                {bannerCms.data?.tag || 'Special Announcement'}
+              </span>
+              <h2 className="text-2xl md:text-3xl font-extrabold font-manrope">{bannerCms.title}</h2>
+              {bannerCms.subtitle && <p className="text-sm text-white/90 font-medium">{bannerCms.subtitle}</p>}
+            </div>
+            <Link
+              to={bannerCms.data?.ctaLink || '/courses'}
+              className="px-6 py-3.5 bg-white text-[var(--primary)] text-xs font-extrabold rounded-full shadow-md hover:bg-slate-100 transition-all cursor-pointer shrink-0 relative z-10"
+            >
+              {bannerCms.data?.ctaText || 'Explore Now'}
+            </Link>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
