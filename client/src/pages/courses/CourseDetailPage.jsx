@@ -93,6 +93,24 @@ export function CourseDetailPage() {
     setExpandedUnits(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
+  const [shareMsg, setShareMsg] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refParam = params.get('ref');
+    if (refParam) {
+      localStorage.setItem('pendingReferralCode', refParam);
+    }
+  }, []);
+
+  const handleShareClick = () => {
+    const refCode = user?.referralCode || '';
+    const shareUrl = `${window.location.origin}/course/${slug}${refCode ? `?ref=${refCode}` : ''}`;
+    navigator.clipboard.writeText(shareUrl);
+    setShareMsg(true);
+    setTimeout(() => setShareMsg(false), 3000);
+  };
+
   const handleActionClick = () => {
     if (!course) return;
     if (isOwned) {
@@ -232,6 +250,14 @@ export function CourseDetailPage() {
                         {isHindi ? "अभी खरीदें" : "Buy Now"}
                       </>
                     )}
+                  </button>
+
+                  <button 
+                    onClick={handleShareClick}
+                    className="w-full font-extrabold text-xs py-3 px-4 rounded-full border border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary-soft)] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>{shareMsg ? 'Referral Link Copied! 📋' : 'Refer & Share Course'}</span>
                   </button>
 
                   <p className="text-center text-xs font-medium text-[var(--ink-muted)]">

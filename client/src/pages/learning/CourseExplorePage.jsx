@@ -4,6 +4,7 @@ import { courseApi } from '../../api/models/course.api';
 import { enrollmentApi } from '../../api/models/enrollment.api';
 import { Navbar } from '../../components/guest/Navbar';
 import { Footer } from '../../components/guest/Footer';
+import { useAuth } from '../../hooks/useAuth';
 import {
   Radio,
   PlayCircle,
@@ -20,12 +21,14 @@ import {
   Award,
   Play,
   Sparkles,
+  Share2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const CourseExplorePage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,8 +37,17 @@ export const CourseExplorePage = () => {
   const [expandedUnitIndex, setExpandedUnitIndex] = useState(0);
 
   const [orderId, setOrderId] = useState(null);
+  const [shareMsg, setShareMsg] = useState(false);
 
   const [unlockStatus, setUnlockStatus] = useState({ unlockedSections: [0] });
+
+  const handleShareClick = () => {
+    const refCode = user?.referralCode || '';
+    const shareUrl = `${window.location.origin}/course/${course?.slug || courseId}${refCode ? `?ref=${refCode}` : ''}`;
+    navigator.clipboard.writeText(shareUrl);
+    setShareMsg(true);
+    setTimeout(() => setShareMsg(false), 3000);
+  };
 
   useEffect(() => {
     const fetchExploreContent = async () => {
@@ -161,7 +173,14 @@ export const CourseExplorePage = () => {
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{course.subtitle || course.description}</p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                onClick={handleShareClick}
+                className="btn-visual bg-[#5B54E8]/10 text-[#5B54E8] hover:bg-[#5B54E8]/20 text-xs font-black px-4 py-3 rounded-2xl border border-[#5B54E8]/30 flex items-center gap-2 cursor-pointer"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>{shareMsg ? 'Referral Link Copied! 📋' : 'Refer & Share'}</span>
+              </button>
+
               <Link
                 to={orderId ? `/receipt/${orderId}` : '/payments'}
                 className="btn-visual bg-[#2FA876] hover:bg-[#25875e] text-white text-xs font-black px-4 py-3 rounded-2xl shadow-md flex items-center gap-2"
