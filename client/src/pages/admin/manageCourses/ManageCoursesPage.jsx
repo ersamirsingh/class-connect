@@ -1057,6 +1057,20 @@ export function ManageCoursesPage() {
                 
                 <form id="course-form" onSubmit={handleSaveCourse} className="space-y-4">
                   <div>
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Category (Required First)</label>
+                    <select 
+                      required
+                      value={courseFormData.category} onChange={e => setCourseFormData({...courseFormData, category: e.target.value})}
+                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                    >
+                      <option value="">Select Category First</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
                     <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Course Title</label>
                     <input 
                       type="text" required
@@ -1074,28 +1088,13 @@ export function ManageCoursesPage() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Price (₹)</label>
-                      <input 
-                        type="number" required
-                        value={courseFormData.price} onChange={e => setCourseFormData({...courseFormData, price: e.target.value})}
-                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Category</label>
-                      <select 
-                        required
-                        value={courseFormData.category} onChange={e => setCourseFormData({...courseFormData, category: e.target.value})}
-                        className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map(cat => (
-                          <option key={cat._id} value={cat._id}>{cat.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Price (₹)</label>
+                    <input 
+                      type="number" required
+                      value={courseFormData.price} onChange={e => setCourseFormData({...courseFormData, price: e.target.value})}
+                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                    />
                   </div>
                   
                   <div>
