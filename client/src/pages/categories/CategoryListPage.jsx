@@ -38,18 +38,34 @@ export function CategoryListPage() {
         setCategories(loadedCats);
 
         if (id) {
-          const match = loadedCats.find(c => c._id === id || c.slug === id) || {
+          const match = loadedCats.find(c => c._id === id || c.slug === id || c.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()) || {
             _id: id,
+            slug: id,
             name: id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             tagline: 'Master industry-relevant skills with top experts',
           };
           setSelectedCategory(match);
 
-          const courseRes = await courseApi.getCourses({ category: match._id || match.slug });
-          const loadedCourses = Array.isArray(courseRes.data)
-            ? courseRes.data
-            : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : SAMPLE_COURSES));
-          setCategoryCourses(loadedCourses);
+          try {
+            const courseRes = await courseApi.getCourses({ category: match._id || match.slug });
+            const loadedCourses = Array.isArray(courseRes.data)
+              ? courseRes.data
+              : (courseRes.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
+            
+            if (loadedCourses.length > 0) {
+              setCategoryCourses(loadedCourses);
+            } else {
+              // Fallback filter from SAMPLE_COURSES
+              const matchedSample = SAMPLE_COURSES.filter(c => {
+                const cCatSlug = typeof c.category === 'object' ? c.category?.slug : '';
+                const cCatName = typeof c.category === 'object' ? c.category?.name : String(c.category || '');
+                return cCatSlug.toLowerCase() === match.slug.toLowerCase() || cCatName.toLowerCase() === match.name.toLowerCase();
+              });
+              setCategoryCourses(matchedSample.length > 0 ? matchedSample : SAMPLE_COURSES);
+            }
+          } catch (err) {
+            setCategoryCourses(SAMPLE_COURSES);
+          }
         }
       } catch (error) {
         console.warn('Fallback to sample data for category:', error);
@@ -171,7 +187,7 @@ export function CategoryListPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredCourses.map((course) => (
-                    <Link key={course._id} to={`/course/${course.slug || course._id}`} className="block h-full group">
+                    <Link key={course._id} to={`/courses/${course.slug || course._id}`} className="block h-full group">
                       <SpotlightCard className="h-full bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden flex flex-col justify-between">
                         <div className="aspect-video w-full relative bg-[var(--canvas)] overflow-hidden">
                           <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -244,8 +260,27 @@ export function CategoryListPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   <AnimatePresence>
                     {categories.map((category, index) => {
-                      const gradientClass = gradients[index % gradients.length];
-                      const [bgGrad, textColor] = gradientClass.split(' text-');
+                      // Map category slug/name to its thumbnail image
+                      const CATEGORY_IMAGES = {
+                        'web-development': '/assets/categories/web-development.jpg',
+                        'app-development': '/assets/categories/app-development.jpg',
+                        'ui-ux-design': '/assets/categories/ui-ux-design.jpg',
+                        'ai-data-science': '/assets/categories/ai-data-science.jpg',
+                        'digital-marketing': '/assets/categories/digital-marketing.jpg',
+                        'cyber-security-cloud': '/assets/categories/cyber-security-cloud.jpg',
+                      };
+                      const CATEGORY_COLORS = {
+                        'web-development': '#EF4444',
+                        'app-development': '#10B981',
+                        'ui-ux-design': '#8B5CF6',
+                        'ai-data-science': '#3B82F6',
+                        'digital-marketing': '#F97316',
+                        'cyber-security-cloud': '#14B8A6',
+                      };
+
+                      const slug = category.slug || category.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                      const imageUrl = CATEGORY_IMAGES[slug] || null;
+                      const accentColor = CATEGORY_COLORS[slug] || '#4338F2';
                       
                       return (
                         <motion.div
@@ -255,26 +290,52 @@ export function CategoryListPage() {
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.4, delay: index * 0.05 }}
                         >
-                          <Link to={`/category/${category._id || category.slug}`} className="block h-full group">
-                            <SpotlightCard className="h-full bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden p-8 flex flex-col justify-between">
-                              <div className="flex items-start justify-between mb-8">
-                                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${bgGrad} flex items-center justify-center transition-transform duration-500 group-hover:scale-110`}>
-                                  <Layers className={`w-7 h-7 text-${textColor}`} />
-                                </div>
-                                <div className="w-10 h-10 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--canvas)] text-[var(--ink-muted)] group-hover:bg-[var(--primary)] group-hover:text-[var(--surface)] group-hover:border-[var(--primary)] transition-colors duration-300">
-                                  <ArrowRight className="w-5 h-5" />
-                                </div>
-                              </div>
+                          <Link to={`/courses?category=${slug}`} className="block h-full group">
+                            <div className="h-full bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden">
                               
-                              <div>
-                                <h3 className="text-2xl font-bold text-[var(--ink)] mb-2 group-hover:text-[var(--primary)] transition-colors">
-                                  {category.name}
-                                </h3>
-                                <p className="text-[var(--ink-muted)] font-medium">
-                                  {category.courseCount !== undefined ? `${category.courseCount} Courses` : 'Explore courses'}
-                                </p>
+                              {/* Category Thumbnail Image */}
+                              <div className="relative w-full h-44 overflow-hidden">
+                                {imageUrl ? (
+                                  <img
+                                    src={imageUrl}
+                                    alt={category.name}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center">
+                                    <Layers className="w-12 h-12 text-indigo-400" />
+                                  </div>
+                                )}
+                                {/* Gradient overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                                {/* Course count badge */}
+                                <div className="absolute top-3 left-3">
+                                  <span
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold text-white backdrop-blur-md"
+                                    style={{ backgroundColor: `${accentColor}CC` }}
+                                  >
+                                    <Sparkles className="w-3 h-3" />
+                                    {category.courseCount !== undefined ? `${category.courseCount} Courses` : '5 Courses'}
+                                  </span>
+                                </div>
                               </div>
-                            </SpotlightCard>
+
+                              {/* Card Content */}
+                              <div className="p-5 flex items-center justify-between">
+                                <div>
+                                  <h3 className="text-lg font-extrabold text-[var(--ink)] mb-1 group-hover:text-[var(--primary)] transition-colors font-manrope">
+                                    {category.name}
+                                  </h3>
+                                  <p className="text-xs text-[var(--ink-muted)] font-medium">
+                                    Explore courses
+                                  </p>
+                                </div>
+                                <div className="w-9 h-9 rounded-full border border-[var(--border)] flex items-center justify-center bg-[var(--canvas)] text-[var(--ink-muted)] group-hover:bg-[var(--primary)] group-hover:text-white group-hover:border-[var(--primary)] transition-colors duration-300 shrink-0">
+                                  <ArrowRight className="w-4 h-4" />
+                                </div>
+                              </div>
+
+                            </div>
                           </Link>
                         </motion.div>
                       );

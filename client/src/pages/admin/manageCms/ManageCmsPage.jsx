@@ -164,7 +164,43 @@ export const ManageCmsPage = () => {
           <p className="text-xs sm:text-sm text-[var(--ink-muted)] font-medium">Edit live banners, section titles, images, and curated homepage courses.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() =>
+              setEditingBlock({
+                page: 'home',
+                section: 'student-results',
+                title: 'Real Results from Batch Zero',
+                subtitle: '100% of graduates secured paid industry opportunities',
+                data: {
+                  headlineMetric: '100% of graduates* secured paid industry opportunities.',
+                  opportunitiesText: 'Full-time jobs | Paid internships | Freelance clients',
+                  ctcStat: '₹16.2 LPA Combined CTC',
+                  footnote: '*Out of all the students who completed the program and actively pursued paid opportunities from ClassConnect',
+                  students: [
+                    {
+                      id: 'student-1',
+                      name: 'Aarav Sharma',
+                      role: 'Full-Stack Developer',
+                      company: 'TechCorp India',
+                      packageCTC: '₹18.5 LPA Package',
+                      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+                      rating: 5,
+                      review: 'ClassConnect transformed my career. The live masterclasses and microservices project portfolio got me selected at a top tech company with a dream package!',
+                      skills: ['React 19', 'Node.js', 'System Design']
+                    }
+                  ]
+                },
+                order: blocks.length + 1,
+                isActive: true,
+              })
+            }
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-full text-xs font-extrabold hover:bg-emerald-700 transition-all min-h-[44px] shadow-sm cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Add Batch Results Block</span>
+          </button>
+
           <button
             onClick={() =>
               setEditingBlock({

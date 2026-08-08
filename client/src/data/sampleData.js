@@ -49,6 +49,16 @@ export const SAMPLE_CATEGORIES = [
     courseCount: 5,
     gradient: 'from-amber-500/20 to-rose-500/20',
   },
+  {
+    _id: 'cat-6',
+    name: 'Cyber Security & Cloud',
+    nameHi: 'साइबर सिक्योरिटी और क्लाउड',
+    slug: 'cyber-security-cloud',
+    description: 'AWS, Azure, Ethical Hacking & DevOps',
+    descriptionHi: 'AWS, Azure, एथिकल हैकिंग और DevOps सीखें',
+    courseCount: 5,
+    gradient: 'from-teal-500/20 to-emerald-500/20',
+  },
 ];
 
 export const SAMPLE_COURSES = [
@@ -178,6 +188,26 @@ export const SAMPLE_COURSES = [
     thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80',
     lectures: [
       { _id: 'l61', title: 'Next.js 15 App Architecture', duration: '25:00', isPreview: true },
+    ],
+  },
+  {
+    _id: 'course-7',
+    title: 'AWS Cloud & Ethical Hacking Bootcamp 2026',
+    titleHi: 'AWS क्लाउड और एथिकल हैकिंग बूटकैंप',
+    slug: 'aws-cloud-ethical-hacking-bootcamp',
+    description: 'Master cloud security, AWS architecture, Linux systems, network defense, and penetration testing.',
+    descriptionHi: 'क्लाउड सिक्योरिटी, AWS और नेटवर्क डिफेंस सीखें।',
+    price: 1599,
+    originalPrice: 4999,
+    category: { _id: 'cat-6', name: 'Cyber Security & Cloud', slug: 'cyber-security-cloud' },
+    instructor: 'Vikram Sethi',
+    rating: 4.9,
+    totalReviews: 540,
+    studentsEnrolled: 1980,
+    tags: ['AWS', 'Ethical Hacking', 'Linux', 'DevOps'],
+    thumbnail: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=80',
+    lectures: [
+      { _id: 'l71', title: 'Cloud Fundamentals & AWS Setup', duration: '20:00', isPreview: true },
     ],
   },
 ];
