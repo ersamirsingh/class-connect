@@ -24,7 +24,9 @@ export class MediaService {
     filename: string,
     options: MediaUploadOptions = {}
   ): Promise<MediaUploadResult> {
-    const { bunnyStreamApiKey, bunnyStreamLibraryId, bunnyStreamCdnUrl } = config;
+    const bunnyStreamApiKey = config.bunnyStreamApiKey?.trim();
+    const bunnyStreamLibraryId = config.bunnyStreamLibraryId?.trim();
+    const bunnyStreamCdnUrl = config.bunnyStreamCdnUrl?.trim() || 'https://iframe.mediadelivery.net';
 
     // Direct new video uploads to Bunny Stream if API keys are configured
     if (bunnyStreamApiKey && bunnyStreamLibraryId) {
@@ -97,7 +99,9 @@ export class MediaService {
     filename: string,
     options: MediaUploadOptions = {}
   ): Promise<MediaUploadResult> {
-    const { bunnyStorageApiKey, bunnyStorageZone, bunnyStorageCdnUrl } = config;
+    const bunnyStorageApiKey = config.bunnyStorageApiKey?.trim();
+    const bunnyStorageZone = config.bunnyStorageZone?.trim();
+    const bunnyStorageCdnUrl = config.bunnyStorageCdnUrl?.trim();
 
     // Direct new image uploads to Bunny Storage if API keys are configured
     if (bunnyStorageApiKey && bunnyStorageZone) {
@@ -199,5 +203,57 @@ export class MediaService {
     }
 
     return true;
+  }
+
+  /**
+   * Diagnostic check for Bunny Stream & Bunny Storage connection status
+   */
+  static async checkBunnyConnections(): Promise<{
+    stream: { configured: boolean; connected: boolean; statusText?: string };
+    storage: { configured: boolean; connected: boolean; statusText?: string };
+  }> {
+    const bunnyStreamApiKey = config.bunnyStreamApiKey?.trim();
+    const bunnyStreamLibraryId = config.bunnyStreamLibraryId?.trim();
+    const bunnyStorageApiKey = config.bunnyStorageApiKey?.trim();
+    const bunnyStorageZone = config.bunnyStorageZone?.trim();
+
+    const result = {
+      stream: { configured: !!(bunnyStreamApiKey && bunnyStreamLibraryId), connected: false, statusText: 'Not configured (using fallback)' },
+      storage: { configured: !!(bunnyStorageApiKey && bunnyStorageZone), connected: false, statusText: 'Not configured (using fallback)' },
+    };
+
+    if (result.stream.configured) {
+      try {
+        const res = await fetch(`https://video.bunnycdn.com/library/${bunnyStreamLibraryId}/videos?page=1&itemsPerPage=1`, {
+          headers: { AccessKey: bunnyStreamApiKey, accept: 'application/json' },
+        });
+        if (res.ok) {
+          result.stream.connected = true;
+          result.stream.statusText = 'Connected to Bunny Stream API successfully!';
+        } else {
+          result.stream.statusText = `Bunny Stream API HTTP ${res.status}: ${res.statusText}`;
+        }
+      } catch (err: any) {
+        result.stream.statusText = `Bunny Stream connection failed: ${err.message}`;
+      }
+    }
+
+    if (result.storage.configured) {
+      try {
+        const res = await fetch(`https://storage.bunnycdn.com/${bunnyStorageZone}/`, {
+          headers: { AccessKey: bunnyStorageApiKey },
+        });
+        if (res.ok) {
+          result.storage.connected = true;
+          result.storage.statusText = 'Connected to Bunny Storage API successfully!';
+        } else {
+          result.storage.statusText = `Bunny Storage API HTTP ${res.status}: ${res.statusText}`;
+        }
+      } catch (err: any) {
+        result.storage.statusText = `Bunny Storage connection failed: ${err.message}`;
+      }
+    }
+
+    return result;
   }
 }

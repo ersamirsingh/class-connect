@@ -173,6 +173,7 @@ export const CourseExplorePage = () => {
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{course.subtitle || course.description}</p>
             </div>
 
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
               <button
                 onClick={handleShareClick}
                 className="btn-visual bg-[#5B54E8]/10 text-[#5B54E8] hover:bg-[#5B54E8]/20 text-xs font-black px-4 py-3 rounded-2xl border border-[#5B54E8]/30 flex items-center gap-2 cursor-pointer"
