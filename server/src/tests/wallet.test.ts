@@ -2,6 +2,7 @@ import request from 'supertest';
 import app from '../app';
 import { UserModel } from '../modules/user/user.model';
 import { WalletModel } from '../modules/wallet/wallet.model';
+import { ReferralTransactionModel } from '../modules/wallet/referralTransaction.model';
 import { WithdrawalRequestModel } from '../modules/wallet/withdrawalRequest.model';
 import { DocumentVerificationModel } from '../modules/verification/documentVerification.model';
 import { WalletService } from '../modules/wallet/wallet.service';
@@ -47,9 +48,15 @@ describe('9. Referral, Wallet & Payout Module', () => {
   });
 
   it('Happy Path: Referral commission credited on paid order, penny-drop verified bank saved, payout approved after document verification', async () => {
-    await WalletService.creditReferralCommission(referrerId, refereeId, '507f1f77bcf86cd799439011', 2000);
-    const walletAfterCredited = await WalletModel.findOne({ student: referrerId });
-    expect(walletAfterCredited?.balance).toBe(300);
+    const tx = await WalletService.creditReferralCommission(referrerId, refereeId, '507f1f77bcf86cd799439011', 2000);
+    // Mark commission as available for immediate testing
+    if (tx) {
+      tx.status = 'available';
+      tx.availableAt = new Date(Date.now() - 1000);
+      await tx.save();
+    }
+    const balance = await WalletService.calculateLedgerBalance(referrerId);
+    expect(balance).toBe(300);
 
     const bankRes = await request(app)
       .post('/api/wallet/bank-details')
@@ -63,12 +70,15 @@ describe('9. Referral, Wallet & Payout Module', () => {
 
     await DocumentVerificationModel.create({
       student: referrerId,
-      panNumber: 'ABCDE1234F',
-      panImageUrl: 'https://cloudinary.com/pan.jpg',
+      aadhaarNumber: '123456789012',
+      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
       status: 'verified',
     });
 
-    await WalletModel.findOneAndUpdate({ student: referrerId }, { balance: 1000 });
+    // Add available commission for testing withdrawal
+    await WalletService.creditReferralCommission(referrerId, refereeId, '507f1f77bcf86cd799439022', 5000);
+    await ReferralTransactionModel.updateMany({ referrer: referrerId }, { status: 'available' });
+    await WalletService.calculateLedgerBalance(referrerId);
 
     const withdrawRes = await request(app)
       .post('/api/wallet/withdraw')
@@ -104,6 +114,15 @@ describe('9. Referral, Wallet & Payout Module', () => {
   });
 
   it('Attack Case: Withdrawal attempt while Document Verification is pending/rejected (BACKEND HARD-BLOCK)', async () => {
+    await ReferralTransactionModel.create({
+      referrer: referrerId,
+      referredStudent: refereeId,
+      order: '507f1f77bcf86cd799439011',
+      commissionAmount: 1000,
+      status: 'available',
+      availableAt: new Date(Date.now() - 1000),
+    });
+
     await WalletModel.findOneAndUpdate(
       { student: referrerId },
       {
@@ -120,8 +139,8 @@ describe('9. Referral, Wallet & Payout Module', () => {
 
     await DocumentVerificationModel.create({
       student: referrerId,
-      panNumber: 'ABCDE1234F',
-      panImageUrl: 'https://cloudinary.com/pan.jpg',
+      aadhaarNumber: '123456789012',
+      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
       status: 'pending',
     });
 
@@ -140,6 +159,22 @@ describe('9. Referral, Wallet & Payout Module', () => {
   });
 
   it('Attack Case: Attempting to withdraw more than current available wallet balance', async () => {
+    await DocumentVerificationModel.create({
+      student: referrerId,
+      aadhaarNumber: '123456789012',
+      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
+      status: 'verified',
+    });
+
+    await ReferralTransactionModel.create({
+      referrer: referrerId,
+      referredStudent: refereeId,
+      order: '507f1f77bcf86cd799439011',
+      commissionAmount: 600,
+      status: 'available',
+      availableAt: new Date(Date.now() - 1000),
+    });
+
     await WalletModel.findOneAndUpdate(
       { student: referrerId },
       {
@@ -160,10 +195,26 @@ describe('9. Referral, Wallet & Payout Module', () => {
       .send({ amount: 2000 });
 
     expect(res.status).toBe(400);
-    expect(res.body.message).toMatch(/Insufficient wallet balance/i);
+    expect(res.body.message).toMatch(/Insufficient available balance|Insufficient wallet balance/i);
   });
 
   it('Attack Case: Race Condition - Dual simultaneous withdrawal requests against same balance', async () => {
+    await DocumentVerificationModel.create({
+      student: referrerId,
+      aadhaarNumber: '123456789012',
+      aadhaarImageUrl: 'https://cloudinary.com/aadhaar.jpg',
+      status: 'verified',
+    });
+
+    await ReferralTransactionModel.create({
+      referrer: referrerId,
+      referredStudent: refereeId,
+      order: '507f1f77bcf86cd799439011',
+      commissionAmount: 600,
+      status: 'available',
+      availableAt: new Date(Date.now() - 1000),
+    });
+
     await WalletModel.findOneAndUpdate(
       { student: referrerId },
       {
