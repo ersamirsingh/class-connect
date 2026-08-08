@@ -13,8 +13,8 @@ const startServer = async () => {
     // Concurrent startup: Connect MongoDB and Redis in parallel using Promise.all
     logger.info('Initializing MongoDB & Redis connections concurrently...');
     await Promise.all([
-      connectDB().then(() => logger.info('MongoDB connected successfully')),
-      connectRedis().then(() => logger.info('Redis connected successfully')),
+      connectDB(),
+      connectRedis(),
     ]);
 
     const httpServer = http.createServer(app);
