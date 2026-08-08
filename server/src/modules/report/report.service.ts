@@ -1,5 +1,5 @@
 import { ReportModel, IReport } from './report.model';
-import { uploadToCloudinary } from '../../config/cloudinary';
+import { MediaService } from '../../services/mediaService';
 
 export class ReportService {
   static async createReport(payload: {
@@ -14,8 +14,8 @@ export class ReportService {
 
     if (payload.files && payload.files.length > 0) {
       for (const file of payload.files) {
-        const url = await uploadToCloudinary(file.buffer, file.mimetype, 'class-connect/reports');
-        uploadedUrls.push(url);
+        const uploadRes = await MediaService.uploadImage(file.buffer, file.originalname || 'attachment.jpg', { folder: 'report-images', mimeType: file.mimetype });
+        uploadedUrls.push(uploadRes.url);
       }
     }
 

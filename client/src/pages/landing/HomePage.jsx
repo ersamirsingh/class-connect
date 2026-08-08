@@ -35,7 +35,8 @@ import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
 import { contentApi } from '../../api/models/content.api';
-import { SAMPLE_CATEGORIES } from '../../data/sampleData';
+import { SAMPLE_CATEGORIES, SAMPLE_COURSES } from '../../data/sampleData';
+import { FeaturedCourseCard } from '../../components/courses/FeaturedCourseCard';
 
 // --- Sample Testimonials Data ---
 const testimonials = [
@@ -151,8 +152,10 @@ export function HomePage() {
         const response = await contentApi.getPublicContent('home');
         const blocks = Array.isArray(response.data) ? response.data : (Array.isArray(response) ? response : []);
         const featuredBlock = blocks.find(b => b.section === 'featured_courses');
-        if (featuredBlock && featuredBlock.isActive) {
-          setFeaturedCourses(featuredBlock.data?.courses || []);
+        let coursesToDisplay = [];
+
+        if (featuredBlock && featuredBlock.isActive && featuredBlock.data?.courses?.length > 0) {
+          coursesToDisplay = featuredBlock.data.courses;
           if (featuredBlock.title) {
             setFeaturedHeader(prev => ({
               title: featuredBlock.title,
@@ -160,11 +163,16 @@ export function HomePage() {
             }));
           }
         } else {
-          setFeaturedCourses([]);
+          const allCoursesRes = await courseApi.getCourses().catch(() => ({ data: [] }));
+          coursesToDisplay = Array.isArray(allCoursesRes.data)
+            ? allCoursesRes.data
+            : (allCoursesRes.data?.courses || (Array.isArray(allCoursesRes) ? allCoursesRes : SAMPLE_COURSES));
         }
+
+        setFeaturedCourses(coursesToDisplay.slice(0, 6));
       } catch (error) {
         console.warn('Failed to fetch admin featured courses:', error.message);
-        setFeaturedCourses([]);
+        setFeaturedCourses(SAMPLE_COURSES.slice(0, 6));
       } finally {
         setIsLoadingCourses(false);
       }
@@ -352,52 +360,7 @@ export function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredCourses.map((course, idx) => (
                 <InView key={course._id || idx} delay={idx * 0.1}>
-                  <Link to={`/courses/${course.slug || course._id}`} className="block h-full">
-                    {/* GlowingEdge Border Card */}
-                    <GlowingEffect
-                      glowColor="rgba(67, 56, 242, 0.45)"
-                      accentGlow="rgba(255, 107, 53, 0.4)"
-                      containerClassName="h-full"
-                    >
-                      <div className="h-full bg-[var(--canvas)] overflow-hidden flex flex-col rounded-[15px] relative">
-                        <div className="relative aspect-video w-full overflow-hidden bg-[var(--ink-faint)]">
-                          {course.thumbnail ? (
-                            <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)] flex items-center justify-center">
-                              <BookOpen className="w-12 h-12 text-[var(--primary)]/40" />
-                            </div>
-                          )}
-                          {course.category && (
-                            <div className="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-bold text-[var(--ink)] shadow-sm">
-                              {typeof course.category === 'object' ? course.category.name : 'Category'}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="p-6 flex flex-col flex-grow">
-                          <h3 className="text-xl font-bold font-manrope leading-tight mb-2 line-clamp-2">
-                            {course.title}
-                          </h3>
-                          <p className="text-[var(--ink-muted)] text-sm mb-4 line-clamp-2">
-                            {course.subtitle || course.description}
-                          </p>
-                          
-                          <div className="mt-auto pt-4 border-t border-[var(--border)] flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 fill-[var(--accent)] text-[var(--accent)]" />
-                              <span className="text-sm font-bold">{course.rating || '4.9'}</span>
-                              <span className="text-xs text-[var(--ink-muted)]">({course.totalReviews || 120})</span>
-                            </div>
-                            
-                            <div className="font-manrope font-bold text-lg text-[var(--primary-deep)]">
-                              {course.price === 0 ? 'Free' : `₹${course.price?.toLocaleString('en-IN')}`}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </GlowingEffect>
-                  </Link>
+                  <FeaturedCourseCard course={course} />
                 </InView>
               ))}
             </div>

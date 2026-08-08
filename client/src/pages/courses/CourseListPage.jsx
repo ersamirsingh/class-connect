@@ -11,6 +11,7 @@ import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
+import { FeaturedCourseCard } from '../../components/courses/FeaturedCourseCard';
 
 export function CourseListPage() {
   const { language } = useLanguage();
@@ -212,67 +213,7 @@ export function CourseListPage() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3, delay: index * 0.04 }}
                   >
-                    <Link to={`/courses/${course.slug}`} className="block h-full group">
-                      {/* Edge Glowing Effect Wrapper */}
-                      <GlowingEffect
-                        glowColor="rgba(67, 56, 242, 0.45)"
-                        accentGlow="rgba(255, 107, 53, 0.4)"
-                        containerClassName="h-full"
-                      >
-                        <div className="h-full flex flex-col bg-[var(--surface)] rounded-[15px] overflow-hidden relative">
-                          {/* Thumbnail */}
-                          <div className="relative aspect-video w-full overflow-hidden bg-[var(--canvas)]">
-                            {course.thumbnail ? (
-                              <img 
-                                src={course.thumbnail} 
-                                alt={course.title} 
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--accent-soft)] flex items-center justify-center">
-                                <BookOpen className="w-12 h-12 text-[var(--primary)] opacity-50" />
-                              </div>
-                            )}
-                            <div className="absolute top-3 left-3 bg-[var(--surface)]/90 backdrop-blur-sm px-3 py-1 rounded-[var(--radius-pill)] text-xs font-semibold text-[var(--ink)] shadow-sm">
-                              {typeof course.category === 'object' ? course.category?.name : course.category || "General"}
-                            </div>
-                          </div>
-
-                          {/* Content */}
-                          <div className="p-6 flex flex-col flex-grow">
-                            <h3 className="text-lg font-bold text-[var(--ink)] mb-2 line-clamp-2 leading-snug group-hover:text-[var(--primary)] transition-colors"
-                              style={{ fontFamily: 'Manrope, sans-serif' }}>
-                              {course.title}
-                            </h3>
-                            
-                            <p className="text-xs font-medium text-[var(--ink-muted)] mb-4">
-                              By {typeof course.instructor === 'object' ? course.instructor?.name : course.instructor || "Samir Singh"}
-                            </p>
-                            
-                            <div className="mt-auto">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-1.5 bg-[var(--canvas)] px-2.5 py-1 rounded-[var(--radius-pill)]">
-                                  <Star className="w-3.5 h-3.5 fill-[var(--accent)] text-[var(--accent)]" />
-                                  <span className="text-xs font-bold text-[var(--ink)]">{course.rating?.toFixed(1) || "4.9"}</span>
-                                  <span className="text-[11px] text-[var(--ink-faint)]">({course.totalReviews || 120})</span>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center justify-between border-t border-[var(--border)] pt-4 mt-2">
-                                <div className="text-lg font-extrabold text-[var(--primary)]"
-                                  style={{ fontFamily: 'Manrope, sans-serif' }}>
-                                  {course.price === 0 ? "Free" : `₹${course.price?.toLocaleString('en-IN')}`}
-                                </div>
-                                <div className="text-xs font-bold text-[var(--ink-muted)] flex items-center gap-1 group-hover:text-[var(--primary)] transition-colors">
-                                  {isHindi ? "विवरण देखें" : "View Course"}
-                                  <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[var(--primary)]" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </GlowingEffect>
-                    </Link>
+                    <FeaturedCourseCard course={course} />
                   </motion.div>
                 ))}
               </AnimatePresence>

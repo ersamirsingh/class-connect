@@ -29,6 +29,9 @@ import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
 import { FloatingNav } from '../../components/layout/FloatingNav';
 import { Footer } from '../../components/guest/Footer';
+import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
+import { CourseRatingModal } from '../../components/courses/CourseRatingModal';
+import { Share2 } from 'lucide-react';
 
 export function CourseDetailPage() {
   const { idOrSlug, slug: paramSlug } = useParams();
@@ -43,6 +46,7 @@ export function CourseDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedUnits, setExpandedUnits] = useState({ 0: true });
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
 
   const isHindi = language === 'hi';
 
@@ -196,6 +200,12 @@ export function CourseDetailPage() {
                   <Star className="w-5 h-5 fill-[var(--accent)] text-[var(--accent)]" />
                   <span className="font-bold">{course.rating?.toFixed(1) || "4.8"}</span>
                   <span className="text-sm text-[var(--ink-muted)]">({course.totalReviews || 120} reviews)</span>
+                  <button
+                    onClick={() => setIsRatingModalOpen(true)}
+                    className="ml-2 px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 text-xs font-black rounded-full border border-amber-500/30 transition-all cursor-pointer"
+                  >
+                    ⭐ Rate Course
+                  </button>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-[var(--ink-muted)]">
                   <div className="w-8 h-8 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold">
@@ -210,13 +220,12 @@ export function CourseDetailPage() {
             <div className="hidden lg:block w-full max-w-md shrink-0">
               <div className="bg-[var(--canvas)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] overflow-hidden sticky top-32">
                 <div className="aspect-video bg-black relative group">
-                  {course.thumbnail ? (
-                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)]">
-                      <PlayCircle className="w-16 h-16 text-[var(--primary)]" />
-                    </div>
-                  )}
+                  <ImageWithFallback 
+                    src={course.thumbnail} 
+                    alt={course.title} 
+                    fallbackType="course" 
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
 
                 <div className="p-8 space-y-6">
@@ -443,6 +452,13 @@ export function CourseDetailPage() {
       <div className="hidden lg:block">
         <Footer />
       </div>
+
+      <CourseRatingModal
+        isOpen={isRatingModalOpen}
+        course={course}
+        onClose={() => setIsRatingModalOpen(false)}
+        onRatingSubmitted={(newRating) => setCourse(prev => ({ ...prev, rating: newRating }))}
+      />
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-react';
+import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
 
 export function ProfilePage() {
   const { t } = useLanguage();
@@ -200,13 +201,12 @@ export function ProfilePage() {
             {/* Avatar Photo Container (DIRECT FILE UPLOAD) */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative w-32 h-32 bg-gradient-to-br from-[var(--primary)] to-indigo-600 rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden group">
-                {profile.photo ? (
-                  <img src={profile.photo} alt="Profile Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl font-extrabold text-white">
-                    {(profile.name || 'U').charAt(0).toUpperCase()}
-                  </span>
-                )}
+                <ImageWithFallback 
+                  src={profile.photo} 
+                  alt="Profile Avatar" 
+                  fallbackType="avatar" 
+                  className="w-full h-full object-cover" 
+                />
                 
                 <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
                   {uploadingPhoto ? <Loader2 className="w-6 h-6 animate-spin" /> : <Camera className="w-7 h-7 mb-1" />}

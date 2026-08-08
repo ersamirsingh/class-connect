@@ -21,6 +21,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { SAMPLE_COURSES } from '../../data/sampleData';
+import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
 
 export function StudentDashboard() {
   const { t } = useLanguage();
@@ -186,7 +187,12 @@ export function StudentDashboard() {
             >
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="w-full md:w-2/5 aspect-video rounded-2xl overflow-hidden shadow-lg relative bg-slate-800 border border-white/10 shrink-0">
-                  <img src={continueEnrollment.course.thumbnail} alt={continueEnrollment.course.title} className="w-full h-full object-cover" />
+                  <ImageWithFallback 
+                    src={continueEnrollment.course.thumbnail} 
+                    alt={continueEnrollment.course.title} 
+                    fallbackType="course" 
+                    className="w-full h-full object-cover" 
+                  />
                   <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-black/60 backdrop-blur-md text-white border border-white/20">
                     {continueEnrollment.course.type === 'live' ? '🔴 Live Session' : 'Recorded Course'}
                   </div>
@@ -262,7 +268,12 @@ export function StudentDashboard() {
                 >
                   <div className="space-y-4">
                     <div className="aspect-video w-full rounded-2xl bg-[var(--canvas)] overflow-hidden relative border border-[var(--border)]">
-                      <img src={c.thumbnail} alt={c.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <ImageWithFallback 
+                        src={c.thumbnail} 
+                        alt={c.title} 
+                        fallbackType="course" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
                       <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-white/90 backdrop-blur-md text-[var(--ink)] shadow-sm">
                         {c.type === 'live' ? (
                           <span className="text-red-500 flex items-center gap-1"><Radio className="w-3 h-3 animate-pulse" /> LIVE</span>

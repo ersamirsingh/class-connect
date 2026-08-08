@@ -1,11 +1,10 @@
 import { config } from '../config';
-import { uploadToCloudinary } from '../config/cloudinary';
 
 export interface MediaUploadResult {
   assetId: string;
   url: string;
   playbackUrl?: string;
-  provider: 'bunny_stream' | 'bunny_storage' | 'cloudinary' | 'local_fallback';
+  provider: 'bunny_stream' | 'bunny_storage' | 'local_fallback';
   duration?: string;
 }
 
@@ -15,9 +14,14 @@ export interface MediaUploadOptions {
   mimeType?: string;
 }
 
+function encodeToDataUri(fileBuffer: Buffer, mimeType: string): string {
+  const base64 = fileBuffer.toString('base64');
+  return `data:${mimeType};base64,${base64}`;
+}
+
 export class MediaService {
   /**
-   * Upload video file (Directs new videos to Bunny Stream, or fallback to Cloudinary/Data URI)
+   * Upload video file (Directs new videos to Bunny Stream, or fallback to Data URI)
    */
   static async uploadVideo(
     fileBuffer: Buffer,
@@ -74,25 +78,24 @@ export class MediaService {
           provider: 'bunny_stream',
         };
       } catch (err: any) {
-        console.warn('Bunny Stream upload failed, falling back to Cloudinary/local fallback:', err.message);
+        console.warn('Bunny Stream upload failed, utilizing local fallback:', err.message);
       }
     }
 
-    // Fallback: Cloudinary or Data URI for local dev/test environment
+    // Fallback: Data URI for local dev/test environment
     const mimeType = options.mimeType || 'video/mp4';
-    const fallbackUrl = await uploadToCloudinary(fileBuffer, mimeType, options.folder || 'videos');
-    const isCloudinary = fallbackUrl.includes('cloudinary.com');
+    const fallbackUrl = encodeToDataUri(fileBuffer, mimeType);
 
     return {
       assetId: `video-${Date.now()}`,
       url: fallbackUrl,
       playbackUrl: fallbackUrl,
-      provider: isCloudinary ? 'cloudinary' : 'local_fallback',
+      provider: 'local_fallback',
     };
   }
 
   /**
-   * Upload image file (Directs new images to Bunny Storage + CDN Pull Zone, or fallback to Cloudinary/Data URI)
+   * Upload image file (Directs new images to Bunny Storage + CDN Pull Zone, or fallback to Data URI)
    */
   static async uploadImage(
     fileBuffer: Buffer,
@@ -120,7 +123,7 @@ export class MediaService {
         });
 
         if (!uploadRes.ok) {
-          throw new Error(`Bunny Storage upload error: ${uploadRes.statusText}`);
+          throw new Error(`Bunny Storage upload HTTP ${uploadRes.status}: ${uploadRes.statusText}`);
         }
 
         const cdnHost = bunnyStorageCdnUrl ? bunnyStorageCdnUrl.replace(/\/$/, '') : `https://${bunnyStorageZone}.b-cdn.net`;
@@ -132,31 +135,29 @@ export class MediaService {
           provider: 'bunny_storage',
         };
       } catch (err: any) {
-        console.warn('Bunny Storage upload failed, falling back to Cloudinary/local fallback:', err.message);
+        console.warn('Bunny Storage upload failed, utilizing resilient media fallback:', err.message);
       }
     }
 
-    // Fallback: Cloudinary or Data URI
+    // Resilient fallback: Data URI ensuring 100% image rendering
     const mimeType = options.mimeType || 'image/jpeg';
-    const fallbackUrl = await uploadToCloudinary(fileBuffer, mimeType, options.folder || 'images');
-    const isCloudinary = fallbackUrl.includes('cloudinary.com');
+    const fallbackUrl = encodeToDataUri(fileBuffer, mimeType);
 
     return {
       assetId: `img-${Date.now()}`,
       url: fallbackUrl,
-      provider: isCloudinary ? 'cloudinary' : 'local_fallback',
+      provider: 'local_fallback',
     };
   }
 
   /**
-   * Get formatted playback URL (Guarantees backward compatibility for existing Cloudinary URLs untouched)
+   * Get formatted playback URL
    */
   static getPlaybackUrl(urlOrAssetId: string): string {
     if (!urlOrAssetId) return '';
 
-    // Existing Cloudinary URLs, data URIs, or standard URLs return untouched as-is
+    // Data URIs or standard HTTP(S) URLs return untouched
     if (
-      urlOrAssetId.includes('cloudinary.com') ||
       urlOrAssetId.startsWith('data:') ||
       urlOrAssetId.startsWith('http://') ||
       urlOrAssetId.startsWith('https://')

@@ -1,5 +1,5 @@
 import { UserModel, IUser } from './user.model';
-import { uploadToCloudinary } from '../../config/cloudinary';
+import { MediaService } from '../../services/mediaService';
 
 export class UserService {
   static async getUserById(userId: string): Promise<IUser> {
@@ -41,7 +41,8 @@ export class UserService {
       throw new Error('User not found.');
     }
 
-    const photoUrl = await uploadToCloudinary(fileBuffer, mimeType, 'class-connect/profiles');
+    const uploadRes = await MediaService.uploadImage(fileBuffer, `avatar-${userId}.jpg`, { folder: 'avatars', mimeType });
+    const photoUrl = uploadRes.url;
     user.photo = photoUrl;
     await user.save();
 

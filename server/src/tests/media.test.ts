@@ -1,10 +1,10 @@
 import { MediaService } from '../services/mediaService';
 
 describe('14. Bunny.net / MediaService Abstraction Layer Module', () => {
-  it('Phase 1 Check: getPlaybackUrl preserves existing Cloudinary URLs untouched', () => {
-    const cloudinaryUrl = 'https://res.cloudinary.com/demo/video/upload/v1234567890/sample.mp4';
-    const result = MediaService.getPlaybackUrl(cloudinaryUrl);
-    expect(result).toBe(cloudinaryUrl);
+  it('Phase 1 Check: getPlaybackUrl preserves standard HTTPS URLs untouched', () => {
+    const httpsUrl = 'https://class-connect.b-cdn.net/sample.mp4';
+    const result = MediaService.getPlaybackUrl(httpsUrl);
+    expect(result).toBe(httpsUrl);
   });
 
   it('Phase 1 Check: getPlaybackUrl preserves data URIs untouched', () => {

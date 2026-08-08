@@ -1,32 +1,34 @@
 import request from 'supertest';
 import app from '../app';
 import { UserModel } from '../modules/user/user.model';
-import { CategoryModel } from '../modules/category/category.model';
 import { CourseModel } from '../modules/course/course.model';
+import { CategoryModel } from '../modules/category/category.model';
 import { EnrollmentModel } from '../modules/enrollment/enrollment.model';
 import { createTestToken } from './utils';
 import { Types } from 'mongoose';
 
 describe('6. Enrollment & Course Access Security Module', () => {
   let enrolledStudentToken: string;
-  let enrolledStudentId: string;
   let nonEnrolledStudentToken: string;
+  let enrolledStudentId: string;
   let courseAId: string;
   let courseBId: string;
 
   beforeEach(async () => {
     const student1 = await UserModel.create({
-      name: 'Enrolled Student A',
-      email: 'studentA@example.com',
-      password: 'Password@123',
+      name: 'Enrolled Student',
+      email: 'enrolled@test.com',
+      password: 'password123',
+      role: 'student',
     });
     enrolledStudentId = student1._id.toString();
     enrolledStudentToken = await createTestToken(student1);
 
     const student2 = await UserModel.create({
       name: 'Non Enrolled Student',
-      email: 'studentB@example.com',
-      password: 'Password@123',
+      email: 'nonenrolled@test.com',
+      password: 'password123',
+      role: 'student',
     });
     nonEnrolledStudentToken = await createTestToken(student2);
 
@@ -40,7 +42,7 @@ describe('6. Enrollment & Course Access Security Module', () => {
       slug: 'course-a-paid',
       description: 'Paid Course A',
       category: category._id,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
+      thumbnail: 'https://class-connect.b-cdn.net/thumb.jpg',
       price: 2000,
       sections: [
         {
@@ -50,7 +52,7 @@ describe('6. Enrollment & Course Access Security Module', () => {
             {
               title: 'Lecture A1',
               duration: '10 mins',
-              videoUrl: 'https://res.cloudinary.com/demo/video/authenticated/private_lecture_a1.mp4',
+              videoUrl: 'https://vz-e90d4726-817.b-cdn.net/embed/723388/private_lecture_a1',
               isPreview: false,
             },
           ],
@@ -64,8 +66,8 @@ describe('6. Enrollment & Course Access Security Module', () => {
       slug: 'course-b-paid',
       description: 'Paid Course B',
       category: category._id,
-      thumbnail: 'https://cloudinary.com/thumb.jpg',
-      price: 3000,
+      thumbnail: 'https://class-connect.b-cdn.net/thumb.jpg',
+      price: 1500,
       sections: [
         {
           title: 'Topic B1',
@@ -73,8 +75,8 @@ describe('6. Enrollment & Course Access Security Module', () => {
           lectures: [
             {
               title: 'Lecture B1',
-              duration: '10 mins',
-              videoUrl: 'https://res.cloudinary.com/demo/video/authenticated/private_lecture_b1.mp4',
+              duration: '15 mins',
+              videoUrl: 'https://vz-e90d4726-817.b-cdn.net/embed/723388/private_lecture_b1',
               isPreview: false,
             },
           ],
@@ -92,21 +94,22 @@ describe('6. Enrollment & Course Access Security Module', () => {
   });
 
   it('Happy Path: Enrolled student can check enrollment status and progress for Course A', async () => {
-    const statusRes = await request(app)
+    const res = await request(app)
       .get(`/api/enrollments/status/${courseAId}`)
       .set('Authorization', `Bearer ${enrolledStudentToken}`);
 
-    expect(statusRes.status).toBe(200);
-    expect(statusRes.body.data.isEnrolled).toBe(true);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.isEnrolled).toBe(true);
   });
 
   it('Attack Case: Non-enrolled student attempting to check status or complete lectures for paid Course A', async () => {
-    const statusRes = await request(app)
+    const res = await request(app)
       .get(`/api/enrollments/status/${courseAId}`)
       .set('Authorization', `Bearer ${nonEnrolledStudentToken}`);
 
-    expect(statusRes.status).toBe(200);
-    expect(statusRes.body.data.isEnrolled).toBe(false);
+    expect(res.status).toBe(200);
+    expect(res.body.data.isEnrolled).toBe(false);
   });
 
   it('Attack Case: Enrolled student of Course A attempting to access Course B lecture data', async () => {
@@ -118,10 +121,14 @@ describe('6. Enrollment & Course Access Security Module', () => {
     expect(res.body.data.isEnrolled).toBe(false);
   });
 
-  it('Attack Case: Cloudinary Private Asset Protection (Unsigned URL Bypass Attempt)', async () => {
-    const course = await CourseModel.findById(courseAId);
-    const lectureVideoUrl = course?.sections[0].lectures[0].videoUrl;
+  it('Attack Case: Protected Asset Access Security (Unauthenticated Bypass Attempt)', async () => {
+    const res = await request(app)
+      .post('/api/enrollments/progress/complete')
+      .send({
+        courseId: courseBId,
+        lectureId: 'fake-lecture-id',
+      });
 
-    expect(lectureVideoUrl).toMatch(/authenticated|private/);
+    expect(res.status).toBe(401);
   });
 });

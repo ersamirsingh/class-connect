@@ -33,6 +33,8 @@ import {
   Ban
 } from 'lucide-react';
 import { SAMPLE_COURSES } from '../../../data/sampleData';
+import { AdminGoLiveModal } from '../../../components/live/AdminGoLiveModal';
+import { Radio, Image as ImageIcon } from 'lucide-react';
 
 export function ManageCoursesPage() {
   const { t } = useLanguage();
@@ -40,6 +42,16 @@ export function ManageCoursesPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Go Live Modal State
+  const [isGoLiveModalOpen, setIsGoLiveModalOpen] = useState(false);
+  const [goLiveCourse, setGoLiveCourse] = useState(null);
+
+  // Thumbnail File Upload State
+  const thumbnailInputRef = useRef(null);
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [thumbnailUploadSuccess, setThumbnailUploadSuccess] = useState(false);
+  const [thumbnailUploadError, setThumbnailUploadError] = useState('');
   
   // Navigation Flow States: 'courses' | 'topics' | 'lectures'
   const [viewMode, setViewMode] = useState('courses');
@@ -107,8 +119,44 @@ export function ManageCoursesPage() {
   };
 
   // --- 1. COURSE LEVEL HANDLERS ---
+  const handleOpenGoLiveModal = (course) => {
+    setGoLiveCourse(course);
+    setIsGoLiveModalOpen(true);
+  };
+
+  const handleThumbnailFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setThumbnailUploadError('Please select a valid image file (JPEG, PNG, WEBP, SVG).');
+      return;
+    }
+
+    setThumbnailUploading(true);
+    setThumbnailUploadSuccess(false);
+    setThumbnailUploadError('');
+
+    try {
+      const res = await uploadApi.uploadFile(file);
+      const uploadedUrl = res.url || res.playbackUrl || res.data?.url;
+      if (!uploadedUrl) {
+        throw new Error('Upload succeeded but no image URL was returned.');
+      }
+      setCourseFormData(prev => ({ ...prev, thumbnail: uploadedUrl }));
+      setThumbnailUploadSuccess(true);
+    } catch (err) {
+      console.error('Thumbnail upload error:', err);
+      setThumbnailUploadError(err.message || 'Failed to upload thumbnail image.');
+    } finally {
+      setThumbnailUploading(false);
+    }
+  };
+
   const handleOpenCourseModal = (course = null) => {
     setError('');
+    setThumbnailUploadSuccess(false);
+    setThumbnailUploadError('');
     if (course) {
       setEditingCourse(course);
       setCourseFormData({
@@ -1097,13 +1145,60 @@ export function ManageCoursesPage() {
                     />
                   </div>
                   
+                  {/* Thumbnail Image File Upload Input (Replaces URL text input) */}
                   <div>
-                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Thumbnail Image URL</label>
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">
+                      Upload Thumbnail Image (JPEG, PNG, WEBP, SVG)
+                    </label>
+
                     <input 
-                      type="url"
-                      value={courseFormData.thumbnail} onChange={e => setCourseFormData({...courseFormData, thumbnail: e.target.value})}
-                      className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)] min-h-[44px]"
+                      type="file"
+                      ref={thumbnailInputRef}
+                      accept="image/*"
+                      onChange={handleThumbnailFileChange}
+                      className="hidden"
                     />
+
+                    <div 
+                      onClick={() => !thumbnailUploading && thumbnailInputRef.current?.click()}
+                      className={`w-full p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all flex flex-col items-center justify-center gap-2 text-center ${
+                        thumbnailUploading
+                          ? 'bg-blue-50/50 border-blue-400 cursor-wait'
+                          : thumbnailUploadSuccess || courseFormData.thumbnail
+                          ? 'bg-emerald-50/50 border-emerald-400'
+                          : 'bg-[var(--canvas)] border-[var(--border)] hover:border-[var(--primary)]'
+                      }`}
+                    >
+                      {thumbnailUploading ? (
+                        <div className="flex flex-col items-center gap-2 text-blue-600">
+                          <Loader2 className="w-8 h-8 animate-spin" />
+                          <span className="text-xs font-bold">Uploading thumbnail to Storage...</span>
+                        </div>
+                      ) : courseFormData.thumbnail ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <img 
+                            src={courseFormData.thumbnail} 
+                            alt="Course Thumbnail Preview" 
+                            className="w-36 h-20 object-cover rounded-xl border border-emerald-500 shadow-sm"
+                          />
+                          <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-bold">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Thumbnail Uploaded & Attached!</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 underline font-semibold">Click to upload new thumbnail image</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 text-[var(--ink-muted)]">
+                          <UploadCloud className="w-8 h-8 text-[var(--primary)]" />
+                          <span className="text-xs font-bold text-[var(--ink)]">Click to Select & Upload Image File</span>
+                          <span className="text-[10px]">JPEG, PNG, WEBP, or SVG image (Uploaded directly to Storage)</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {thumbnailUploadError && (
+                      <span className="text-[11px] font-bold text-red-500 mt-1 block">{thumbnailUploadError}</span>
+                    )}
                   </div>
                 </form>
               </div>
@@ -1112,7 +1207,7 @@ export function ManageCoursesPage() {
                 <button type="button" onClick={() => setIsCourseModalOpen(false)} className="px-4 py-2 font-bold text-xs text-[var(--ink-muted)]">
                   Cancel
                 </button>
-                <button type="submit" form="course-form" disabled={formLoading} className="px-6 py-2.5 bg-[var(--primary)] text-white text-xs font-extrabold rounded-full shadow-md hover:bg-[var(--primary-soft)] transition-colors min-h-[40px] disabled:opacity-50">
+                <button type="submit" form="course-form" disabled={formLoading || thumbnailUploading} className="px-6 py-2.5 bg-[var(--primary)] text-white text-xs font-extrabold rounded-full shadow-md hover:bg-[var(--primary-soft)] transition-colors min-h-[40px] disabled:opacity-50 cursor-pointer">
                   {formLoading ? 'Saving...' : 'Save Course'}
                 </button>
               </div>
