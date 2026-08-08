@@ -8,19 +8,23 @@ cloudinary.config({
 });
 
 export const uploadToCloudinary = async (fileBuffer: Buffer, mimeType: string, folder = 'class-connect'): Promise<string> => {
-  // If real Cloudinary keys are provided, upload to Cloudinary
+  // If real Cloudinary keys are provided, upload to Cloudinary with fallback on error
   if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder, resource_type: 'auto' },
-        (error, result) => {
-          if (error) return reject(error);
-          if (result && result.secure_url) resolve(result.secure_url);
-          else reject(new Error('Cloudinary upload failed: secure_url missing'));
-        }
-      );
-      uploadStream.end(fileBuffer);
-    });
+    try {
+      return await new Promise<string>((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder, resource_type: 'auto' },
+          (error, result) => {
+            if (error) return reject(error);
+            if (result && result.secure_url) resolve(result.secure_url);
+            else reject(new Error('Cloudinary upload failed: secure_url missing'));
+          }
+        );
+        uploadStream.end(fileBuffer);
+      });
+    } catch (err: any) {
+      console.warn('Cloudinary upload error (using local data URI fallback):', err.message);
+    }
   }
 
   // Fallback: encode as data URI for local dev/testing without active Cloudinary API keys
