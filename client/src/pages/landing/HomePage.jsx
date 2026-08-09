@@ -85,19 +85,18 @@ export function HomePage() {
       }
     };
 
-    const fetchCourses = async () => {
+    const loadHomepageData = async () => {
+      let apiCourses = [];
       try {
         const response = await courseApi.getCourses();
-        const apiCourses = response.data?.courses || (Array.isArray(response.data) ? response.data : []);
+        apiCourses = response.data?.courses || (Array.isArray(response.data) ? response.data : []);
         if (apiCourses.length > 0) {
           setFeaturedCourses(apiCourses.slice(0, 6));
         }
       } catch (error) {
         console.warn('Failed to load courses:', error.message);
       }
-    };
 
-    const fetchCmsBlocks = async () => {
       try {
         const response = await contentApi.getContentByPage('home');
         let blocks = [];
@@ -135,15 +134,21 @@ export function HomePage() {
         const howBlock = blocks.find(b => b.section === 'how-it-works' && b.isActive);
         if (howBlock) setHowItWorksCms(howBlock);
 
-        const statsBlock = blocks.find(b => b.section === 'stats-cta' && b.isActive);
+        const statsBlock = blocks.find(b => (b.section === 'stats-orbit' || b.section === 'stats-cta') && b.isActive);
         if (statsBlock) setStatsCms(statsBlock);
 
-        const compareBlock = blocks.find(b => b.section === 'compare-options' && b.isActive);
+        const compareBlock = blocks.find(b => (b.section === 'comparison-grid' || b.section === 'compare-options') && b.isActive);
         if (compareBlock) setCompareCms(compareBlock);
 
         const featuredBlock = blocks.find(b => b.section === 'featured_courses' && b.isActive);
         if (featuredBlock) {
-          setFeaturedCourses(featuredBlock.data?.courses || []);
+          if (Array.isArray(featuredBlock.data?.courses) && featuredBlock.data.courses.length > 0) {
+            setFeaturedCourses(featuredBlock.data.courses);
+          } else if (Array.isArray(featuredBlock.data?.courseIds) && featuredBlock.data.courseIds.length > 0) {
+            const selectedSet = new Set(featuredBlock.data.courseIds.map(id => String(id)));
+            const selectedCourses = apiCourses.filter(c => selectedSet.has(String(c._id)));
+            if (selectedCourses.length > 0) setFeaturedCourses(selectedCourses);
+          }
         }
       } catch (error) {
         console.warn('Failed to load CMS blocks:', error.message);
@@ -151,8 +156,7 @@ export function HomePage() {
     };
 
     fetchCategories();
-    fetchCourses();
-    fetchCmsBlocks();
+    loadHomepageData();
   }, []);
 
   const toggleFaq = (index) => {
@@ -169,7 +173,7 @@ export function HomePage() {
         {/* Full-Screen Background Image Layer (Spans 100% Width & Height Edge-to-Edge) */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden m-0 p-0">
           <img 
-            src={cdnImg(heroCms?.data?.imageUrl) || "/assets/hero_students_hq.jpg"} 
+            src={cdnImg(heroCms?.data?.imageUrl)} 
             alt="ClassConnect Workspace" 
             className="w-full h-full object-cover object-right antialiased block m-0 p-0 border-none"
             style={{ imageRendering: 'high-quality' }}
@@ -254,7 +258,7 @@ export function HomePage() {
       <StudentBatchResultsShowcase cmsData={studentResultsCms} />
 
       {/* 4. Category Crafts Deck (Find Your Path - Auto-scrolling Interface Crafts style) */}
-      <CategoryShowcase />
+      <CategoryShowcase categories={categories} />
 
       {/* 5. Featured Courses Section */}
       <section id="featured-courses" className="py-[var(--space-section)] px-6 lg:px-[var(--space-page)] bg-[var(--surface)]">
@@ -293,7 +297,7 @@ export function HomePage() {
                       <div className="h-full bg-[var(--canvas)] overflow-hidden flex flex-col rounded-[15px] relative">
                         <div className="relative aspect-video w-full overflow-hidden bg-[var(--ink-faint)]">
                           {course.thumbnail ? (
-                            <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                            <img src={cdnImg(course.thumbnail)} alt={course.title} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)] flex items-center justify-center">
                               <BookOpen className="w-12 h-12 text-[var(--primary)]/40" />
@@ -349,13 +353,13 @@ export function HomePage() {
       {liveClassesCms && liveClassesCms.isActive && <LiveClassesWorkshopsSection cmsData={liveClassesCms} />}
 
       {/* 7. How It Works Section */}
-      {howItWorksCms && howItWorksCms.isActive && <HowItWorksFlowSection cmsData={howItWorksCms} />}
+      <HowItWorksFlowSection howItWorksCms={howItWorksCms} />
 
       {/* 8. Arc Orbit Stats & Merged CTA Section */}
-      {statsCms && statsCms.isActive && <ArcOrbitStatsCtaSection cmsData={statsCms} />}
+      <ArcOrbitStatsCtaSection statsCms={statsCms} />
 
       {/* 9. Compare Your Options Comparison Chart */}
-      {compareCms && compareCms.isActive && <CompareOptionsSection cmsData={compareCms} />}
+      <CompareOptionsSection compareCms={compareCms} />
 
       {/* 10. Merged Side-by-Side Section: Student Loved Stories (Left) + FAQs (Right) */}
       {((testimonialsCms && testimonialsCms.isActive) || (faqCms && faqCms.isActive)) && (

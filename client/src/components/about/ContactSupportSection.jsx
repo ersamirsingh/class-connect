@@ -1,7 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Send, CheckCircle2, User, Mail, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { contentApi } from '../../api/models/content.api';
 
 export function ContactSupportSection() {
   const { language } = useLanguage();
@@ -13,6 +14,21 @@ export function ContactSupportSection() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [contactCms, setContactCms] = useState(null);
+
+  useEffect(() => {
+    const fetchContactCms = async () => {
+      try {
+        const res = await contentApi.getPublicContent('contact');
+        const blocks = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        const contactBlock = blocks.find(b => b.section === 'support-info');
+        if (contactBlock) setContactCms(contactBlock);
+      } catch (err) {
+        console.warn('Failed to load contact CMS block:', err);
+      }
+    };
+    fetchContactCms();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();

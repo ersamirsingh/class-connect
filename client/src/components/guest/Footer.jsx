@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Heart, Globe, Play, MessageCircle, ShieldCheck, FileText, RefreshCw } from 'lucide-react';
+import { BookOpen, Heart, Globe, Play, MessageCircle, ShieldCheck, FileText, RefreshCw, Twitter, Linkedin, Github } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { contentApi } from '../../api/models/content.api';
 
 export function Footer() {
   const { t } = useLanguage();
   const year = new Date().getFullYear();
+  const [footerCms, setFooterCms] = useState(null);
+
+  useEffect(() => {
+    const fetchFooterCms = async () => {
+      try {
+        const res = await contentApi.getPublicContent('footer');
+        const blocks = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        const footerBlock = blocks.find(b => b.section === 'links-and-copy');
+        if (footerBlock) setFooterCms(footerBlock);
+      } catch (err) {
+        console.warn('Failed to fetch footer CMS data:', err);
+      }
+    };
+    fetchFooterCms();
+  }, []);
+
+  const data = footerCms?.data || {};
 
   return (
     <footer className="bg-[#0B132B] text-white border-t border-indigo-900/50">
@@ -25,13 +43,13 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-xs text-indigo-200/80 max-w-sm leading-relaxed font-normal">
-              {t('hero.subtitle', "India's most visual learning platform. Master real-world skills with expert-led courses in Hindi & English.")}
+              {footerCms?.subtitle || t('hero.subtitle', "India's most visual learning platform. Master real-world skills with expert-led courses in Hindi & English.")}
             </p>
             
             {/* Social Links */}
             <div className="flex items-center gap-2.5 pt-1">
               <a 
-                href="https://instagram.com" 
+                href={data.socialLinks?.instagram || "https://instagram.com"} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-8 h-8 rounded-lg bg-white/10 text-indigo-200 hover:text-white hover:bg-indigo-600 transition-all flex items-center justify-center"
@@ -40,7 +58,7 @@ export function Footer() {
                 <Globe className="w-4 h-4" />
               </a>
               <a 
-                href="https://youtube.com" 
+                href={data.socialLinks?.youtube || "https://youtube.com"} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-8 h-8 rounded-lg bg-white/10 text-indigo-200 hover:text-white hover:bg-red-600 transition-all flex items-center justify-center"
@@ -49,13 +67,31 @@ export function Footer() {
                 <Play className="w-4 h-4" />
               </a>
               <a 
-                href="https://wa.me/919876543210" 
+                href={data.socialLinks?.twitter || "https://twitter.com"} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-white/10 text-indigo-200 hover:text-white hover:bg-emerald-600 transition-all flex items-center justify-center"
-                title="WhatsApp Support"
+                className="w-8 h-8 rounded-lg bg-white/10 text-indigo-200 hover:text-white hover:bg-sky-500 transition-all flex items-center justify-center"
+                title="Twitter / X"
               >
-                <MessageCircle className="w-4 h-4" />
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a 
+                href={data.socialLinks?.linkedin || "https://linkedin.com"} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-lg bg-white/10 text-indigo-200 hover:text-white hover:bg-blue-600 transition-all flex items-center justify-center"
+                title="LinkedIn"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+              <a 
+                href={data.socialLinks?.github || "https://github.com"} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-lg bg-white/10 text-indigo-200 hover:text-white hover:bg-slate-700 transition-all flex items-center justify-center"
+                title="GitHub"
+              >
+                <Github className="w-4 h-4" />
               </a>
             </div>
           </div>
@@ -129,13 +165,11 @@ export function Footer() {
               </li>
               <li>
                 <a 
-                  href="https://wa.me/919876543210" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                  href={`mailto:${data.supportEmail || 'support@classconnect.com'}`}
                   className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors flex items-center gap-1"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
-                  WhatsApp Support
+                  {data.supportEmail || 'support@classconnect.com'}
                 </a>
               </li>
             </ul>
@@ -148,7 +182,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-indigo-300/80 font-medium">
-          <p>© {year} ClassConnect. All rights reserved.</p>
+          <p>{data.copyrightText || `© ${year} ClassConnect Inc. All rights reserved.`}</p>
           <p className="flex items-center gap-1">
             Made with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> in India
           </p>

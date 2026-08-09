@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { Search, Sparkles, Award } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
-export function HowItWorksFlowSection() {
+export function HowItWorksFlowSection({ howItWorksCms }) {
   const { language } = useLanguage();
   const isHindi = language === 'hi';
 
-  const steps = [
+  const defaultSteps = [
     {
       id: 'step-1',
       title: isHindi ? '1. कोर्स खोजें' : '1. Explore Courses',
@@ -45,6 +45,20 @@ export function HowItWorksFlowSection() {
       dotColorRight: 'bg-[#9333EA]',
     },
   ];
+
+  const cmsSteps = howItWorksCms?.data?.steps;
+  const steps = (Array.isArray(cmsSteps) && cmsSteps.length > 0)
+    ? cmsSteps.map((st, idx) => ({
+        id: `step-${idx + 1}`,
+        title: st.title || `Step ${idx + 1}`,
+        desc: st.desc || '',
+        icon: idx % 3 === 0 ? Search : idx % 3 === 1 ? Sparkles : Award,
+        bgColor: idx % 3 === 0 ? 'bg-gradient-to-br from-[#9333EA] to-[#7C3AED]' : idx % 3 === 1 ? 'bg-gradient-to-br from-[#06B6D4] to-[#0284C7]' : 'bg-gradient-to-br from-[#F472B6] to-[#DB2777]',
+        shadowColor: idx % 3 === 0 ? 'shadow-[0_16px_36px_rgba(147,51,234,0.35)]' : idx % 3 === 1 ? 'shadow-[0_16px_36px_rgba(6,182,212,0.35)]' : 'shadow-[0_16px_36px_rgba(244,114,182,0.35)]',
+        dotColorLeft: idx % 3 === 0 ? 'bg-[#9333EA]' : idx % 3 === 1 ? 'bg-[#06B6D4]' : 'bg-[#F472B6]',
+        dotColorRight: idx % 3 === 0 ? 'bg-[#06B6D4]' : idx % 3 === 1 ? 'bg-[#F472B6]' : 'bg-[#9333EA]',
+      }))
+    : defaultSteps;
 
   return (
     <section className="py-16 sm:py-24 px-4 sm:px-8 bg-[var(--surface)] relative overflow-hidden">

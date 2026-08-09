@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
   ArrowRight, CheckCircle2, Sparkles, Globe, Award, ShieldCheck, Play, 
@@ -12,6 +12,8 @@ import { InView } from '../../components/motion/InView';
 import { NumberTicker } from '../../components/motion/NumberTicker';
 import { useLanguage } from '../../context/LanguageContext';
 import { ContactSupportSection } from '../../components/about/ContactSupportSection';
+import { contentApi } from '../../api/models/content.api';
+import { cdnImg } from '../../utils/cdnImg';
 
 // Category Magazine Tiles Data (linking directly to /courses)
 const CATEGORY_TILES = [
@@ -21,7 +23,7 @@ const CATEGORY_TILES = [
     titleHi: 'వెబ్ డెవలప్‌మెంట్',
     count: '12 Courses',
     desc: 'Master HTML, CSS, React 19, Node.js, Next.js & fullstack architecture.',
-    image: '/assets/categories/web-development.jpg',
+    image: 'https://class-connect.b-cdn.net/categories/web-development.jpg',
     accent: 'from-red-600 to-rose-600',
     tag: 'FULLSTACK',
   },
@@ -31,7 +33,7 @@ const CATEGORY_TILES = [
     titleHi: 'యాప్ డెవలప్‌మెంట్',
     count: '8 Courses',
     desc: 'Build Android & iOS apps with React Native, Flutter, Swift & Mobile APIs.',
-    image: '/assets/categories/app-development.jpg',
+    image: 'https://class-connect.b-cdn.net/categories/app-development.jpg',
     accent: 'from-emerald-600 to-teal-600',
     tag: 'MOBILE',
   },
@@ -41,7 +43,7 @@ const CATEGORY_TILES = [
     titleHi: 'యుఐ/యుఎక్స్ డిజైన్',
     count: '6 Courses',
     desc: 'Figma UI/UX, Motion Graphics, Premiere Pro & visual design systems.',
-    image: '/assets/categories/ui-ux-design.jpg',
+    image: 'https://class-connect.b-cdn.net/categories/ui-ux-design.jpg',
     accent: 'from-purple-600 to-pink-600',
     tag: 'CREATIVE',
   },
@@ -51,7 +53,7 @@ const CATEGORY_TILES = [
     titleHi: 'ఎఐ & డేటా సైన్స్',
     count: '10 Courses',
     desc: 'Python, Machine Learning, OpenAI APIs, LLM Agents & Data Analytics.',
-    image: '/assets/about_hero_lead.jpg',
+    image: 'https://class-connect.b-cdn.net/categories/ai-data-science.jpg',
     accent: 'from-blue-600 to-indigo-600',
     tag: 'FUTURE TECH',
   },
@@ -61,7 +63,7 @@ const CATEGORY_TILES = [
     titleHi: 'డిజిటల్ మార్కెటింగ్',
     count: '5 Courses',
     desc: 'SEO, performance marketing ads, social media growth & brand funnel strategy.',
-    image: '/assets/categories/digital-marketing.jpg',
+    image: 'https://class-connect.b-cdn.net/categories/digital-marketing.jpg',
     accent: 'from-amber-500 to-orange-600',
     tag: 'GROWTH',
   },
@@ -71,7 +73,7 @@ const CATEGORY_TILES = [
     titleHi: 'సైబర్ సెక్యూరిటీ & క్లౌడ్',
     count: '5 Courses',
     desc: 'AWS, Azure, Ethical Hacking, Network Security & DevOps infrastructure.',
-    image: '/assets/categories/cyber-security-cloud.jpg',
+    image: 'https://class-connect.b-cdn.net/categories/cyber-security-cloud.jpg',
     accent: 'from-teal-600 to-cyan-600',
     tag: 'SECURITY',
   },
@@ -131,19 +133,19 @@ const WHY_TABS = [
     id: 'video',
     title: 'Visual Lessons',
     desc: 'HD video lessons designed around real screen captures, clear diagrams, and zero fluff.',
-    image: '/assets/students/video_poster_1.jpg',
+    image: 'https://class-connect.b-cdn.net/cms/video_poster_priya.jpg',
   },
   {
     id: 'notes',
     title: 'Structured Notes',
     desc: 'Downloadable summary cheat-sheets and step-by-step guides for quick revision.',
-    image: '/assets/students/video_poster_2.jpg',
+    image: 'https://class-connect.b-cdn.net/cms/video_poster_aarav.jpg',
   },
   {
     id: 'project',
     title: 'Practical Project',
     desc: 'Build real portfolio pieces instead of taking passive multiple-choice quizzes.',
-    image: '/assets/students/video_poster_3.jpg',
+    image: 'https://class-connect.b-cdn.net/cms/video_poster_priya.jpg',
   },
   {
     id: 'certificate',
@@ -157,11 +159,41 @@ export function AboutPage() {
   const { language } = useLanguage();
   const isTelugu = language === 'te';
 
+  // CMS State Variables with default fallbacks
+  const [heroStoryCms, setHeroStoryCms] = useState(null);
+  const [categoryTilesCms, setCategoryTilesCms] = useState(CATEGORY_TILES);
+  const [approachStagesCms, setApproachStagesCms] = useState(APPROACH_STAGES);
+  const [whyTabsCms, setWhyTabsCms] = useState(WHY_TABS);
+
   // Active states
   const [activeApproach, setActiveApproach] = useState('learn');
   const [activeWhyTab, setActiveWhyTab] = useState('video');
   const [langToggle, setLangToggle] = useState('te'); // 'te' or 'en'
   const [verifiedPreview, setVerifiedPreview] = useState(false);
+
+  useEffect(() => {
+    const fetchAboutCms = async () => {
+      try {
+        const res = await contentApi.getPublicContent('about');
+        const blocks = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+
+        const heroBlock = blocks.find(b => b.section === 'hero-story');
+        if (heroBlock) setHeroStoryCms(heroBlock);
+
+        const tilesBlock = blocks.find(b => b.section === 'category-tiles');
+        if (tilesBlock?.data?.tiles?.length > 0) setCategoryTilesCms(tilesBlock.data.tiles);
+
+        const stagesBlock = blocks.find(b => b.section === 'approach-stages');
+        if (stagesBlock?.data?.stages?.length > 0) setApproachStagesCms(stagesBlock.data.stages);
+
+        const whyBlock = blocks.find(b => b.section === 'why-tabs');
+        if (whyBlock?.data?.tabs?.length > 0) setWhyTabsCms(whyBlock.data.tabs);
+      } catch (err) {
+        console.warn('Failed to load About page CMS blocks:', err);
+      }
+    };
+    fetchAboutCms();
+  }, []);
 
   // Hero parallax scroll
   const heroRef = useRef(null);
@@ -282,7 +314,7 @@ export function AboutPage() {
 
             {/* Interactive Feature Switchers */}
             <div className="pt-4 space-y-3">
-              {WHY_TABS.map((tab) => (
+              {whyTabsCms.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
@@ -317,7 +349,7 @@ export function AboutPage() {
           <div className="lg:col-span-6 relative">
             <div className="relative rounded-[32px] overflow-hidden border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xl">
               <AnimatePresence mode="wait">
-                {WHY_TABS.map((tab) => (
+                {whyTabsCms.map((tab) => (
                   tab.id === activeWhyTab && (
                     <motion.div
                       key={tab.id}
@@ -328,7 +360,7 @@ export function AboutPage() {
                       className="relative rounded-[24px] overflow-hidden aspect-[4/3] bg-slate-950"
                     >
                       <img
-                        src={tab.image}
+                        src={cdnImg(tab.image)}
                         alt={tab.title}
                         className="w-full h-full object-cover"
                       />
@@ -436,8 +468,8 @@ export function AboutPage() {
 
         {/* 4 Interactive Stages Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {APPROACH_STAGES.map((stage) => {
-            const Icon = stage.icon;
+          {approachStagesCms.map((stage) => {
+            const Icon = stage.icon || (stage.id === 'learn' ? BookOpen : stage.id === 'practice' ? Code : stage.id === 'prove' ? Award : Trophy);
             const isActive = activeApproach === stage.id;
             return (
               <div
@@ -574,15 +606,15 @@ export function AboutPage() {
 
         {/* Horizontal Scroll / Grid of Magazine Tiles */}
         <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory">
-          {CATEGORY_TILES.map((cat) => (
+          {categoryTilesCms.map((cat, idx) => (
             <Link
-              key={cat.id}
+              key={cat.id || idx}
               to="/courses"
               className="min-w-[280px] sm:min-w-[340px] snap-start group relative rounded-3xl overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
             >
               <div className="relative h-48 overflow-hidden bg-slate-900">
                 <img 
-                  src={cat.image}
+                  src={cdnImg(cat.image)}
                   alt={cat.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
                 />
@@ -872,7 +904,7 @@ export function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           <div className="md:col-span-7 relative rounded-3xl overflow-hidden aspect-[16/10] bg-slate-900 shadow-xl border border-[var(--border)] group">
             <img 
-              src="/assets/students/video_poster_1.jpg"
+              src={cdnImg("https://class-connect.b-cdn.net/cms/video_poster_priya.jpg")}
               alt="ClassConnect student interface"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />

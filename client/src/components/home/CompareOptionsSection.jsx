@@ -54,7 +54,8 @@ const COMPARISON_DATA = {
   }
 };
 
-export function CompareOptionsSection() {
+export function CompareOptionsSection({ compareCms, cmsData }) {
+  const cms = compareCms || cmsData;
   return (
     <section className="py-20 px-6 lg:px-[var(--space-page)] bg-white text-slate-900 relative overflow-hidden">
       
@@ -70,13 +71,10 @@ export function CompareOptionsSection() {
             Clear Comparison
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-manrope text-slate-900 tracking-tight leading-tight">
-            Compare Your{' '}
-            <span className="relative inline-block border-b-4 border-slate-900 pb-1 text-slate-900">
-              Options
-            </span>
+            {cms?.title || 'Compare Your Options'}
           </h2>
           <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto mt-3 font-normal">
-            See how ClassConnect's practical visual ecosystem compares to traditional learning paths.
+            {cms?.subtitle || "See how ClassConnect's practical visual ecosystem compares to traditional learning paths."}
           </p>
         </div>
 

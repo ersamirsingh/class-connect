@@ -7,7 +7,8 @@ import { NumberTicker } from '../motion/NumberTicker';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 
-export function ArcOrbitStatsCtaSection() {
+export function ArcOrbitStatsCtaSection({ statsCms, cmsData }) {
+  const cms = statsCms || cmsData;
   const { language } = useLanguage();
   const { user } = useAuth();
   const isHindi = language === 'hi';
@@ -121,7 +122,9 @@ export function ArcOrbitStatsCtaSection() {
           transition={{ duration: 0.7, delay: 0.4 }}
           className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold font-manrope text-[var(--ink)] tracking-tight leading-tight mb-5"
         >
-          {isHindi ? (
+          {cms?.title ? (
+            <span>{cms.title}</span>
+          ) : isHindi ? (
             <span>
               మీ కేరిర్‌ను <span className="font-cursive font-normal text-indigo-600 text-4xl sm:text-5xl lg:text-6xl">10x గ్రోత్</span> వైపు తీసుకెళ్లడానికి సిద్ధమా?
             </span>
@@ -138,9 +141,9 @@ export function ArcOrbitStatsCtaSection() {
           transition={{ duration: 0.7, delay: 0.5 }}
           className="text-base sm:text-lg lg:text-xl text-[var(--ink-muted)] font-medium leading-relaxed max-w-2xl mx-auto mb-10"
         >
-          {isHindi 
+          {cms?.subtitle || (isHindi 
             ? '10,000+ విద్యార్థులతో చేరండి. ఇండస్ట్రీ-ఆధారిత ప్రాజెక్ట్‌లను నిర్మించి మీ డ్రీమ్ ఉద్యోగాన్ని సాధించండి.'
-            : 'Join 10,000+ ambitious skill builders. Master production-grade skills, build real projects, and land high-paying tech roles.'}
+            : 'Join 10,000+ ambitious skill builders. Master production-grade skills, build real projects, and land high-paying tech roles.')}
         </motion.p>
 
         {/* CTA Buttons */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { contentApi } from '../../../api/models/content.api';
 import { courseApi } from '../../../api/models/course.api';
 import { uploadApi } from '../../../api/models/upload.api';
+import { categoryApi } from '../../../api/models/category.api';
 import { 
   Layout, 
   Plus, 
@@ -38,13 +39,24 @@ import { motion } from 'framer-motion';
 // Website Sections Definition for 1-Click Navigation
 const CMS_SECTIONS = [
   { id: 'hero', name: 'Homepage Hero Banner', category: 'Header', icon: Layout, description: 'Headline, subtitle, hero background image & CTA button.' },
+  { id: 'categories', name: 'Curated Skill Collections', category: 'Categories', icon: Layers, description: 'Manage card images, title, color & description for skill collection cards.' },
   { id: 'student-results', name: 'Batch Zero Real Results', category: 'Outcomes', icon: Award, description: 'Placement metric, CTC packages & graduate student cards.' },
   { id: 'featured_courses', name: 'Featured Masterclasses', category: 'Courses', icon: Sparkles, description: 'Select and order homepage featured courses.' },
   { id: 'live-classes', name: 'Live Classes & Workshops', category: 'Schedule', icon: Radio, description: 'Upcoming live sessions, hosts & workshop posters.' },
   { id: 'video-testimonials', name: 'Real Video Reviews', category: 'Social Proof', icon: Video, description: 'Student video testimonials with hike badges, video upload & cover image upload.' },
   { id: 'testimonial', name: 'Student Love Stories', category: 'Social Proof', icon: MessageSquare, description: 'Written student reviews, quotes & star ratings.' },
   { id: 'faqs', name: 'Frequently Asked Questions', category: 'Help', icon: HelpCircle, description: 'Q&A accordion list addressing common queries.' },
-  { id: 'banner', name: 'Promotional Banners', category: 'Marketing', icon: ImageIcon, description: 'Custom promotional image banners & discount alerts.' }
+  { id: 'banner', name: 'Promotional Banners', category: 'Marketing', icon: ImageIcon, description: 'Custom promotional image banners & discount alerts.' },
+  { id: 'hero-story', name: 'About Page Hero Story', category: 'About Page', icon: Layout, description: 'Main tagline, description & CTA link on /about page.' },
+  { id: 'category-tiles', name: 'About Page Discipline Cards', category: 'About Page', icon: Layers, description: 'Discipline cards, course counts, tags & cover images on /about.' },
+  { id: 'approach-stages', name: 'About Page 4-Stage System', category: 'About Page', icon: Sliders, description: '4 learning stages (Learn, Practice, Prove, Grow) with bullet lists.' },
+  { id: 'why-tabs', name: 'About Page Interactive Tabs', category: 'About Page', icon: FolderOpen, description: 'Visual Lessons, Notes, Project, Certificate poster images.' },
+  { id: 'support-info', name: 'Contact & Support Details', category: 'Footer & Support', icon: User, description: 'Support email, phone, working hours & response time.' },
+  { id: 'links-and-copy', name: 'Footer Links & Social Media', category: 'Footer & Support', icon: ExternalLink, description: 'Tagline, copyright, social media links & legal links.' },
+  { id: 'how-it-works', name: 'How ClassConnect Works', category: 'Homepage', icon: Sliders, description: '4 step workflow cards for learning progression.' },
+  { id: 'stats-orbit', name: 'Scale & Orbit Statistics', category: 'Homepage', icon: Award, description: 'Statistics counters, average hike, rating & CTA image.' },
+  { id: 'comparison-grid', name: 'Platform Comparison Grid', category: 'Homepage', icon: Check, description: 'Feature matrix comparing ClassConnect vs bootcamps vs YouTube.' },
+  { id: 'constellation', name: 'Skill Constellation Nodes', category: 'Homepage', icon: Sparkles, description: 'Interactive skill nodes and mentor avatar thumbnails.' }
 ];
 
 export const ManageCmsPage = () => {
@@ -70,6 +82,9 @@ export const ManageCmsPage = () => {
   const [uploadingField, setUploadingField] = useState(null);
   const heroFileInputRef = useRef(null);
 
+  const [cmsCategories, setCmsCategories] = useState([]);
+  const [savingCatId, setSavingCatId] = useState(null);
+
   useEffect(() => {
     loadAllData();
   }, []);
@@ -77,9 +92,10 @@ export const ManageCmsPage = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [cmsRes, courseRes] = await Promise.all([
+      const [cmsRes, courseRes, catRes] = await Promise.all([
         contentApi.getAllContentAdmin(),
-        courseApi.getAllCoursesAdmin()
+        courseApi.getAllCoursesAdmin(),
+        categoryApi.getCategories()
       ]);
 
       const loadedBlocks = Array.isArray(cmsRes?.data) 
@@ -91,6 +107,11 @@ export const ManageCmsPage = () => {
         ? courseRes.data 
         : (courseRes?.data?.courses || (Array.isArray(courseRes) ? courseRes : []));
       setCourses(loadedCourses);
+
+      const loadedCats = Array.isArray(catRes?.data)
+        ? catRes.data
+        : (catRes?.data?.categories || (Array.isArray(catRes) ? catRes : []));
+      setCmsCategories(loadedCats);
 
       // Select initial block data for 'hero'
       const dbHero = loadedBlocks.find(b => b.section === 'hero');
@@ -190,6 +211,8 @@ export const ManageCmsPage = () => {
         curr[keys[keys.length - 1]] = url;
         return updated;
       });
+      setMessage({ type: 'success', text: 'Media file uploaded to Bunny CDN! Click Save Section Changes to publish.' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (err) {
       alert(err.message || 'File upload failed.');
     } finally {
@@ -209,15 +232,95 @@ export const ManageCmsPage = () => {
 
   // Toggle Featured Course
   const toggleFeaturedCourse = (courseId) => {
-    const currentIds = formData.data?.courseIds || [];
-    const newIds = currentIds.includes(courseId)
-      ? currentIds.filter(id => id !== courseId)
-      : [...currentIds, courseId];
+    const targetIdStr = String(courseId);
+    const currentIds = (formData.data?.courseIds || []).map(id => String(id));
+    const newIds = currentIds.includes(targetIdStr)
+      ? currentIds.filter(id => id !== targetIdStr)
+      : [...currentIds, targetIdStr];
     
     setFormData(prev => ({
       ...prev,
       data: { ...prev.data, courseIds: newIds }
     }));
+  };
+
+  // Category Management Handlers for Curated Skill Collections
+  const handleUpdateCategoryField = (index, field, value) => {
+    setCmsCategories(prev => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
+    });
+  };
+
+  const handleSaveCategory = async (cat) => {
+    setSavingCatId(cat._id);
+    try {
+      await categoryApi.updateCategory(cat._id, cat);
+      setMessage({ type: 'success', text: `Updated "${cat.name}" category card!` });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    } catch (err) {
+      alert(err.message || 'Failed to update category.');
+    } finally {
+      setSavingCatId(null);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    const newName = prompt('Enter new category name for skill collection:');
+    if (!newName || !newName.trim()) return;
+    const slug = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    try {
+      const res = await categoryApi.createCategory({
+        name: newName.trim(),
+        slug,
+        description: 'High-income visual skill track',
+        color: '#4338F2',
+        coverImage: '',
+        isActive: true,
+      });
+      const createdCat = res.data?.category || res.data || res;
+      setCmsCategories(prev => [...prev, createdCat]);
+      setMessage({ type: 'success', text: `Created skill card "${newName}"!` });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    } catch (err) {
+      alert(err.message || 'Failed to create category.');
+    }
+  };
+
+  const handleDeleteCategory = async (catId, index) => {
+    if (!window.confirm('Are you sure you want to remove this skill card from the platform?')) return;
+    try {
+      if (catId) {
+        await categoryApi.deleteCategory(catId);
+      }
+      setCmsCategories(prev => prev.filter((_, i) => i !== index));
+      setMessage({ type: 'success', text: 'Category card deleted successfully!' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    } catch (err) {
+      alert(err.message || 'Failed to delete category.');
+    }
+  };
+
+  const handleUploadCategoryCover = async (file, index) => {
+    if (!file) return;
+    setUploadingField(`cat-${index}`);
+    try {
+      const res = await uploadApi.uploadFile(file, 'class-connect/categories');
+      const url = res.url || res.data?.url;
+      if (!url) throw new Error('Upload failed');
+      handleUpdateCategoryField(index, 'coverImage', url);
+      const catToUpdate = cmsCategories[index];
+      if (catToUpdate && catToUpdate._id) {
+        await categoryApi.updateCategory(catToUpdate._id, { ...catToUpdate, coverImage: url });
+      }
+      setMessage({ type: 'success', text: `Uploaded and saved cover image for "${cmsCategories[index]?.name || 'Category'}"!` });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    } catch (err) {
+      alert(err.message || 'Upload failed.');
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   // List Items Handlers (Students, Workshops, Video Reviews, FAQs, Testimonials)
@@ -419,6 +522,162 @@ export const ManageCmsPage = () => {
 
             {/* DYNAMIC SECTION EDITORS */}
 
+            {/* 0. CURATED SKILL COLLECTIONS (CATEGORIES) EDITOR */}
+            {activeSectionId === 'categories' && (
+              <div className="space-y-6 pt-4 border-t border-[var(--border)]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase text-[var(--ink)] tracking-wider">
+                      Curated Skill Collection Cards ({cmsCategories.length} Categories)
+                    </label>
+                    <span className="text-[10px] text-[var(--primary)] font-bold">Manage images, titles, colors & descriptions live</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddCategory}
+                    className="px-3.5 py-1.5 bg-emerald-600 text-white text-xs font-extrabold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Skill Track</span>
+                  </button>
+                </div>
+
+                <div className="space-y-5">
+                  {cmsCategories.map((cat, idx) => (
+                    <div key={cat._id || idx} className="p-5 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-4 shadow-xs">
+                      <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
+                        <span className="text-xs font-bold font-mono text-[var(--primary)]">
+                          Category #{idx + 1}: {cat.name}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateCategoryField(idx, 'isActive', !(cat.isActive !== false))}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-colors ${cat.isActive !== false ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                          >
+                            {cat.isActive !== false ? 'Active' : 'Hidden'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSaveCategory(cat)}
+                            disabled={savingCatId === cat._id}
+                            className="px-3 py-1 bg-[var(--primary)] text-white text-[11px] font-extrabold rounded-lg hover:bg-[var(--deep-anchor,#24216F)] transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                          >
+                            {savingCatId === cat._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                            <span>Save</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat._id, idx)}
+                            className="p-1 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors cursor-pointer"
+                            title="Delete Category Card"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Category Card Cover Image Upload Dropzone */}
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase text-[var(--ink-muted)] mb-1">
+                          Category Card Cover Image (Bunny Storage)
+                        </label>
+                        {cat.coverImage ? (
+                          <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--canvas)] h-32">
+                            <img src={cdnImg(cat.coverImage)} alt={cat.name} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                              <label className="px-3 py-1.5 bg-white text-slate-900 text-[10px] font-extrabold rounded-lg cursor-pointer">
+                                Replace Image
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleUploadCategoryCover(f, idx);
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCategoryField(idx, 'coverImage', '')}
+                                className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-extrabold rounded-lg cursor-pointer"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="w-full h-24 border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors bg-[var(--surface)] p-2">
+                            {uploadingField === `cat-${idx}` ? (
+                              <><Loader2 className="w-5 h-5 text-amber-500 animate-spin" /><span className="text-[10px] font-bold text-amber-600">Uploading to Bunny...</span></>
+                            ) : (
+                              <><UploadCloud className="w-5 h-5 text-[var(--primary)]" /><span className="text-[10px] font-bold text-[var(--ink-muted)]">Upload Category Card Image</span></>
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) handleUploadCategoryCover(f, idx);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
+                        )}
+                      </div>
+
+                      {/* Category Name, Color Accent & Description */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-[var(--ink-muted)] mb-1">Category Title</label>
+                          <input
+                            type="text"
+                            placeholder="Category Name"
+                            value={cat.name || ''}
+                            onChange={(e) => handleUpdateCategoryField(idx, 'name', e.target.value)}
+                            className="w-full p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-[var(--ink-muted)] mb-1">Hex Color Accent</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={cat.color || '#4338F2'}
+                              onChange={(e) => handleUpdateCategoryField(idx, 'color', e.target.value)}
+                              className="w-8 h-8 rounded-lg border border-[var(--border)] cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              placeholder="#4338F2"
+                              value={cat.color || ''}
+                              onChange={(e) => handleUpdateCategoryField(idx, 'color', e.target.value)}
+                              className="w-full p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-mono font-bold"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-[var(--ink-muted)] mb-1">Card Subtitle / Description</label>
+                        <input
+                          type="text"
+                          placeholder="Short tagline description..."
+                          value={cat.description || ''}
+                          onChange={(e) => handleUpdateCategoryField(idx, 'description', e.target.value)}
+                          className="w-full p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* 1. FEATURED COURSES SELECTOR */}
             {activeSectionId === 'featured_courses' && (
               <div className="space-y-4 pt-4 border-t border-[var(--border)]">
@@ -444,7 +703,7 @@ export const ManageCmsPage = () => {
                   {courses
                     .filter(c => c.title.toLowerCase().includes(courseSearch.toLowerCase()))
                     .map(c => {
-                      const isSelected = (formData.data?.courseIds || []).includes(c._id);
+                      const isSelected = (formData.data?.courseIds || []).map(id => String(id)).includes(String(c._id));
                       return (
                         <div
                           key={c._id}
@@ -517,13 +776,22 @@ export const ManageCmsPage = () => {
                       <div key={student.id || idx} className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-3">
                         <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
                           <span className="text-xs font-bold text-[var(--primary)] font-mono">Student #{idx + 1}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteItem(idx)}
-                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItem(idx, 'isActive', !(student.isActive !== false))}
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-colors ${student.isActive !== false ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                            >
+                              {student.isActive !== false ? 'Active' : 'Hidden'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteItem(idx)}
+                              className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Student Photo Upload */}
@@ -612,13 +880,22 @@ export const ManageCmsPage = () => {
                     <div key={item.id || idx} className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-3">
                       <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
                         <span className="text-xs font-bold text-indigo-600 font-mono">Workshop #{idx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteItem(idx)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItem(idx, 'isActive', !(item.isActive !== false))}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-colors ${item.isActive !== false ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                          >
+                            {item.isActive !== false ? 'Active' : 'Hidden'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteItem(idx)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Workshop Banner Image Upload */}
@@ -708,13 +985,22 @@ export const ManageCmsPage = () => {
                     <div key={item.id || idx} className="p-5 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-4">
                       <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
                         <span className="text-xs font-bold text-purple-600 font-mono">Video Review #{idx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteItem(idx)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItem(idx, 'isActive', !(item.isActive !== false))}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-colors ${item.isActive !== false ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                          >
+                            {item.isActive !== false ? 'Active' : 'Hidden'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteItem(idx)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -838,13 +1124,22 @@ export const ManageCmsPage = () => {
                     <div key={faq.id || idx} className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-3">
                       <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
                         <span className="text-xs font-bold text-amber-600 font-mono">Q&A #{idx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteItem(idx)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItem(idx, 'isActive', !(faq.isActive !== false))}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-colors ${faq.isActive !== false ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                          >
+                            {faq.isActive !== false ? 'Active' : 'Hidden'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteItem(idx)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       <input
@@ -890,13 +1185,22 @@ export const ManageCmsPage = () => {
                     <div key={item.id || idx} className="p-4 bg-[var(--canvas)] rounded-2xl border border-[var(--border)] space-y-3">
                       <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
                         <span className="text-xs font-bold text-rose-600 font-mono">Story #{idx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteItem(idx)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItem(idx, 'isActive', !(item.isActive !== false))}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-colors ${item.isActive !== false ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                          >
+                            {item.isActive !== false ? 'Active' : 'Hidden'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteItem(idx)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Student Avatar Photo Upload */}
