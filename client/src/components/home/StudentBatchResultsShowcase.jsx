@@ -156,7 +156,7 @@ function StudentCardItem({ student }) {
 
 export function StudentBatchResultsShowcase({ cmsData }) {
   const data = cmsData?.data || {};
-  const students = data.students || [];
+  const students = (data.students || []).filter(s => s.isActive !== false);
   const scrollContainerRef = useRef(null);
 
   if (!cmsData || !cmsData.isActive || students.length === 0) {

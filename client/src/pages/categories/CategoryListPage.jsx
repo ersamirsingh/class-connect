@@ -198,7 +198,7 @@ export function CategoryListPage() {
                     <Link key={course._id} to={`/courses/${course.slug || course._id}`} className="block h-full group">
                       <SpotlightCard className="h-full bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden flex flex-col justify-between">
                         <div className="aspect-video w-full relative bg-[var(--canvas)] overflow-hidden">
-                          <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={cdnImg(course.thumbnail)} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-black bg-white/90 backdrop-blur-md text-[var(--ink)] shadow-sm flex items-center gap-1">
                             {course.type === 'live' ? (
                               <span className="text-red-500 flex items-center gap-1"><Radio className="w-3 h-3 animate-pulse" /> LIVE</span>
@@ -268,52 +268,9 @@ export function CategoryListPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   <AnimatePresence>
                     {categories.map((category, index) => {
-                      const CATEGORY_META = {
-                        'web-development': {
-                          tag: 'FULLSTACK',
-                          image: '/assets/categories/web-development.jpg',
-                          count: '12 Courses',
-                          desc: 'Master HTML, CSS, React 19, Node.js, Next.js & fullstack architecture.',
-                        },
-                        'app-development': {
-                          tag: 'MOBILE',
-                          image: '/assets/categories/app-development.jpg',
-                          count: '8 Courses',
-                          desc: 'Build Android & iOS apps with React Native, Flutter, Swift & Mobile APIs.',
-                        },
-                        'ui-ux-design': {
-                          tag: 'CREATIVE',
-                          image: '/assets/categories/ui-ux-design.jpg',
-                          count: '6 Courses',
-                          desc: 'Figma UI/UX, Motion Graphics, Premiere Pro & visual design systems.',
-                        },
-                        'ai-data-science': {
-                          tag: 'FUTURE TECH',
-                          image: '/assets/about_hero_lead.jpg',
-                          count: '10 Courses',
-                          desc: 'Python, Machine Learning, OpenAI APIs, LLM Agents & Data Analytics.',
-                        },
-                        'digital-marketing': {
-                          tag: 'GROWTH',
-                          image: '/assets/categories/digital-marketing.jpg',
-                          count: '5 Courses',
-                          desc: 'SEO, performance marketing ads, social media growth & brand funnel strategy.',
-                        },
-                        'cyber-security-cloud': {
-                          tag: 'SECURITY',
-                          image: '/assets/categories/cyber-security-cloud.jpg',
-                          count: '5 Courses',
-                          desc: 'AWS, Azure, Ethical Hacking, Network Security & DevOps infrastructure.',
-                        },
-                      };
-
                       const slug = category.slug || category.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                      const meta = CATEGORY_META[slug] || {
-                        tag: 'PROGRAM',
-                        image: '/assets/about_hero_lead.jpg',
-                        count: '5 Courses',
-                        desc: category.description || 'Master industry-relevant skills with senior experts.',
-                      };
+                      const displayImg = cdnImg(category.coverImage);
+                      const displayDesc = category.description || 'Master industry-relevant skills with senior experts.';
                       
                       return (
                         <motion.div
@@ -330,13 +287,9 @@ export function CategoryListPage() {
                               {/* Top Header Image + Glass Badge */}
                               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
                                 <img
-                                  src={meta.image}
+                                  src={displayImg}
                                   alt={category.name}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = '/assets/about_hero_lead.jpg';
-                                  }}
                                 />
                                 {/* Bottom Fade Gradient into White */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />

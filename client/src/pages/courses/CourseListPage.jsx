@@ -5,6 +5,7 @@ import { Search, Star, BookOpen, Sparkles, X, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { courseApi } from '../../api/models/course.api';
 import { categoryApi } from '../../api/models/category.api';
+import { cdnImg } from '../../utils/cdnImg';
 import { GlowingEffect } from '../../components/motion/GlowingEffect';
 import { TextEffect } from '../../components/motion/TextEffect';
 import { InView } from '../../components/motion/InView';
@@ -256,13 +257,9 @@ export function CourseListPage() {
                           <div className="relative aspect-video w-full overflow-hidden bg-[var(--canvas)]">
                             {course.thumbnail ? (
                               <img 
-                                src={course.thumbnail} 
+                                src={cdnImg(course.thumbnail)} 
                                 alt={course.title} 
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = '/assets/about_hero_lead.jpg';
-                                }}
                               />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-[var(--primary-soft)] to-[var(--accent-soft)] flex items-center justify-center">

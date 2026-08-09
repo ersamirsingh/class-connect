@@ -28,7 +28,7 @@ export const uploadMultipleImages = multer({
 
 export const uploadGenericFile = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for video/files
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit for video/files
   fileFilter: (req, file, cb) => {
     const isImage = file.mimetype.startsWith('image/');
     const isVideo = file.mimetype.startsWith('video/');

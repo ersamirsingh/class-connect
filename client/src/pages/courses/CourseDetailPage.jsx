@@ -22,6 +22,7 @@ import {
   BookOpen,
   Users
 } from 'lucide-react';
+import { cdnImg } from '../../utils/cdnImg';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { courseApi } from '../../api/models/course.api';
@@ -217,13 +218,9 @@ export function CourseDetailPage() {
                 <div className="aspect-video bg-black relative group">
                   {course.thumbnail ? (
                     <img 
-                      src={course.thumbnail} 
+                      src={cdnImg(course.thumbnail)} 
                       alt={course.title} 
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/assets/about_hero_lead.jpg';
-                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-[var(--aura-violet)]">

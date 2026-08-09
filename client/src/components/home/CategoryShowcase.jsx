@@ -1,58 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 
-const CATEGORIES = [
-  {
-    name: 'Web Development',
-    slug: 'web-development',
-    courses: 5,
-    image: '/assets/categories/web-development.jpg',
-    color: '#EF4444',
-    tagline: 'HTML, CSS, React, Node.js & Next.js',
-  },
-  {
-    name: 'App Development',
-    slug: 'app-development',
-    courses: 5,
-    image: '/assets/categories/app-development.jpg',
-    color: '#10B981',
-    tagline: 'Flutter, React Native & Swift',
-  },
-  {
-    name: 'UI/UX Design',
-    slug: 'ui-ux-design',
-    courses: 5,
-    image: '/assets/categories/ui-ux-design.jpg',
-    color: '#8B5CF6',
-    tagline: 'Figma, Design Systems & Prototyping',
-  },
-  {
-    name: 'AI & Data Science',
-    slug: 'ai-data-science',
-    courses: 5,
-    image: '/assets/categories/ai-data-science.jpg',
-    color: '#3B82F6',
-    tagline: 'Python, ML, OpenAI & Data Analytics',
-  },
-  {
-    name: 'Digital Marketing',
-    slug: 'digital-marketing',
-    courses: 5,
-    image: '/assets/categories/digital-marketing.jpg',
-    color: '#F97316',
-    tagline: 'SEO, Google Ads, Meta Ads & Content',
-  },
-  {
-    name: 'Cyber Security & Cloud',
-    slug: 'cyber-security-cloud',
-    courses: 5,
-    image: '/assets/categories/cyber-security-cloud.jpg',
-    color: '#14B8A6',
-    tagline: 'AWS, Azure, Ethical Hacking & DevOps',
-  },
-];
+import { cdnImg } from '../../utils/cdnImg';
+import { categoryApi } from '../../api/models/category.api';
+
+
 
 // Individual fanning card component
 function CategoryFanCard({ category, index, totalCards, hoveredIndex, setHoveredIndex }) {
@@ -107,7 +61,7 @@ function CategoryFanCard({ category, index, totalCards, hoveredIndex, setHovered
         >
           {/* Card Background Image */}
           <img
-            src={category.image}
+            src={cdnImg(category.image || category.coverImage)}
             alt={category.name}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -153,7 +107,7 @@ function CategoryFanCard({ category, index, totalCards, hoveredIndex, setHovered
 }
 
 // Horizontal Slider Version (Mobile + Tablet)
-function CategorySlider() {
+function CategorySlider({ categories = [] }) {
   const scrollRef = useRef(null);
 
   const scrollDirection = (dir) => {
@@ -187,9 +141,9 @@ function CategorySlider() {
         className="flex gap-5 overflow-x-auto scrollbar-hide px-6 pb-4 snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {CATEGORIES.map((cat, i) => (
+        {categories.map((cat, i) => (
           <Link
-            key={cat.slug}
+            key={cat.slug || i}
             to={`/courses?category=${cat.slug}`}
             className="flex-shrink-0 w-[240px] snap-center block group"
           >
@@ -205,7 +159,7 @@ function CategorySlider() {
               }}
             >
               <img
-                src={cat.image}
+                src={cdnImg(cat.image || cat.coverImage)}
                 alt={cat.name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
@@ -215,10 +169,10 @@ function CategorySlider() {
               <div className="absolute top-3 left-3">
                 <span
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold text-white backdrop-blur-md"
-                  style={{ backgroundColor: `${cat.color}CC` }}
+                  style={{ backgroundColor: `${cat.color || '#4338F2'}CC` }}
                 >
                   <Sparkles className="w-3 h-3" />
-                  {cat.courses} Courses
+                  {cat.courses || 5} Courses
                 </span>
               </div>
 
@@ -228,7 +182,7 @@ function CategorySlider() {
                   {cat.name}
                 </h3>
                 <p className="text-[11px] text-white/80 font-medium leading-snug mb-2">
-                  {cat.tagline}
+                  {cat.tagline || cat.description}
                 </p>
                 <div className="flex items-center gap-1.5 text-white/90 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <span>Explore</span>
@@ -243,8 +197,34 @@ function CategorySlider() {
   );
 }
 
-export function CategoryShowcase() {
+export function CategoryShowcase({ categories: propsCategories }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [fetchedCategories, setFetchedCategories] = useState([]);
+
+  useEffect(() => {
+    if (!propsCategories || propsCategories.length === 0) {
+      categoryApi.getCategories()
+        .then((res) => {
+          const list = res.data?.categories || (Array.isArray(res.data) ? res.data : []);
+          setFetchedCategories(list);
+        })
+        .catch((err) => console.warn('Failed to load categories:', err));
+    }
+  }, [propsCategories]);
+
+  const rawList = (propsCategories && propsCategories.length > 0) ? propsCategories : fetchedCategories;
+  const activeList = rawList.filter(c => c.isActive !== false);
+
+  const displayCategories = activeList.map((cat) => ({
+    name: cat.name,
+    slug: cat.slug || cat._id,
+    courses: cat.coursesCount || cat.courses || 5,
+    image: cdnImg(cat.coverImage || cat.image),
+    color: cat.color || '#4338F2',
+    tagline: cat.description || cat.tagline || 'High-income visual skill track',
+  }));
+
+  if (displayCategories.length === 0) return null;
 
   return (
     <section className="relative py-20 sm:py-28 bg-[var(--surface)] overflow-hidden">
@@ -272,12 +252,12 @@ export function CategoryShowcase() {
       {/* Desktop Fan-out Cards (Hidden on mobile/tablet) */}
       <div className="hidden lg:flex justify-center items-end relative" style={{ minHeight: '560px' }}>
         <div className="relative flex items-end justify-center" style={{ width: '100%', maxWidth: '1100px' }}>
-          {CATEGORIES.map((cat, i) => (
+          {displayCategories.map((cat, i) => (
             <CategoryFanCard
-              key={cat.slug}
+              key={cat.slug || i}
               category={cat}
               index={i}
-              totalCards={CATEGORIES.length}
+              totalCards={displayCategories.length}
               hoveredIndex={hoveredIndex}
               setHoveredIndex={setHoveredIndex}
             />
@@ -287,7 +267,7 @@ export function CategoryShowcase() {
 
       {/* Mobile / Tablet Horizontal Slider (Hidden on desktop) */}
       <div className="lg:hidden">
-        <CategorySlider />
+        <CategorySlider categories={displayCategories} />
       </div>
 
       {/* Bottom CTA */}

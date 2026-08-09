@@ -7,7 +7,7 @@ import { cdnImg } from '../../utils/cdnImg';
 
 
 export function LiveClassesWorkshopsSection({ cmsData }) {
-  const sessions = cmsData?.data?.items || [];
+  const sessions = (cmsData?.data?.items || []).filter(s => s.isActive !== false);
   if (!cmsData || !cmsData.isActive || sessions.length === 0) return null;
   const sectionTitle = cmsData.title;
 

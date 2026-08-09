@@ -31,13 +31,15 @@ export class MediaService {
     const bunnyStreamApiKey = config.bunnyStreamApiKey?.trim();
     const bunnyStreamLibraryId = config.bunnyStreamLibraryId?.trim();
     const bunnyStreamCdnUrl = config.bunnyStreamCdnUrl?.trim() || 'https://iframe.mediadelivery.net';
+    const bunnyStorageApiKey = config.bunnyStorageApiKey?.trim();
+    const bunnyStorageZone = config.bunnyStorageZone?.trim() || 'class-connect';
+    const bunnyCdnHostname = config.bunnyStorageCdnUrl?.trim() || 'https://class-connect.b-cdn.net';
 
-    // Direct new video uploads to Bunny Stream if API keys are configured
+    // 1. Direct new video uploads to Bunny Stream if API keys are configured
     if (bunnyStreamApiKey && bunnyStreamLibraryId) {
       try {
         const title = options.title || filename || `video-${Date.now()}`;
         
-        // Step 1: Create video object in Bunny Stream Library
         const createRes = await fetch(`https://video.bunnycdn.com/library/${bunnyStreamLibraryId}/videos`, {
           method: 'POST',
           headers: {
@@ -48,41 +50,65 @@ export class MediaService {
           body: JSON.stringify({ title }),
         });
 
-        if (!createRes.ok) {
-          throw new Error(`Bunny Stream create video error: ${createRes.statusText}`);
+        if (createRes.ok) {
+          const createData: any = await createRes.json();
+          const videoId = createData.guid || createData.id;
+
+          const uploadRes = await fetch(`https://video.bunnycdn.com/library/${bunnyStreamLibraryId}/videos/${videoId}`, {
+            method: 'PUT',
+            headers: {
+              AccessKey: bunnyStreamApiKey,
+              'Content-Type': options.mimeType || 'application/octet-stream',
+            },
+            body: fileBuffer as any,
+          });
+
+          if (uploadRes.ok) {
+            const playbackUrl = `${bunnyStreamCdnUrl}/embed/${bunnyStreamLibraryId}/${videoId}`;
+            return {
+              assetId: videoId,
+              url: playbackUrl,
+              playbackUrl,
+              provider: 'bunny_stream',
+            };
+          }
         }
+      } catch (err: any) {
+        console.warn('Bunny Stream upload failed, attempting Bunny Storage:', err.message);
+      }
+    }
 
-        const createData: any = await createRes.json();
-        const videoId = createData.guid || createData.id;
+    // 2. Upload video payload directly to Bunny Storage CDN
+    if (bunnyStorageApiKey && bunnyStorageZone) {
+      try {
+        const folder = options.folder || 'class-connect/cms-videos';
+        const sanitizedFilename = `${Date.now()}-${filename.toLowerCase().replace(/[^a-z0-9.-]/g, '_')}`;
+        const targetUrl = `https://storage.bunnycdn.com/${bunnyStorageZone}/${folder}/${sanitizedFilename}`;
 
-        // Step 2: Upload binary payload to Bunny Stream
-        const uploadRes = await fetch(`https://video.bunnycdn.com/library/${bunnyStreamLibraryId}/videos/${videoId}`, {
+        const uploadRes = await fetch(targetUrl, {
           method: 'PUT',
           headers: {
-            AccessKey: bunnyStreamApiKey,
-            'Content-Type': options.mimeType || 'application/octet-stream',
+            AccessKey: bunnyStorageApiKey,
+            'Content-Type': options.mimeType || 'video/mp4',
           },
           body: fileBuffer as any,
         });
 
-        if (!uploadRes.ok) {
-          throw new Error(`Bunny Stream upload binary error: ${uploadRes.statusText}`);
+        if (uploadRes.ok) {
+          const cdnUrl = `${bunnyCdnHostname}/${folder}/${sanitizedFilename}`;
+          return {
+            assetId: sanitizedFilename,
+            url: cdnUrl,
+            playbackUrl: cdnUrl,
+            provider: 'bunny_storage',
+          };
         }
-
-        const playbackUrl = `${bunnyStreamCdnUrl}/embed/${bunnyStreamLibraryId}/${videoId}`;
-
-        return {
-          assetId: videoId,
-          url: playbackUrl,
-          playbackUrl,
-          provider: 'bunny_stream',
-        };
       } catch (err: any) {
-        console.warn('Bunny Stream upload failed, utilizing local fallback:', err.message);
+        console.warn('Bunny Storage video upload failed:', err.message);
       }
     }
 
-    // Fallback: Data URI for local dev/test environment
+    // 3. Fallback: Data URI for small dev video clips
     const mimeType = options.mimeType || 'video/mp4';
     const fallbackUrl = encodeToDataUri(fileBuffer, mimeType);
 

@@ -4,6 +4,7 @@ import { useLanguage } from '../../../context/LanguageContext';
 import { categoryApi } from '../../../api/models/category.api';
 import { courseApi } from '../../../api/models/course.api';
 import { uploadApi } from '../../../api/models/upload.api';
+import { cdnImg } from '../../../utils/cdnImg';
 import { 
   Plus, 
   Edit, 
@@ -587,6 +588,33 @@ export function ManageCategoriesPage() {
                       placeholder="Brief overview of this category..."
                       className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--canvas)] text-sm font-semibold focus:outline-none focus:border-[var(--primary)]"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-xs font-bold text-[var(--ink-muted)] uppercase">Category Cover Image (Bunny CDN)</label>
+                    {formData.coverImage ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--canvas)] h-28">
+                        <img src={cdnImg(formData.coverImage)} alt="Cover" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <label className="px-3 py-1 bg-white text-slate-900 text-[10px] font-extrabold rounded-md cursor-pointer">
+                            Replace
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleCatImageUpload(f); e.target.value = ''; }} />
+                          </label>
+                          <button type="button" onClick={() => setFormData({...formData, coverImage: ''})} className="px-3 py-1 bg-red-600 text-white text-[10px] font-extrabold rounded-md cursor-pointer">
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full h-24 border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors bg-[var(--canvas)] p-2">
+                        {catImageUploading ? (
+                          <><Loader2 className="w-5 h-5 text-amber-500 animate-spin" /><span className="text-[10px] font-bold text-amber-600">Uploading to Bunny CDN...</span></>
+                        ) : (
+                          <><UploadCloud className="w-5 h-5 text-[var(--primary)]" /><span className="text-[10px] font-bold text-[var(--ink-muted)]">Upload Category Card Image</span></>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleCatImageUpload(f); e.target.value = ''; }} />
+                      </label>
+                    )}
                   </div>
                 </form>
               </div>

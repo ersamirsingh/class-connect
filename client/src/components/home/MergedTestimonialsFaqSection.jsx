@@ -13,8 +13,9 @@ import { cdnImg } from '../../utils/cdnImg';
 
 
 export function MergedTestimonialsFaqSection({ cmsData, faqCmsData }) {
-  const testimonialsList = cmsData?.data?.items || [];
-  const faqList = faqCmsData?.data?.items || cmsData?.data?.faqs || [];
+  const testimonialsList = (cmsData?.data?.items || []).filter(s => s.isActive !== false);
+  const rawFaqs = faqCmsData?.data?.items || cmsData?.data?.faqs || [];
+  const faqList = rawFaqs.filter(f => f.isActive !== false);
 
   if ((!cmsData || !cmsData.isActive) && (!faqCmsData || !faqCmsData.isActive)) return null;
   if (testimonialsList.length === 0 && faqList.length === 0) return null;

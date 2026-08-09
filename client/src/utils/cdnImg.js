@@ -5,6 +5,7 @@
 export const cdnImg = (url) => {
   if (!url) return '';
   if (url.startsWith('data:')) return url;
+  if (url.startsWith('/api/upload/proxy')) return url;
   if (url.includes('.b-cdn.net') && typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return `/api/upload/proxy?url=${encodeURIComponent(url)}`;
   }

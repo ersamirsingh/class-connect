@@ -24,7 +24,7 @@ import { cdnImg } from '../../utils/cdnImg';
 
 
 export function StudentVideoTestimonialsSection({ cmsData }) {
-  const testimonialsList = cmsData?.data?.items || [];
+  const testimonialsList = (cmsData?.data?.items || []).filter(s => s.isActive !== false);
   if (!cmsData || !cmsData.isActive || testimonialsList.length === 0) return null;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,7 +32,7 @@ export function StudentVideoTestimonialsSection({ cmsData }) {
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef(null);
 
-  const rawTestimonial = testimonialsList[currentIndex] || testimonialsList[0] || VIDEO_TESTIMONIALS[0];
+  const rawTestimonial = testimonialsList[currentIndex] || testimonialsList[0];
   const currentTestimonial = {
     ...rawTestimonial,
     avatarStack: rawTestimonial.avatarStack || [
@@ -162,17 +162,26 @@ export function StudentVideoTestimonialsSection({ cmsData }) {
                   </div>
                 </div>
 
-                {/* HTML5 Video Element */}
-                <video
-                  ref={videoRef}
-                  src={cdnImg(currentTestimonial.videoUrl)}
-                  poster={currentTestimonial.posterUrl}
-                  playsInline
-                  muted={isMuted}
-                  loop
-                  className="w-full h-full object-cover cursor-pointer"
-                  onClick={togglePlay}
-                />
+                {/* HTML5 Video Element or iFrame Embed */}
+                {currentTestimonial.videoUrl?.includes('/embed/') ? (
+                  <iframe
+                    src={currentTestimonial.videoUrl}
+                    className="w-full h-full object-cover border-none"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    ref={videoRef}
+                    src={cdnImg(currentTestimonial.videoUrl)}
+                    poster={cdnImg(currentTestimonial.posterUrl)}
+                    playsInline
+                    muted={isMuted}
+                    loop
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={togglePlay}
+                  />
+                )}
 
                 {/* Center Big Play / Pause Button Overlay */}
                 <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
@@ -258,7 +267,7 @@ export function StudentVideoTestimonialsSection({ cmsData }) {
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <span className="text-xs font-mono font-bold text-slate-500">
-                  {currentIndex + 1} / {VIDEO_TESTIMONIALS.length}
+                  {currentIndex + 1} / {testimonialsList.length}
                 </span>
                 <button
                   onClick={handleNext}

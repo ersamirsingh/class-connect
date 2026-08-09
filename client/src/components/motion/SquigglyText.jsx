@@ -44,17 +44,11 @@ export function SquigglyText({
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ 
             pathLength: 1, 
-            opacity: 1,
-            d: [
-              "M 4,14 Q 40,2 75,14 T 145,14 T 215,14 T 295,14",
-              "M 4,14 Q 40,24 75,14 T 145,14 T 215,14 T 295,14",
-              "M 4,14 Q 40,2 75,14 T 145,14 T 215,14 T 295,14",
-            ]
+            opacity: 1
           }}
           transition={{
             pathLength: { duration: 1, ease: 'easeOut' },
-            opacity: { duration: 0.3 },
-            d: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
+            opacity: { duration: 0.3 }
           }}
         />
 

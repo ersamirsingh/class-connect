@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../../api/models/admin.api';
+import { cdnImg } from '../../../utils/cdnImg';
 import { Users, CheckCircle2, AlertCircle, Loader2, Archive, Check } from 'lucide-react';
 
 export const ManageUsersPage = () => {
@@ -77,7 +78,7 @@ export const ManageUsersPage = () => {
             <div key={student._id} className="card-visual p-5 space-y-4 flex flex-col justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={student.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
+                  src={cdnImg(student.avatarUrl || student.avatar || student.photo) || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
                   alt={student.name}
                   className="w-12 h-12 rounded-full object-cover ring-2 ring-[#3730E0]"
                 />

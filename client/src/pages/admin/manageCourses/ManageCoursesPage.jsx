@@ -4,6 +4,7 @@ import { useLanguage } from '../../../context/LanguageContext';
 import { courseApi } from '../../../api/models/course.api';
 import { categoryApi } from '../../../api/models/category.api';
 import { uploadApi } from '../../../api/models/upload.api';
+import { cdnImg } from '../../../utils/cdnImg';
 import { 
   Plus, 
   Edit, 
@@ -749,13 +750,9 @@ export function ManageCoursesPage() {
                       <div className="aspect-video w-full rounded-xl bg-black/10 overflow-hidden relative">
                         {course.thumbnail ? (
                           <img 
-                            src={course.thumbnail} 
+                            src={cdnImg(course.thumbnail)} 
                             alt={course.title} 
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = '/assets/about_hero_lead.jpg';
-                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--primary-soft)] to-purple-500/20">
@@ -1563,7 +1560,7 @@ export function ManageCoursesPage() {
                       ) : courseFormData.thumbnail ? (
                         <div className="flex flex-col items-center gap-2">
                           <img 
-                            src={courseFormData.thumbnail} 
+                            src={cdnImg(courseFormData.thumbnail)} 
                             alt="Course Thumbnail Preview" 
                             className="w-36 h-20 object-cover rounded-xl border border-emerald-500 shadow-sm"
                           />
