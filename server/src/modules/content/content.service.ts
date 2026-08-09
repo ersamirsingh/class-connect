@@ -8,7 +8,9 @@ const DEFAULT_CONTENT_BLOCKS = [
     title: 'Master New Skills With Visual Learning',
     subtitle: 'Interactive video lessons, live classes, and expert guidance designed for visual thinkers.',
     data: {
-      imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1000',
+      imageUrl: 'https://class-connect.b-cdn.net/cms/hero_desktop.jpg',
+      desktopImageUrl: 'https://class-connect.b-cdn.net/cms/hero_desktop.jpg',
+      mobileImageUrl: 'https://class-connect.b-cdn.net/cms/hero_mobile.jpg',
       ctaText: 'Explore Courses',
       ctaLink: '/courses',
       badge: 'Visual-First EdTech Platform',

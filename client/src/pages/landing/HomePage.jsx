@@ -170,14 +170,22 @@ export function HomePage() {
       {/* 1. Full-Screen Hero Section (100% Viewport Edge-to-Edge with 0px Top, Left & Right Padding) */}
       <section className="relative min-h-screen w-full flex items-center overflow-hidden m-0 p-0 border-none">
         
-        {/* Full-Screen Background Image Layer (Spans 100% Width & Height Edge-to-Edge) */}
+        {/* Full-Screen Background Image Layer (Responsive Desktop vs Mobile Phone) */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden m-0 p-0">
-          <img 
-            src={cdnImg(heroCms?.data?.imageUrl)} 
-            alt="ClassConnect Workspace" 
-            className="w-full h-full object-cover object-right antialiased block m-0 p-0 border-none"
-            style={{ imageRendering: 'high-quality' }}
-          />
+          <picture className="w-full h-full block m-0 p-0">
+            {/* Mobile / Phone Image for screens up to 768px */}
+            <source
+              media="(max-width: 768px)"
+              srcSet={cdnImg(heroCms?.data?.mobileImageUrl || heroCms?.data?.desktopImageUrl || heroCms?.data?.imageUrl)}
+            />
+            {/* Desktop / Laptop Image for larger screens */}
+            <img 
+              src={cdnImg(heroCms?.data?.desktopImageUrl || heroCms?.data?.imageUrl)} 
+              alt="ClassConnect Workspace" 
+              className="w-full h-full object-cover object-right antialiased block m-0 p-0 border-none"
+              style={{ imageRendering: 'high-quality' }}
+            />
+          </picture>
         </div>
 
         {/* Content Layer Shifted Farther to the Left Edge */}

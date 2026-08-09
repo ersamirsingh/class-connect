@@ -522,6 +522,173 @@ export const ManageCmsPage = () => {
 
             {/* DYNAMIC SECTION EDITORS */}
 
+            {/* HERO BANNER SPECIALIZED EDITOR (DESKTOP + MOBILE IMAGES) */}
+            {activeSectionId === 'hero' && (
+              <div className="space-y-6 pt-4 border-t border-[var(--border)]">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-extrabold uppercase text-[var(--ink)] tracking-wider">
+                    Hero Banner Responsive Images (Bunny Storage)
+                  </label>
+                  <span className="text-[10px] text-[var(--primary)] font-bold">Upload separate Desktop & Mobile hero images</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 1. Desktop / Laptop Hero Image */}
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-extrabold uppercase text-[var(--ink-muted)]">
+                      1. Desktop / Laptop Hero Image (Widescreen 16:9)
+                    </label>
+                    {formData.data?.desktopImageUrl || formData.data?.imageUrl ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--canvas)] h-36">
+                        <img 
+                          src={cdnImg(formData.data?.desktopImageUrl || formData.data?.imageUrl)} 
+                          alt="Desktop Hero" 
+                          className="w-full h-full object-cover" 
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                          <label className="px-3 py-1.5 bg-white text-slate-900 text-[10px] font-extrabold rounded-lg cursor-pointer">
+                            Replace Desktop Image
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => { 
+                                const f = e.target.files?.[0]; 
+                                if (f) {
+                                  handleUploadFile(f, 'data.desktopImageUrl');
+                                  handleUploadFile(f, 'data.imageUrl');
+                                }
+                                e.target.value = ''; 
+                              }} 
+                            />
+                          </label>
+                          <button 
+                            type="button" 
+                            onClick={() => setFormData(prev => ({ ...prev, data: { ...prev.data, desktopImageUrl: '', imageUrl: '' } }))} 
+                            className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-extrabold rounded-lg cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full h-36 border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors bg-[var(--surface)] p-3">
+                        {uploadingField === 'data.desktopImageUrl' ? (
+                          <><Loader2 className="w-6 h-6 text-amber-500 animate-spin" /><span className="text-[10px] font-bold text-amber-600">Uploading Desktop Hero...</span></>
+                        ) : (
+                          <><UploadCloud className="w-6 h-6 text-[var(--primary)]" /><span className="text-[11px] font-bold text-[var(--ink)]">Upload Desktop / PC Image</span><span className="text-[9px] text-[var(--ink-muted)]">16:9 Landscape ratio</span></>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => { 
+                            const f = e.target.files?.[0]; 
+                            if (f) {
+                              handleUploadFile(f, 'data.desktopImageUrl');
+                              handleUploadFile(f, 'data.imageUrl');
+                            }
+                            e.target.value = ''; 
+                          }} 
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* 2. Mobile / Phone Hero Image */}
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-extrabold uppercase text-[var(--ink-muted)]">
+                      2. Mobile / Phone Hero Image (Portrait / Flexible)
+                    </label>
+                    {formData.data?.mobileImageUrl ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--canvas)] h-36">
+                        <img 
+                          src={cdnImg(formData.data?.mobileImageUrl)} 
+                          alt="Mobile Hero" 
+                          className="w-full h-full object-cover" 
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                          <label className="px-3 py-1.5 bg-white text-slate-900 text-[10px] font-extrabold rounded-lg cursor-pointer">
+                            Replace Mobile Image
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => { 
+                                const f = e.target.files?.[0]; 
+                                if (f) handleUploadFile(f, 'data.mobileImageUrl'); 
+                                e.target.value = ''; 
+                              }} 
+                            />
+                          </label>
+                          <button 
+                            type="button" 
+                            onClick={() => setFormData(prev => ({ ...prev, data: { ...prev.data, mobileImageUrl: '' } }))} 
+                            className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-extrabold rounded-lg cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full h-36 border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors bg-[var(--surface)] p-3">
+                        {uploadingField === 'data.mobileImageUrl' ? (
+                          <><Loader2 className="w-6 h-6 text-amber-500 animate-spin" /><span className="text-[10px] font-bold text-amber-600">Uploading Mobile Hero...</span></>
+                        ) : (
+                          <><UploadCloud className="w-6 h-6 text-[var(--primary)]" /><span className="text-[11px] font-bold text-[var(--ink)]">Upload Mobile / Phone Image</span><span className="text-[9px] text-[var(--ink-muted)]">Portrait or Square ratio</span></>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => { 
+                            const f = e.target.files?.[0]; 
+                            if (f) handleUploadFile(f, 'data.mobileImageUrl'); 
+                            e.target.value = ''; 
+                          }} 
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-[var(--ink-muted)] mb-1">Badge Tagline</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Visual-First EdTech Platform"
+                      value={formData.data?.badge || ''}
+                      onChange={(e) => setFormData({ ...formData, data: { ...formData.data, badge: e.target.value } })}
+                      className="w-full p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-[var(--ink-muted)] mb-1">CTA Button Text</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Explore Courses"
+                      value={formData.data?.ctaText || ''}
+                      onChange={(e) => setFormData({ ...formData, data: { ...formData.data, ctaText: e.target.value } })}
+                      className="w-full p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-[var(--ink-muted)] mb-1">CTA Button Link</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. /courses"
+                      value={formData.data?.ctaLink || ''}
+                      onChange={(e) => setFormData({ ...formData, data: { ...formData.data, ctaLink: e.target.value } })}
+                      className="w-full p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 0. CURATED SKILL COLLECTIONS (CATEGORIES) EDITOR */}
             {activeSectionId === 'categories' && (
               <div className="space-y-6 pt-4 border-t border-[var(--border)]">
